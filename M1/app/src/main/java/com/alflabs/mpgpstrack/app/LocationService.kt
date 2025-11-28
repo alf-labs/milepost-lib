@@ -6,7 +6,6 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
@@ -22,6 +21,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class LocationService : Service() {
+    private val TAG = LocationService::class.java.simpleName
 
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -37,6 +37,7 @@ class LocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "onStartCommand: ")
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Tracking location...")
             .setContentText("Location: null")
@@ -57,7 +58,7 @@ class LocationService : Service() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
-                    Log.d("LocationService", "Location: ${location.latitude}, ${location.longitude}")
+                    Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}")
                     val updatedNotification = notification.setContentText(
                         "Location: ${location.latitude}, ${location.longitude}"
                     )
@@ -78,23 +79,28 @@ class LocationService : Service() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
+            Log.d(TAG, "onStartCommand: No permission")
             return START_NOT_STICKY
         }
+
         fusedLocationProviderClient.requestLocationUpdates(
             locationRequest,
             locationCallback,
             Looper.getMainLooper()
         )
 
+        Log.d(TAG, "Started")
         return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? {
+        Log.d(TAG, "onBind")
         return null
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.d(TAG, "onDestroy")
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }
 }
