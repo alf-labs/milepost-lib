@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack
+package com.alflabs.mpgpstrack.activity
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
+import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.databinding.FragmentSecondBinding
 import dagger.hilt.android.AndroidEntryPoint
 
