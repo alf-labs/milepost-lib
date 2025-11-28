@@ -8,10 +8,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.IBinder
 import android.os.Looper
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
+import com.alflabs.mpgpstrack.dagger.CurrentLocation
+import com.alflabs.rx.IPublisher
+import com.alflabs.rx.Publishers
+import com.alflabs.utils.ILogger
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -23,21 +26,17 @@ import javax.inject.Inject
 class LocationService : Service() {
     private val TAG = LocationService::class.java.simpleName
 
-    @Inject
-    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-
-    @Inject
-    lateinit var locationRequest: LocationRequest
+    @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    @Inject lateinit var locationRequest: LocationRequest
+    @Inject lateinit var logger: ILogger
+    @Inject lateinit var currentLocation: CurrentLocation
 
     private lateinit var locationCallback: LocationCallback
 
-    companion object {
-        const val ACTION_LOCATION_UPDATE = "com.alflabs.mpgpstrack.app.LOCATION_UPDATE"
-        const val EXTRA_LOCATION = "location"
-    }
+    private val locationPublisher: IPublisher<String?> = Publishers.latest()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand: ")
+        logger.d(TAG, "onStartCommand: ")
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Tracking location...")
             .setContentText("Location: null")
@@ -55,18 +54,30 @@ class LocationService : Service() {
 
         startForeground(1, notification.build())
 
+        currentLocation.start()
+        currentLocation.location.publishWith(locationPublisher)
+        locationPublisher.publish("Location Service Started")
+        var idx = 0
+        val indicator = "|/-\\"
+
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
-                    Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}")
-                    val updatedNotification = notification.setContentText(
-                        "Location: ${location.latitude}, ${location.longitude}"
-                    )
-                    notificationManager.notify(1, updatedNotification.build())
+                    val indic = indicator[idx++ % 4]
+                    var msg = "Location: ${location.latitude}, ${location.longitude}"
+                    if (location.hasSpeed()) {
+                        msg += "\nSpeed: ${location.speed} mps +/- ${location.speedAccuracyMetersPerSecond}"
+                    }
+                    if (location.hasBearing()) {
+                        msg += "\nBearing: ${location.bearing} deg +/- ${location.bearingAccuracyDegrees}"
+                    }
+                    msg += "\n$indic"
+                    logger.d(TAG, msg)
 
-                    val broadcastIntent = Intent(ACTION_LOCATION_UPDATE)
-                    broadcastIntent.putExtra(EXTRA_LOCATION, location)
-                    sendBroadcast(broadcastIntent)
+                    locationPublisher.publish(msg)
+
+                    val updatedNotification = notification.setContentText(msg)
+                    notificationManager.notify(1, updatedNotification.build())
                 }
             }
         }
@@ -79,7 +90,7 @@ class LocationService : Service() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            Log.d(TAG, "onStartCommand: No permission")
+            logger.d(TAG, "onStartCommand: No permission")
             return START_NOT_STICKY
         }
 
@@ -89,18 +100,20 @@ class LocationService : Service() {
             Looper.getMainLooper()
         )
 
-        Log.d(TAG, "Started")
+        logger.d(TAG, "Started")
         return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-        Log.d(TAG, "onBind")
+        logger.d(TAG, "onBind")
         return null
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "onDestroy")
+        logger.d(TAG, "onDestroy")
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        locationPublisher.publish("Location Service Stopped")
+        currentLocation.location.remove(locationPublisher)
     }
 }

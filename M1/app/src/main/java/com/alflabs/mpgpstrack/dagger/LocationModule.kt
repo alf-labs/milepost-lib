@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.modules
+package com.alflabs.mpgpstrack.dagger
 
 import android.content.Context
 import com.google.android.gms.location.FusedLocationProviderClient

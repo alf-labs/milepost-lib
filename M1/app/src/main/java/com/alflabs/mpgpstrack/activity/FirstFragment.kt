@@ -1,24 +1,26 @@
 package com.alflabs.mpgpstrack.activity
 
 import android.Manifest
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.alflabs.mpgpstrack.app.LocationService
 import com.alflabs.mpgpstrack.R
+import com.alflabs.mpgpstrack.app.LocationService
+import com.alflabs.mpgpstrack.dagger.CurrentLocation
 import com.alflabs.mpgpstrack.databinding.FragmentFirstBinding
+import com.alflabs.rx.AndroidSchedulers
+import com.alflabs.rx.IStream
+import com.alflabs.rx.ISubscriber
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -27,19 +29,22 @@ import dagger.hilt.android.AndroidEntryPoint
 class FirstFragment : Fragment() {
     private val TAG = FirstFragment::class.java.simpleName
 
+    @Inject lateinit var currentLocation: CurrentLocation
+
     private var _binding: FragmentFirstBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
-    private val binding get() = _binding!!
+    private val locationSubscriber: ISubscriber<in String?> =
+        ISubscriber<String?> { stream, event -> onLocationChanged(stream, event) }
 
-    private lateinit var locationReceiver: BroadcastReceiver
+    // This property is only valid between onCreateView and onDestroyView.
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         Log.d(TAG, "onCreateView")
+        currentLocation.start()
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
         return binding.root
 
@@ -74,28 +79,24 @@ class FirstFragment : Fragment() {
             Log.d(TAG, "On click STOP button")
             requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
         }
+    }
 
-        locationReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                Log.d(TAG, "On Broadcast Received")
-                val location = intent?.getParcelableExtra<Location>(LocationService.EXTRA_LOCATION)
-                binding.locationText.text = "Location: ${location?.latitude}, ${location?.longitude}"
-            }
-        }
+    fun onLocationChanged(stream: IStream<out String?>?, value: String?) {
+        if (value == null) return
+        Log.d(TAG, "onLocationChanged: $value")
+        binding.locationText.text = value
     }
 
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume")
-        requireActivity().registerReceiver(locationReceiver,
-            IntentFilter(LocationService.ACTION_LOCATION_UPDATE),
-            Context.RECEIVER_NOT_EXPORTED)
+        currentLocation.location.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
     }
 
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause")
-        requireActivity().unregisterReceiver(locationReceiver)
+        currentLocation.location.remove(locationSubscriber)
     }
 
     @Deprecated("Deprecated in Java")
