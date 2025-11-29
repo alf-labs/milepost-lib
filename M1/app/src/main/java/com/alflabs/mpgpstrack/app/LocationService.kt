@@ -80,7 +80,7 @@ class LocationService : Service() {
                         timestampMillis = location.time,
                         latitude = location.latitude,
                         longitude = location.longitude,
-                        accuracy = location.accuracy,
+                        accuracy = if (location.hasAccuracy()) location.accuracy else 0f,
                     )
 
                     val speedBearing = if (location.hasSpeed() && location.hasBearing()) {

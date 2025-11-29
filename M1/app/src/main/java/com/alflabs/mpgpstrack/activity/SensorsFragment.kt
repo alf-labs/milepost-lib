@@ -3,6 +3,7 @@ package com.alflabs.mpgpstrack.activity
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -44,6 +45,7 @@ class SensorsFragment : Fragment() {
 
     private val locationSubscriber: ISubscriber<in CurrentLocationData?> =
         ISubscriber<CurrentLocationData?> { _, event -> onLocationChanged(event) }
+    private var lastMapsLocation: Location? = null
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
@@ -122,13 +124,19 @@ class SensorsFragment : Fragment() {
         if (value == null) return
         Log.d(TAG, "onLocationChanged: $value")
 
-
         val latLong = value.latLong
         if (latLong != null) {
             binding.locationText.text = String.format(
                 Locale.US,
                 "%.5f, %.5f\n±%.1f m",   // matches precision of google maps display
                 latLong.latitude, latLong.longitude, latLong.accuracy)
+
+            val newLocation = Location(null)
+            newLocation.latitude = latLong.latitude
+            newLocation.longitude = latLong.longitude
+            newLocation.accuracy = latLong.accuracy
+            lastMapsLocation = newLocation
+            // TBD place or update a marker in a MapView at lastMapsLocation
 
             val instant = Instant.ofEpochMilli(latLong.timestampMillis)
             binding.statusText.text = dateTimeFormatter.format(instant)
