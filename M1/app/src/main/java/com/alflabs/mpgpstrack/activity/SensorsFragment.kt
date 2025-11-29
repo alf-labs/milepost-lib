@@ -12,10 +12,14 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.alflabs.mpgpstrack.app.LocationService
 import com.alflabs.mpgpstrack.dagger.CurrentLocation
+import com.alflabs.mpgpstrack.dagger.CurrentLocationData
 import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 
 
@@ -30,8 +34,11 @@ class SensorsFragment : Fragment() {
 
     private var _binding: SensorsFragmentBinding? = null
 
-    private val locationSubscriber: ISubscriber<in String?> =
-        ISubscriber<String?> { _, event -> onLocationChanged(event) }
+    private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
+    // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
+
+    private val locationSubscriber: ISubscriber<in CurrentLocationData?> =
+        ISubscriber<CurrentLocationData?> { _, event -> onLocationChanged(event) }
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
@@ -78,12 +85,6 @@ class SensorsFragment : Fragment() {
         }
     }
 
-    fun onLocationChanged(value: String?) {
-        if (value == null) return
-        Log.d(TAG, "onLocationChanged: $value")
-        binding.locationText.text = value
-    }
-
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume")
@@ -110,5 +111,39 @@ class SensorsFragment : Fragment() {
         super.onDestroyView()
         Log.d(TAG, "onDestroyView")
         _binding = null
+    }
+
+    fun onLocationChanged(value: CurrentLocationData?) {
+        if (value == null) return
+        Log.d(TAG, "onLocationChanged: $value")
+
+
+        val latLong = value.latLong
+        if (latLong != null) {
+            binding.locationText.text = String.format(
+                Locale.US,
+                "%.5f, %.5f",   // matches precision of google maps display
+                latLong.lat, latLong.longi)
+
+            val instant = Instant.ofEpochMilli(latLong.ts)
+            binding.statusText.text = dateTimeFormatter.format(instant)
+        } else {
+            binding.statusText.text = value.status
+        }
+
+        val speedBearing = value.speedBearing
+        if (speedBearing != null) {
+            val mph = speedBearing.speedMps / 1609.34 * 3600
+            val acc_mph = speedBearing.speedAcc / 1609.34 * 3600
+            binding.speedText.text = String.format(Locale.US,
+                "%.1f MPH +/- %.1f",
+                mph,
+                acc_mph)
+
+            binding.bearingText.text = String.format(Locale.US,
+                "%.1f° +/- %.1f°",
+                speedBearing.bearingDeg,
+                speedBearing.bearingAcc)
+        }
     }
 }

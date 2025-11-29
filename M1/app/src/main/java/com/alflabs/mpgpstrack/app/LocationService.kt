@@ -11,7 +11,10 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
+import com.alflabs.mpgpstrack.dagger.CurrentLatLong
 import com.alflabs.mpgpstrack.dagger.CurrentLocation
+import com.alflabs.mpgpstrack.dagger.CurrentLocationData
+import com.alflabs.mpgpstrack.dagger.CurrentSpeedBearing
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -33,7 +36,7 @@ class LocationService : Service() {
 
     private lateinit var locationCallback: LocationCallback
 
-    private val locationPublisher: IPublisher<String?> = Publishers.latest()
+    private val locationPublisher: IPublisher<CurrentLocationData?> = Publishers.latest()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.d(TAG, "onStartCommand: ")
@@ -56,26 +59,44 @@ class LocationService : Service() {
 
         currentLocation.start()
         currentLocation.location.publishWith(locationPublisher)
-        locationPublisher.publish("Location Service Started")
-        var idx = 0
-        val indicator = "|/-\\"
+        var currentLocationData = CurrentLocationData(
+            running = true,
+            status = "Location Service: Getting first fix",
+            latLong = null,
+            speedBearing = null
+        )
+        locationPublisher.publish(
+            currentLocationData
+        )
+        val updatedNotification = notification.setContentText(currentLocationData.status)
+        notificationManager.notify(1, updatedNotification.build())
+
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
-                    val indic = indicator[idx++ % 4]
-                    var msg = "Location: ${location.latitude}, ${location.longitude}"
-                    if (location.hasSpeed()) {
-                        msg += "\nSpeed: ${location.speed} mps +/- ${location.speedAccuracyMetersPerSecond}"
-                    }
-                    if (location.hasBearing()) {
-                        msg += "\nBearing: ${location.bearing} deg +/- ${location.bearingAccuracyDegrees}"
-                    }
-                    msg += "\n$indic"
-                    logger.d(TAG, msg)
 
-                    locationPublisher.publish(msg)
+                    val latLong = CurrentLatLong(
+                        ts = location.time,
+                        lat = location.latitude,
+                        longi = location.longitude
+                    )
 
+                    val speedBearing = if (location.hasSpeed() && location.hasBearing()) {
+                        CurrentSpeedBearing(
+                            speedMps = location.speed,
+                            speedAcc = location.speedAccuracyMetersPerSecond,
+                            bearingDeg = location.bearing,
+                            bearingAcc = location.bearingAccuracyDegrees,
+                        )
+                    } else {
+                        null
+                    }
+
+                    currentLocationData = currentLocationData.update(latLong, speedBearing)
+                    locationPublisher.publish(currentLocationData)
+
+                    val msg = "Location: ${location.latitude}, ${location.longitude}"
                     val updatedNotification = notification.setContentText(msg)
                     notificationManager.notify(1, updatedNotification.build())
                 }
@@ -113,7 +134,13 @@ class LocationService : Service() {
         super.onDestroy()
         logger.d(TAG, "onDestroy")
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        locationPublisher.publish("Location Service Stopped")
+        locationPublisher.publish(
+            CurrentLocationData(
+                running = false,
+                status = "Location Service Stopped",
+                latLong = null,
+                speedBearing = null
+            ))
         currentLocation.location.remove(locationPublisher)
     }
 }
