@@ -3,6 +3,10 @@
       xmlns:tools="http://schemas.android.com/tools"
       tools:showIn="navigation_view">
 
+    <!-- Notes:
+        - All item ids here should match nav_graph.xml destination ids.
+     -->
+
     <group> <!-- android:checkableBehavior="single" -->
         <item
                 android:id="@+id/nav_intro"
@@ -15,7 +19,7 @@
                 android:title="Current Track"
                 android:enabled="false" />
         <item
-                android:id="@+id/nav_sensor_data"
+                android:id="@+id/nav_sensors"
                 android:title="Sensors Data" />
     </group>
 <!--    android:icon="@drawable/ic_get_app_light"-->

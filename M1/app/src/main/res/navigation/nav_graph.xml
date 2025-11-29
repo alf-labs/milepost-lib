@@ -3,18 +3,22 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/nav_graph"
-        app:startDestination="@id/nav_aboutFragment">
+        app:startDestination="@id/nav_about">
 
+    <!-- Notes:
+        - All fragment destination ids here should match drawer_menu.xml item ids.
+        - The labels automatically become AppBar/Toolbar titles.
+     -->
 
     <fragment
-            android:id="@+id/nav_aboutFragment"
+            android:id="@+id/nav_about"
             android:name="com.alflabs.mpgpstrack.activity.AboutFragment"
             android:label="About"
             tools:layout="@layout/about_fragment">
     </fragment>
 
     <fragment
-            android:id="@+id/nav_sensorsFragment"
+            android:id="@+id/nav_sensors"
             android:name="com.alflabs.mpgpstrack.activity.SensorsFragment"
             android:label="Sensors"
             tools:layout="@layout/sensors_fragment">
