@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:showIn="navigation_view">
+
+    <group> <!-- android:checkableBehavior="single" -->
+        <item
+                android:id="@+id/nav_intro"
+                android:title="Introduction" />
+        <item
+                android:id="@+id/nav_list_tracks"
+                android:title="Milepost Tracks" />
+        <item
+                android:id="@+id/nav_current"
+                android:title="Current Track"
+                android:enabled="false" />
+        <item
+                android:id="@+id/nav_sensor_data"
+                android:title="Sensors Data" />
+    </group>
+<!--    android:icon="@drawable/ic_get_app_light"-->
+<!--    android:icon="@drawable/ic_explore_light"-->
+<!--    android:icon="@drawable/ic_map_dark"-->
+<!--    android:icon="@drawable/ic_assessment_light"-->
+
+    <item android:title="More">
+        <menu>
+            <item
+                    android:id="@+id/nav_permissions"
+                    android:title="Permissions" />
+            <item
+                    android:id="@+id/nav_settings"
+                    android:title="Settings" />
+            <item
+                    android:id="@+id/nav_about"
+                    android:title="About" />
+<!--            android:icon="@drawable/ic_report_problem_light"-->
+<!--            android:icon="@drawable/ic_settings_light"-->
+<!--            android:icon="@drawable/ic_info_light"-->
+        </menu>
+    </item>
+
+</menu>
