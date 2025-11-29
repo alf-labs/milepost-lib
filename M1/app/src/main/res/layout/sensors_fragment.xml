@@ -47,7 +47,6 @@
             android:id="@+id/bearing_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
             android:text="Bearing"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
@@ -63,6 +62,19 @@
             android:text="SPEED"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:layout_above="@id/bearing_text"
+            android:layout_centerHorizontal="true" />
+
+    <!-- Placeholder for Map View ; replace the View by a Map View -->
+    <TextView
+            android:id="@+id/map_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAccent"
+            android:text="Placeholder for Map View"
+            android:layout_below="@id/location_text"
+            android:layout_above="@id/speed_text"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
