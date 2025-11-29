@@ -32,8 +32,13 @@ class SensorsFragment : Fragment() {
 
     @Inject lateinit var currentLocation: CurrentLocation
 
-    private var _binding: SensorsFragmentBinding? = null
+    companion object {
+        private const val SECONDS_PER_HOUR = 3600
+        private const val METERS_PER_MILE = 1609.344
+        private const val MPS_TO_MPH = SECONDS_PER_HOUR / METERS_PER_MILE
+    }
 
+    private var _binding: SensorsFragmentBinding? = null
     private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
     // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
 
@@ -122,10 +127,10 @@ class SensorsFragment : Fragment() {
         if (latLong != null) {
             binding.locationText.text = String.format(
                 Locale.US,
-                "%.5f, %.5f",   // matches precision of google maps display
-                latLong.lat, latLong.longi)
+                "%.5f, %.5f\n±%.1f m",   // matches precision of google maps display
+                latLong.latitude, latLong.longitude, latLong.accuracy)
 
-            val instant = Instant.ofEpochMilli(latLong.ts)
+            val instant = Instant.ofEpochMilli(latLong.timestampMillis)
             binding.statusText.text = dateTimeFormatter.format(instant)
         } else {
             binding.statusText.text = value.status
@@ -133,15 +138,15 @@ class SensorsFragment : Fragment() {
 
         val speedBearing = value.speedBearing
         if (speedBearing != null) {
-            val mph = speedBearing.speedMps / 1609.34 * 3600
-            val acc_mph = speedBearing.speedAcc / 1609.34 * 3600
+            val spd_mph = speedBearing.speedMps * MPS_TO_MPH
+            val acc_mph = speedBearing.speedAcc * MPS_TO_MPH
             binding.speedText.text = String.format(Locale.US,
-                "%.1f MPH +/- %.1f",
-                mph,
+                "%.1f MPH ±%.1f",
+                spd_mph,
                 acc_mph)
 
             binding.bearingText.text = String.format(Locale.US,
-                "%.1f° +/- %.1f°",
+                "%.1f° ±%.1f°",
                 speedBearing.bearingDeg,
                 speedBearing.bearingAcc)
         }

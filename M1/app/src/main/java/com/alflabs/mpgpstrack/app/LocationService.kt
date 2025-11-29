@@ -77,9 +77,10 @@ class LocationService : Service() {
                 for (location in locationResult.locations) {
 
                     val latLong = CurrentLatLong(
-                        ts = location.time,
-                        lat = location.latitude,
-                        longi = location.longitude
+                        timestampMillis = location.time,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        accuracy = location.accuracy,
                     )
 
                     val speedBearing = if (location.hasSpeed() && location.hasBearing()) {
