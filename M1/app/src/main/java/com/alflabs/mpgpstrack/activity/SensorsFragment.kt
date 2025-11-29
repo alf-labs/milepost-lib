@@ -10,13 +10,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.app.LocationService
 import com.alflabs.mpgpstrack.dagger.CurrentLocation
-import com.alflabs.mpgpstrack.databinding.FragmentFirstBinding
+import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
 import com.alflabs.rx.AndroidSchedulers
-import com.alflabs.rx.IStream
 import com.alflabs.rx.ISubscriber
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,15 +23,15 @@ import javax.inject.Inject
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 @AndroidEntryPoint
-class FirstFragment : Fragment() {
-    private val TAG = FirstFragment::class.java.simpleName
+class SensorsFragment : Fragment() {
+    private val TAG = SensorsFragment::class.java.simpleName
 
     @Inject lateinit var currentLocation: CurrentLocation
 
-    private var _binding: FragmentFirstBinding? = null
+    private var _binding: SensorsFragmentBinding? = null
 
     private val locationSubscriber: ISubscriber<in String?> =
-        ISubscriber<String?> { stream, event -> onLocationChanged(stream, event) }
+        ISubscriber<String?> { _, event -> onLocationChanged(event) }
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
@@ -45,7 +42,7 @@ class FirstFragment : Fragment() {
     ): View {
         Log.d(TAG, "onCreateView")
         currentLocation.start()
-        _binding = FragmentFirstBinding.inflate(inflater, container, false)
+        _binding = SensorsFragmentBinding.inflate(inflater, container, false)
         return binding.root
 
     }
@@ -54,9 +51,9 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "onViewCreated")
 
-        binding.buttonFirst.setOnClickListener {
-            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
-        }
+//        binding.buttonFirst.setOnClickListener {
+//            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
+//        }
 
         binding.startButton.setOnClickListener {
             Log.d(TAG, "On click START button")
@@ -81,7 +78,7 @@ class FirstFragment : Fragment() {
         }
     }
 
-    fun onLocationChanged(stream: IStream<out String?>?, value: String?) {
+    fun onLocationChanged(value: String?) {
         if (value == null) return
         Log.d(TAG, "onLocationChanged: $value")
         binding.locationText.text = value
