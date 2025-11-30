@@ -24,4 +24,11 @@
             tools:layout="@layout/sensors_fragment">
     </fragment>
 
+    <fragment
+            android:id="@+id/nav_permissions"
+            android:name="com.alflabs.mpgpstrack.activity.PermissionsFragment"
+            android:label="Permissions"
+            tools:layout="@layout/permissions_fragment">
+    </fragment>
+
 </navigation>

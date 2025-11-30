@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        tools:context=".activity.PermissionsFragment"
+        >
+
+    <TextView
+            android:id="@+id/description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="This application needs the following permissions to work properly:"
+            android:layout_marginTop="16dp"
+            android:layout_alignParentTop="true"
+            tools:ignore="HardcodedText"/>
+
+    <Switch
+            android:id="@+id/gps_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@id/description"
+            android:text="Enable GPS fine location"
+            tools:ignore="HardcodedText"
+            />
+
+    <TextView
+            android:id="@+id/gps_switch_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/gps_switch"
+            />
+
+    <Switch
+            android:id="@+id/notification_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@id/gps_switch_label"
+            android:text="Enable Notifications"
+            tools:ignore="HardcodedText"
+            />
+
+    <TextView
+            android:id="@+id/notification_switch_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/notification_switch"
+            />
+
+</RelativeLayout>

@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.app.LocationService
 import com.alflabs.mpgpstrack.dagger.CurrentLocation
 import com.alflabs.mpgpstrack.dagger.CurrentLocationData
@@ -29,9 +31,6 @@ import javax.inject.Inject
 
 
 
-/**
- * A simple [Fragment] subclass as the default destination in the navigation.
- */
 @AndroidEntryPoint
 class SensorsFragment : Fragment() {
     private val TAG = SensorsFragment::class.java.simpleName
@@ -78,25 +77,16 @@ class SensorsFragment : Fragment() {
 //        }
 
         binding.startButton.setOnClickListener {
+            Log.d(TAG, "On click START button")
 
-            val hasLocationPerm = ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-            val hasNotificationPerm = ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-
-            Log.d(TAG, "On click START button, hasLocationPerm: $hasLocationPerm, hasNotificationPerm: $hasNotificationPerm")
-
-            if (!hasLocationPerm || !hasNotificationPerm) {
+            if (!PermissionsFragment.allPermissionsGranted(requireContext())) {
                 Log.d(TAG, "START --> request permissions")
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS),
-                    PERM_REQUEST_CODE
-                )
+                findNavController().navigate(R.id.nav_permissions)
+//                ActivityCompat.requestPermissions(
+//                    requireActivity(),
+//                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS),
+//                    PERM_REQUEST_CODE
+//                )
             } else {
                 requireActivity().startForegroundService(Intent(requireContext(), LocationService::class.java))
             }
@@ -127,14 +117,16 @@ class SensorsFragment : Fragment() {
         currentLocation.location.remove(locationSubscriber)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        binding.mapView.onDestroy()
-    }
-
     override fun onLowMemory() {
         super.onLowMemory()
-        binding.mapView.onLowMemory()
+        _binding?.mapView?.onLowMemory()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d(TAG, "onDestroyView")
+        binding.mapView.onDestroy()
+        _binding = null
     }
 
     @Deprecated("Deprecated in Java")
@@ -152,12 +144,6 @@ class SensorsFragment : Fragment() {
         } else {
             Log.d(TAG, "onRequestPermissionsResult --> NOT granted")
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d(TAG, "onDestroyView")
-        _binding = null
     }
 
     fun onLocationChanged(value: CurrentLocationData?) {
