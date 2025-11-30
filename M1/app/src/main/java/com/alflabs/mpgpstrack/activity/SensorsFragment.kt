@@ -17,11 +17,16 @@ import com.alflabs.mpgpstrack.dagger.CurrentLocationData
 import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
+
 
 
 /**
@@ -34,6 +39,8 @@ class SensorsFragment : Fragment() {
     @Inject lateinit var currentLocation: CurrentLocation
 
     companion object {
+        private const val PERM_REQUEST_CODE = 1
+        private const val MAPS_ZOOM_LEVEL = 15f
         private const val SECONDS_PER_HOUR = 3600
         private const val METERS_PER_MILE = 1609.344
         private const val MPS_TO_MPH = SECONDS_PER_HOUR / METERS_PER_MILE
@@ -46,6 +53,7 @@ class SensorsFragment : Fragment() {
     private val locationSubscriber: ISubscriber<in CurrentLocationData?> =
         ISubscriber<CurrentLocationData?> { _, event -> onLocationChanged(event) }
     private var lastMapsLocation: Location? = null
+    private var googleMap: GoogleMap? = null
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
@@ -70,16 +78,24 @@ class SensorsFragment : Fragment() {
 //        }
 
         binding.startButton.setOnClickListener {
-            Log.d(TAG, "On click START button")
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
+
+            val hasLocationPerm = ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            val hasNotificationPerm = ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            Log.d(TAG, "On click START button, hasLocationPerm: $hasLocationPerm, hasNotificationPerm: $hasNotificationPerm")
+
+            if (!hasLocationPerm || !hasNotificationPerm) {
+                Log.d(TAG, "START --> request permissions")
                 ActivityCompat.requestPermissions(
                     requireActivity(),
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.POST_NOTIFICATIONS),
-                    1
+                    PERM_REQUEST_CODE
                 )
             } else {
                 requireActivity().startForegroundService(Intent(requireContext(), LocationService::class.java))
@@ -90,18 +106,35 @@ class SensorsFragment : Fragment() {
             Log.d(TAG, "On click STOP button")
             requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
         }
+
+        binding.mapView.onCreate(savedInstanceState)
+        binding.mapView.getMapAsync { map ->
+            googleMap = map
+        }
     }
 
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "onResume")
+        binding.mapView.onResume()
         currentLocation.location.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
     }
 
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause")
+        binding.mapView.onPause()
         currentLocation.location.remove(locationSubscriber)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.mapView.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        binding.mapView.onLowMemory()
     }
 
     @Deprecated("Deprecated in Java")
@@ -109,8 +142,15 @@ class SensorsFragment : Fragment() {
                                             permissions: Array<out String>,
                                             grantResults: IntArray) {
         Log.d(TAG, "onRequestPermissionsResult: $requestCode, $permissions, $grantResults")
-        if (requestCode == 1 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            requireActivity().startForegroundService(Intent(requireContext(), LocationService::class.java))
+        if (requestCode == PERM_REQUEST_CODE
+            && grantResults.isNotEmpty()
+            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "onRequestPermissionsResult --> GRANTED")
+
+            requireActivity()
+                .startForegroundService(Intent(requireContext(), LocationService::class.java))
+        } else {
+            Log.d(TAG, "onRequestPermissionsResult --> NOT granted")
         }
     }
 
@@ -131,12 +171,25 @@ class SensorsFragment : Fragment() {
                 "%.5f, %.5f\n±%.1f m",   // matches precision of google maps display
                 latLong.latitude, latLong.longitude, latLong.accuracy)
 
+            val isFirst = lastMapsLocation == null
             val newLocation = Location(null)
             newLocation.latitude = latLong.latitude
             newLocation.longitude = latLong.longitude
             newLocation.accuracy = latLong.accuracy
             lastMapsLocation = newLocation
-            // TBD place or update a marker in a MapView at lastMapsLocation
+
+
+            googleMap?.let { map ->
+                val position = LatLng(latLong.latitude, latLong.longitude)
+                map.clear()
+                map.addMarker(MarkerOptions().position(position))
+                val update = if (isFirst) {
+                    CameraUpdateFactory.newLatLngZoom(position, MAPS_ZOOM_LEVEL)
+                } else {
+                    CameraUpdateFactory.newLatLng(position)
+                }
+                map.moveCamera(update)
+            }
 
             val instant = Instant.ofEpochMilli(latLong.timestampMillis)
             binding.statusText.text = dateTimeFormatter.format(instant)
