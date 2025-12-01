@@ -12,12 +12,12 @@ import android.view.ViewGroup
 import android.widget.CompoundButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.DialogFragment
 import com.alflabs.mpgpstrack.databinding.PermissionsFragmentBinding
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class PermissionsFragment : Fragment() {
+class PermissionsFragment : DialogFragment() {
     private val TAG = PermissionsFragment::class.java.simpleName
 
     private var _binding: PermissionsFragmentBinding? = null
