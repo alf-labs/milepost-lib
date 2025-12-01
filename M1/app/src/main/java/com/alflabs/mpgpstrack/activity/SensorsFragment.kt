@@ -2,7 +2,6 @@ package com.alflabs.mpgpstrack.activity
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -49,8 +48,10 @@ class SensorsFragment : Fragment() {
 
     private val locationSubscriber: ISubscriber<in CurrentLocationData?> =
         ISubscriber<CurrentLocationData?> { _, event -> onLocationChanged(event) }
-    private var lastMapsLocation: Location? = null
+    private var setInitialMapZoom = true
     private var googleMap: GoogleMap? = null
+    private var accuracyColorMissing: Int = 0
+    private var accuracyColorPresent: Int = 0
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
@@ -70,9 +71,8 @@ class SensorsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "onViewCreated")
 
-//        binding.buttonFirst.setOnClickListener {
-//            findNavController().navigate(R.id.action_FirstFragment_to_SecondFragment)
-//        }
+        accuracyColorMissing = requireContext().getColor(R.color.accMissing)
+        accuracyColorPresent = requireContext().getColor(R.color.accPresent)
 
         binding.startButton.setOnClickListener {
             Log.d(TAG, "On click START button")
@@ -81,6 +81,7 @@ class SensorsFragment : Fragment() {
                 Log.d(TAG, "START --> request permissions")
                 findNavController().navigate(R.id.action_sensors_to_permissions_dlg)
             } else {
+                setInitialMapZoom = true
                 requireActivity().startForegroundService(Intent(requireContext(), LocationService::class.java))
             }
         }
@@ -139,6 +140,9 @@ class SensorsFragment : Fragment() {
         }
     }
 
+    fun accuracyColor(value: Float?) : Int =
+        if (value == null) accuracyColorMissing else accuracyColorPresent
+
     fun onLocationChanged(value: CurrentLocationData?) {
         if (value == null) return
         Log.d(TAG, "onLocationChanged: $value")
@@ -147,22 +151,24 @@ class SensorsFragment : Fragment() {
         if (latLong != null) {
             binding.locationText.text = String.format(
                 Locale.US,
-                "%.5f, %.5f\n±%.1f m",   // matches precision of google maps display
-                latLong.latitude, latLong.longitude, latLong.accuracy)
+                "%.5f, %.5f",   // matches precision of google maps display
+                latLong.latitude, latLong.longitude)
 
-            val isFirst = lastMapsLocation == null
-            val newLocation = Location(null)
-            newLocation.latitude = latLong.latitude
-            newLocation.longitude = latLong.longitude
-            newLocation.accuracy = latLong.accuracy
-            lastMapsLocation = newLocation
-
+            val locationAccText = binding.locationAccText
+            latLong.accuracy?.let { meters ->
+                locationAccText.text = String.format(
+                    Locale.US,
+                    "±%.2f m",
+                    meters)
+            }
+            locationAccText.setTextColor(accuracyColor(latLong.accuracy))
 
             googleMap?.let { map ->
                 val position = LatLng(latLong.latitude, latLong.longitude)
                 map.clear()
                 map.addMarker(MarkerOptions().position(position))
-                val update = if (isFirst) {
+                val update = if (setInitialMapZoom) {
+                    setInitialMapZoom = false
                     CameraUpdateFactory.newLatLngZoom(position, MAPS_ZOOM_LEVEL)
                 } else {
                     CameraUpdateFactory.newLatLng(position)
@@ -179,16 +185,30 @@ class SensorsFragment : Fragment() {
         val speedBearing = value.speedBearing
         if (speedBearing != null) {
             val spd_mph = speedBearing.speedMps * MPS_TO_MPH
-            val acc_mph = speedBearing.speedAcc * MPS_TO_MPH
             binding.speedText.text = String.format(Locale.US,
-                "%.1f MPH ±%.1f",
-                spd_mph,
-                acc_mph)
+                "%.1f MPH",
+                spd_mph)
 
             binding.bearingText.text = String.format(Locale.US,
-                "%.1f° ±%.1f°",
-                speedBearing.bearingDeg,
-                speedBearing.bearingAcc)
+                "%.1f°",
+                speedBearing.bearingDeg)
+
+            val speedAccText = binding.speedAccText
+            speedBearing.speedAcc?.let { mps ->
+                val acc_mph = mps * MPS_TO_MPH
+                speedAccText.text = String.format(Locale.US,
+                    "±%.3f",
+                    acc_mph)
+            }
+            speedAccText.setTextColor(accuracyColor(speedBearing.speedAcc))
+
+            val bearingAccText = binding.bearingAccText
+            speedBearing.bearingAcc?.let { deg ->
+                bearingAccText.text = String.format(Locale.US,
+                    "±%.3f°",
+                    deg)
+            }
+            bearingAccText.setTextColor(accuracyColor(speedBearing.bearingAcc))
         }
     }
 }

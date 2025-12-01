@@ -10,4 +10,8 @@
     <color name="colorPrimaryDark">#00227b</color>
     <color name="colorAccent">#6f74dd</color>
 
+    <color name="gpsValue">#000</color>
+    <color name="accMissing">#F00</color>
+    <color name="accPresent">#444</color>
+
 </resources>

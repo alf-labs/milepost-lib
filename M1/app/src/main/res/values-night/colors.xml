@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="gpsValue">#FF0</color>
+    <color name="accMissing">#F00</color>
+    <color name="accPresent">#CCC</color>
+</resources>

@@ -9,13 +9,16 @@
         tools:context=".activity.SensorsFragment"
         >
 
+    <!-- TOP -->
+
     <Button
             android:id="@+id/start_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentStart="true"
-            android:text="Start" />
+            android:text="Start"
+            />
 
     <Button
             android:id="@+id/stop_button"
@@ -23,7 +26,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
-            android:text="Stop" />
+            android:text="Stop"
+            />
 
     <TextView
             android:id="@+id/status_text"
@@ -32,46 +36,106 @@
             android:text="status placeholder"
             android:layout_marginTop="16dp"
             android:layout_below="@id/start_button"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            />
 
     <TextView
             android:id="@+id/location_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Location unknown"
+            android:textColor="@color/gpsValue"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textStyle="bold"
             android:layout_marginTop="16dp"
             android:layout_below="@id/status_text"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            />
 
     <TextView
-            android:id="@+id/bearing_text"
+            android:id="@+id/location_acc_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="distance accuracy"
+            android:textColor="@color/accMissing"
+            android:layout_below="@id/location_text"
+            android:layout_centerHorizontal="true"
+            />
+
+    <!-- BOTTOM -->
+
+    <TextView
+            android:id="@+id/center_divider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            android:text="Bearing"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text=" "
+            android:lines="2"
+            android:background="@color/colorAccent"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            />
 
     <TextView
             android:id="@+id/speed_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
             android:text="SPEED"
+            android:textColor="@color/gpsValue"
+            android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:layout_above="@id/bearing_text"
-            android:layout_centerHorizontal="true" />
+            android:layout_toStartOf="@id/center_divider"
+            android:layout_alignTop="@id/center_divider"
+            />
+
+    <TextView
+            android:id="@+id/speed_acc_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="accuracy"
+            android:textColor="@color/accMissing"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:layout_toEndOf="@id/center_divider"
+            android:layout_alignTop="@id/center_divider"
+            />
+
+    <TextView
+            android:id="@+id/bearing_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bearing"
+            android:textColor="@color/gpsValue"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_toStartOf="@id/center_divider"
+            android:layout_alignBottom="@id/center_divider"
+            />
+
+    <TextView
+            android:id="@+id/bearing_acc_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="accuracy"
+            android:textColor="@color/accMissing"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_toEndOf="@id/center_divider"
+            android:layout_alignBottom="@id/center_divider"
+            />
+
+    <!-- CENTER -->
 
     <com.google.android.gms.maps.MapView
             android:id="@+id/map_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_below="@+id/location_text"
+            android:layout_below="@+id/location_acc_text"
             android:layout_above="@+id/speed_text"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            android:layout_centerHorizontal="true" />
+            android:layout_centerHorizontal="true"
+            />
 
 </RelativeLayout>
