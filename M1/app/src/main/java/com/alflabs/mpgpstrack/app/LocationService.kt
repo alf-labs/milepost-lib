@@ -11,10 +11,11 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
-import com.alflabs.mpgpstrack.dagger.CurrentLatLong
-import com.alflabs.mpgpstrack.dagger.CurrentLocation
-import com.alflabs.mpgpstrack.dagger.CurrentLocationData
-import com.alflabs.mpgpstrack.dagger.CurrentSpeedBearing
+import com.alflabs.mpgpstrack.dagger.LatLongData
+import com.alflabs.mpgpstrack.dagger.GlobalState
+import com.alflabs.mpgpstrack.dagger.LocationData
+import com.alflabs.mpgpstrack.dagger.SpeedBearingData
+import com.alflabs.mpgpstrack.dagger.StatusData
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -32,11 +33,11 @@ class LocationService : Service() {
     @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     @Inject lateinit var locationRequest: LocationRequest
     @Inject lateinit var logger: ILogger
-    @Inject lateinit var currentLocation: CurrentLocation
+    @Inject lateinit var globalState: GlobalState
 
     private lateinit var locationCallback: LocationCallback
 
-    private val locationPublisher: IPublisher<CurrentLocationData?> = Publishers.latest()
+    private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.d(TAG, "onStartCommand: ")
@@ -57,26 +58,17 @@ class LocationService : Service() {
 
         startForeground(1, notification.build())
 
-        currentLocation.start()
-        currentLocation.location.publishWith(locationPublisher)
-        var currentLocationData = CurrentLocationData(
-            running = true,
-            status = "Location Service: Getting first fix",
-            latLong = null,
-            speedBearing = null
-        )
-        locationPublisher.publish(
-            currentLocationData
-        )
-        val updatedNotification = notification.setContentText(currentLocationData.status)
+        globalState.locationStream.publishWith(locationPublisher)
+        val status = "Location Service: Getting first fix"
+        globalState.updateStatus(StatusData.SENSOR)
+        val updatedNotification = notification.setContentText(status)
         notificationManager.notify(1, updatedNotification.build())
-
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
 
-                    val latLong = CurrentLatLong(
+                    val latLong = LatLongData(
                         timestampMillis = location.time,
                         latitude = location.latitude,
                         longitude = location.longitude,
@@ -88,7 +80,7 @@ class LocationService : Service() {
                     )
 
                     val speedBearing = if (location.hasSpeed() && location.hasBearing()) {
-                        CurrentSpeedBearing(
+                        SpeedBearingData(
                             speedMps = location.speed,
                             bearingDeg = location.bearing,
                             speedAcc = if (location.hasSpeedAccuracy()) {
@@ -106,8 +98,12 @@ class LocationService : Service() {
                         null
                     }
 
-                    currentLocationData = currentLocationData.update(latLong, speedBearing)
-                    locationPublisher.publish(currentLocationData)
+                    locationPublisher.publish(
+                        LocationData(
+                            latLong = latLong,
+                            speedBearing = speedBearing
+                        )
+                    )
 
                     val msg = "Location: ${location.latitude}, ${location.longitude}"
                     val updatedNotification = notification.setContentText(msg)
@@ -147,13 +143,7 @@ class LocationService : Service() {
         super.onDestroy()
         logger.d(TAG, "onDestroy")
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        locationPublisher.publish(
-            CurrentLocationData(
-                running = false,
-                status = "Location Service Stopped",
-                latLong = null,
-                speedBearing = null
-            ))
-        currentLocation.location.remove(locationPublisher)
+        globalState.updateStatus(StatusData.STOPPED)
+        globalState.locationStream.remove(locationPublisher)
     }
 }

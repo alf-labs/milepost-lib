@@ -11,8 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.app.LocationService
-import com.alflabs.mpgpstrack.dagger.CurrentLocation
-import com.alflabs.mpgpstrack.dagger.CurrentLocationData
+import com.alflabs.mpgpstrack.dagger.GlobalState
+import com.alflabs.mpgpstrack.dagger.LocationData
+import com.alflabs.mpgpstrack.dagger.StatusData
 import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
@@ -32,7 +33,7 @@ import javax.inject.Inject
 class SensorsFragment : Fragment() {
     private val TAG = SensorsFragment::class.java.simpleName
 
-    @Inject lateinit var currentLocation: CurrentLocation
+    @Inject lateinit var globalState: GlobalState
 
     companion object {
         private const val PERM_REQUEST_CODE = 1
@@ -46,8 +47,11 @@ class SensorsFragment : Fragment() {
     private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
     // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
 
-    private val locationSubscriber: ISubscriber<in CurrentLocationData?> =
-        ISubscriber<CurrentLocationData?> { _, event -> onLocationChanged(event) }
+    private val locationSubscriber: ISubscriber<in LocationData?> =
+        ISubscriber<LocationData?> { _, event -> onLocationChanged(event) }
+    private val statusSubscriber: ISubscriber<in StatusData?> =
+        ISubscriber<StatusData?> { _, event -> onStatusChanged(event) }
+
     private var setInitialMapZoom = true
     private var googleMap: GoogleMap? = null
     private var accuracyColorMissing: Int = 0
@@ -61,7 +65,6 @@ class SensorsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         Log.d(TAG, "onCreateView")
-        currentLocation.start()
         _binding = SensorsFragmentBinding.inflate(inflater, container, false)
         return binding.root
 
@@ -91,6 +94,8 @@ class SensorsFragment : Fragment() {
             requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
         }
 
+        updateButtons(globalState.status)
+
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync { map ->
             googleMap = map
@@ -101,14 +106,17 @@ class SensorsFragment : Fragment() {
         super.onResume()
         Log.d(TAG, "onResume")
         binding.mapView.onResume()
-        currentLocation.location.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
+        globalState.statusStream.subscribe(AndroidSchedulers.mainThread(), statusSubscriber)
+        globalState.locationStream.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
+        updateButtons(globalState.status)
     }
 
     override fun onPause() {
         super.onPause()
         Log.d(TAG, "onPause")
         binding.mapView.onPause()
-        currentLocation.location.remove(locationSubscriber)
+        globalState.locationStream.remove(locationSubscriber)
+        globalState.statusStream.remove(statusSubscriber)
     }
 
     override fun onLowMemory() {
@@ -143,9 +151,22 @@ class SensorsFragment : Fragment() {
     fun accuracyColor(value: Float?) : Int =
         if (value == null) accuracyColorMissing else accuracyColorPresent
 
-    fun onLocationChanged(value: CurrentLocationData?) {
-        if (value == null) return
+    private fun onStatusChanged(state: StatusData?) {
+        Log.d(TAG, "onStatusChanged: $state")
+        if (state == null) return
+        binding.statusText.text = state.status
+        updateButtons(state)
+    }
+
+    private fun updateButtons(state: StatusData) {
+        binding.startButton.isEnabled = state == StatusData.STOPPED
+        binding.stopButton.isEnabled = state == StatusData.SENSOR
+    }
+
+    fun onLocationChanged(value: LocationData?) {
         Log.d(TAG, "onLocationChanged: $value")
+        updateButtons(globalState.status) // TBD FIXME why is first status never received?
+        if (value == null) return
 
         val latLong = value.latLong
         if (latLong != null) {
@@ -178,8 +199,6 @@ class SensorsFragment : Fragment() {
 
             val instant = Instant.ofEpochMilli(latLong.timestampMillis)
             binding.statusText.text = dateTimeFormatter.format(instant)
-        } else {
-            binding.statusText.text = value.status
         }
 
         val speedBearing = value.speedBearing
