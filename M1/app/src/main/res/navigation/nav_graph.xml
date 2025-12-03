@@ -8,6 +8,12 @@
     <!-- Notes:
         - All fragment destination ids here should match drawer_menu.xml item ids.
         - The labels automatically become AppBar/Toolbar titles.
+
+        As usual with Android, there's no clearly defined XML schema.
+        The XML parser is here:
+        https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/NavInflater.kt
+        and
+        https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/ActivityNavigator.kt#264
      -->
 
     <fragment
@@ -15,6 +21,30 @@
             android:name="com.alflabs.mpgpstrack.activity.AboutFragment"
             android:label="About"
             tools:layout="@layout/about_fragment">
+    </fragment>
+
+    <!-- TBD placeholder -->
+    <fragment
+            android:id="@+id/nav_list_tracks"
+            android:name="com.alflabs.mpgpstrack.activity.PlaceholderFragment"
+            android:label="Tracks"
+            tools:layout="@layout/placeholder_fragment">
+    </fragment>
+
+    <!-- TBD placeholder -->
+    <fragment
+            android:id="@+id/nav_record_track"
+            android:name="com.alflabs.mpgpstrack.activity.PlaceholderFragment"
+            android:label="Record Track"
+            tools:layout="@layout/placeholder_fragment">
+    </fragment>
+
+    <!-- TBD placeholder -->
+    <fragment
+            android:id="@+id/nav_play_track"
+            android:name="com.alflabs.mpgpstrack.activity.PlaceholderFragment"
+            android:label="Playback Track"
+            tools:layout="@layout/placeholder_fragment">
     </fragment>
 
     <fragment
@@ -34,11 +64,20 @@
             tools:layout="@layout/permissions_fragment">
     </fragment>
 
+    <!-- Same as nav_permission but as a dialog -->
     <dialog
             android:id="@+id/nav_permissions_dlg"
             android:name="com.alflabs.mpgpstrack.activity.PermissionsFragment"
             android:label="Permissions"
             tools:layout="@layout/permissions_fragment">
     </dialog>
+
+    <!-- TBD placeholder -->
+    <fragment
+            android:id="@+id/nav_settings"
+            android:name="com.alflabs.mpgpstrack.activity.PlaceholderFragment"
+            android:label="Settings"
+            tools:layout="@layout/placeholder_fragment">
+    </fragment>
 
 </navigation>
