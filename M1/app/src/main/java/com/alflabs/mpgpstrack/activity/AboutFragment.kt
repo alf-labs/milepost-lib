@@ -1,5 +1,6 @@
 package com.alflabs.mpgpstrack.activity
 
+import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -14,6 +15,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AboutFragment : Fragment() {
+    private val TAG = AboutFragment::class.java.simpleName
 
     private var _binding: AboutFragmentBinding? = null
     private val binding get() = _binding!!
@@ -32,7 +34,7 @@ class AboutFragment : Fragment() {
         binding.webview.webViewClient = WebViewClient()
         binding.webview.settings.javaScriptEnabled = true
 
-        val jsVersion = JSVersion(this)
+        val jsVersion = JSVersion(requireContext())
         binding.webview.addJavascriptInterface(jsVersion, "JSAppVersion")
 
         // Make the webview transparent
@@ -48,16 +50,17 @@ class AboutFragment : Fragment() {
 }
 
 // ---
-private class JSVersion constructor(val fragment: AboutFragment) {
+private class JSVersion(val context: Context) {
+    private val TAG = JSVersion::class.java.simpleName
     private var version: String? = null
 
     @JavascriptInterface
     fun longVersion(): String {
         if (version == null) {
-            val pm: PackageManager = fragment.requireContext().getPackageManager()
+            val pm: PackageManager = context.getPackageManager()
             val pi: PackageInfo
             try {
-                pi = pm.getPackageInfo(fragment.requireContext().getPackageName(), 0)
+                pi = pm.getPackageInfo(context.getPackageName(), 0)
                 version = pi.versionName
             } catch (e: PackageManager.NameNotFoundException) {
                 version = "" // failed, ignored
