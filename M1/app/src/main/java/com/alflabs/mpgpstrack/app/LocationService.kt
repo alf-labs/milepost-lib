@@ -3,6 +3,7 @@ package com.alflabs.mpgpstrack.app
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,6 +12,7 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
+import com.alflabs.mpgpstrack.activity.MainActivity
 import com.alflabs.mpgpstrack.dagger.LatLongData
 import com.alflabs.mpgpstrack.dagger.GlobalState
 import com.alflabs.mpgpstrack.dagger.LocationData
@@ -41,11 +43,16 @@ class LocationService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.d(TAG, "onStartCommand: ")
+
+        val mainActivityIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, mainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
+
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Tracking location...")
             .setContentText("Location: null")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
+            .setContentIntent(pendingIntent)
 
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(

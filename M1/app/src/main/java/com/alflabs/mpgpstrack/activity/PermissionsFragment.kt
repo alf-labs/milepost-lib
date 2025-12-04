@@ -87,7 +87,7 @@ class PermissionsFragment : DialogFragment() {
     }
 
     private fun onButtonCheckedChanged(switchBtn: CompoundButton, checkMethod: () -> Unit) {
-        Log.d(TAG, "Switch: %{switchBtn.isChecked}")
+        Log.d(TAG, "Switch: ${switchBtn.isChecked}")
         if (switchBtn.isChecked) {
             checkMethod()
         }
@@ -141,8 +141,9 @@ class PermissionsFragment : DialogFragment() {
         rationale: String,
         isGranted: (Context) -> Boolean,
      ) {
-        Log.d(TAG, "checkNotificationPermissions")
-        if (isGranted(requireContext())) {
+        val granted = isGranted(requireContext())
+        Log.d(TAG, "checkNotificationPermissions: $permission --> granted $granted")
+        if (granted) {
             updateAllStates()
             return
         }
