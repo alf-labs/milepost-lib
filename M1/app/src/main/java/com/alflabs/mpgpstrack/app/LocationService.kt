@@ -13,11 +13,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.activity.MainActivity
-import com.alflabs.mpgpstrack.dagger.LatLongData
-import com.alflabs.mpgpstrack.dagger.GlobalState
-import com.alflabs.mpgpstrack.dagger.LocationData
-import com.alflabs.mpgpstrack.dagger.SpeedBearingData
-import com.alflabs.mpgpstrack.dagger.StatusData
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger

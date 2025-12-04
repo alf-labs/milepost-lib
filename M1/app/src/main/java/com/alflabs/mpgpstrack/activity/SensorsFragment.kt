@@ -11,9 +11,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.app.LocationService
-import com.alflabs.mpgpstrack.dagger.GlobalState
-import com.alflabs.mpgpstrack.dagger.LocationData
-import com.alflabs.mpgpstrack.dagger.StatusData
+import com.alflabs.mpgpstrack.app.GlobalState
+import com.alflabs.mpgpstrack.app.LocationData
+import com.alflabs.mpgpstrack.app.StatusData
 import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber

@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.dagger
+package com.alflabs.mpgpstrack.app
 
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.IStream
