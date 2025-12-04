@@ -10,10 +10,12 @@
         - The labels automatically become AppBar/Toolbar titles.
 
         As usual with Android, there's no clearly defined XML schema.
+        Doc:
+          https://developer.android.com/guide/navigation/use-graph/pass-data
         The XML parser is here:
-        https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/NavInflater.kt
+          https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/NavInflater.kt
         and
-        https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/ActivityNavigator.kt#264
+          https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/ActivityNavigator.kt#264
      -->
 
     <fragment
@@ -31,20 +33,26 @@
             tools:layout="@layout/placeholder_fragment">
     </fragment>
 
-    <!-- TBD placeholder -->
     <fragment
             android:id="@+id/nav_record_track"
-            android:name="com.alflabs.mpgpstrack.activity.PlaceholderFragment"
+            android:name="com.alflabs.mpgpstrack.activity.SensorsFragment"
             android:label="Record Track"
-            tools:layout="@layout/placeholder_fragment">
+            tools:layout="@layout/sensors_fragment">
+        <argument
+                android:name="mode"
+                app:argType="com.alflabs.mpgpstrack.app.StatusData"
+                android:defaultValue="RECORD" />
     </fragment>
 
-    <!-- TBD placeholder -->
     <fragment
             android:id="@+id/nav_play_track"
-            android:name="com.alflabs.mpgpstrack.activity.PlaceholderFragment"
+            android:name="com.alflabs.mpgpstrack.activity.SensorsFragment"
             android:label="Playback Track"
-            tools:layout="@layout/placeholder_fragment">
+            tools:layout="@layout/sensors_fragment">
+        <argument
+                android:name="mode"
+                app:argType="com.alflabs.mpgpstrack.app.StatusData"
+                android:defaultValue="PLAYBACK" />
     </fragment>
 
     <fragment
@@ -52,6 +60,10 @@
             android:name="com.alflabs.mpgpstrack.activity.SensorsFragment"
             android:label="Sensors"
             tools:layout="@layout/sensors_fragment">
+        <argument
+                android:name="mode"
+                app:argType="com.alflabs.mpgpstrack.app.StatusData"
+                android:defaultValue="SENSOR" />
         <action
                 android:id="@+id/action_sensors_to_permissions_dlg"
                 app:destination="@id/nav_permissions_dlg">

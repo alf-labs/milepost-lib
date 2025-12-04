@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.app.LocationService
 import com.alflabs.mpgpstrack.app.GlobalState
@@ -33,8 +34,6 @@ import javax.inject.Inject
 class SensorsFragment : Fragment() {
     private val TAG = SensorsFragment::class.java.simpleName
 
-    @Inject lateinit var globalState: GlobalState
-
     companion object {
         private const val PERM_REQUEST_CODE = 1
         private const val MAPS_ZOOM_LEVEL = 15f
@@ -43,7 +42,7 @@ class SensorsFragment : Fragment() {
         private const val MPS_TO_MPH = SECONDS_PER_HOUR / METERS_PER_MILE
     }
 
-    private var _binding: SensorsFragmentBinding? = null
+    private val fragmentArgs: SensorsFragmentArgs by navArgs()
     private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
     // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
 
@@ -52,13 +51,17 @@ class SensorsFragment : Fragment() {
     private val statusSubscriber: ISubscriber<in StatusData?> =
         ISubscriber<StatusData?> { _, event -> onStatusChanged(event) }
 
+    @Inject lateinit var globalState: GlobalState
+
     private var setInitialMapZoom = true
     private var googleMap: GoogleMap? = null
     private var accuracyColorMissing: Int = 0
     private var accuracyColorPresent: Int = 0
 
     // This property is only valid between onCreateView and onDestroyView.
+    private var _binding: SensorsFragmentBinding? = null
     private val binding get() = _binding!!
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -88,6 +91,12 @@ class SensorsFragment : Fragment() {
                 setInitialMapZoom = true
                 requireActivity().startForegroundService(Intent(requireContext(), LocationService::class.java))
             }
+        }
+        binding.startButton.text = when (fragmentArgs.mode) {
+            StatusData.SENSOR -> "Start"
+            StatusData.RECORD -> "Record"
+            StatusData.PLAYBACK -> "Playback"
+            else -> "**invalid state**"
         }
 
         binding.stopButton.setOnClickListener {

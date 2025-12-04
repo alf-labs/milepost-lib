@@ -21,11 +21,11 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class PermissionsFragment : DialogFragment() {
     private val TAG = PermissionsFragment::class.java.simpleName
-    private val args: PermissionsFragmentArgs by navArgs()
+    private val fragmentArgs: PermissionsFragmentArgs by navArgs()
 
-    private var _binding: PermissionsFragmentBinding? = null
 
     // This property is only valid between onCreateView and onDestroyView.
+    private var _binding: PermissionsFragmentBinding? = null
     private val binding get() = _binding!!
 
     companion object {
@@ -58,7 +58,7 @@ class PermissionsFragment : DialogFragment() {
                 btn, _ -> onButtonCheckedChanged(btn) { checkNotificationPermissions() }
         }
 
-        binding.closeButton.visibility = if (args.showClose) View.VISIBLE else View.GONE
+        binding.closeButton.visibility = if (fragmentArgs.showClose) View.VISIBLE else View.GONE
         binding.closeButton.setOnClickListener {
             dismiss()
         }

@@ -19,22 +19,16 @@
         <item
                 android:id="@+id/nav_record_track"
                 android:icon="@drawable/ic_manual_record"
-                android:title="Record Track"
-                android:enabled="false" />
+                android:title="Record Track" />
         <item
                 android:id="@+id/nav_play_track"
                 android:icon="@drawable/ic_autoplay"
-                android:title="Playback Track"
-                android:enabled="false" />
+                android:title="Playback Track"  />
         <item
                 android:id="@+id/nav_sensors"
                 android:icon="@drawable/ic_explore_light"
                 android:title="Sensors Data" />
     </group>
-<!--    android:icon="@drawable/ic_get_app_light"-->
-<!--    android:icon="@drawable/ic_explore_light"-->
-<!--    android:icon="@drawable/ic_map_dark"-->
-<!--    android:icon="@drawable/ic_assessment_light"-->
 
     <item android:title="More">
         <menu>
