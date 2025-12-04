@@ -1,0 +1,41 @@
+<html>
+<head>
+    <title>Permissions</title>
+    <style type="text/css">
+        /* light theme */
+        body      { color: back;    }
+        a:link    { color: darkblue;}
+        a:visited { color: green;   }
+        a:hover   { color: #8B8000; } /* dark yellow */
+        h3        { color: #C76E00; } /* dark orange */
+
+        /* dark theme */
+        @media (prefers-color-scheme: dark) {
+            body      { color: white;  }
+            a:link    { color: white;  }
+            a:visited { color: green;  }
+            a:hover   { color: yellow; }
+            h3        { color: orange; }
+        }
+    </style>
+</head>
+<body>
+<img src="file:///android_asset/app_icon.png" align="right" />
+
+<h3>Permissions</h3>
+This application uses the following Android permissions.
+Please grant all the required permissions by taping them above.
+
+<h3>GPS Fine Location</h3>
+The point of this application is to track the location of the device and record its path
+along a railroad. It uses the GPS to do so. GPS is needed when recording a new track as
+well as when playing an existing track.
+
+<h3>Notification</h3>
+To record and play a GPS track, the application needs to run in a loop, even if not visible.
+In this case, a notification is shown allowing you to easily switch back to the application.
+Modern Android OS versions require the application to do so. As such, the application must
+be authorized by the user to show its notification.
+
+</body>
+</html>

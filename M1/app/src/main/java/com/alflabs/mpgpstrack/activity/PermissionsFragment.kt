@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebViewClient
 import android.widget.CompoundButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -61,9 +62,18 @@ class PermissionsFragment : DialogFragment() {
         binding.closeButton.setOnClickListener {
             dismiss()
         }
-        updateAllStates()
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        updateAllStates()
+
+        binding.webview.webViewClient = WebViewClient()
+        // Make the webview transparent
+        binding.webview.setBackgroundColor(0x00000000)
+        binding.webview.loadUrl("file:///android_asset/permissions.html")
     }
 
     override fun onDestroyView() {
@@ -93,7 +103,10 @@ class PermissionsFragment : DialogFragment() {
         // Permission switch can only be set to on, not to off
         binding.gpsSwitch.isChecked = granted
         binding.gpsSwitch.isEnabled = !granted
-        binding.gpsSwitchLabel.text = if (granted) "GPS is enabled." else "GPS access is not granted yet."
+        binding.gpsSwitch.text = if (granted)
+            "GPS fine location is enabled"
+        else
+            "GPS access is not granted yet"
     }
 
     private fun updateNotification() {
@@ -101,7 +114,10 @@ class PermissionsFragment : DialogFragment() {
         // Permission switch can only be set to on, not to off
         binding.notificationSwitch.isChecked = granted
         binding.notificationSwitch.isEnabled = !granted
-        binding.notificationSwitchLabel.text = if (granted) "Notifications are enabled." else "Notifications are not granted yet."
+        binding.notificationSwitch.text = if (granted)
+            "Notifications are enabled."
+        else
+            "Notifications are not granted yet."
     }
 
     private fun checkGpsPermissions() {
