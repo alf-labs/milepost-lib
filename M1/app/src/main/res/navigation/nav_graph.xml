@@ -56,7 +56,7 @@
                 android:id="@+id/action_sensors_to_permissions_dlg"
                 app:destination="@id/nav_permissions_dlg">
             <argument
-                    android:name="showContinue"
+                    android:name="showClose"
                     app:argType="boolean"
                     android:defaultValue="true" />
         </action>
@@ -68,7 +68,7 @@
             android:label="Permissions"
             tools:layout="@layout/permissions_fragment">
         <argument
-                android:name="showContinue"
+                android:name="showClose"
                 app:argType="boolean"
                 android:defaultValue="false" />
     </fragment>
@@ -80,7 +80,7 @@
             android:label="Permissions"
             tools:layout="@layout/permissions_fragment">
         <argument
-                android:name="showContinue"
+                android:name="showClose"
                 app:argType="boolean"
                 android:defaultValue="true" />
     </dialog>

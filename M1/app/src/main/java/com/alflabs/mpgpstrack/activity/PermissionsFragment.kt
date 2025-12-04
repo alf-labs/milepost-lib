@@ -57,6 +57,12 @@ class PermissionsFragment : DialogFragment() {
                 btn, _ -> onButtonCheckedChanged(btn) { checkNotificationPermissions() }
         }
 
+        binding.closeButton.visibility = if (args.showClose) View.VISIBLE else View.GONE
+        binding.closeButton.setOnClickListener {
+            dismiss()
+        }
+        updateAllStates()
+
         return binding.root
     }
 
