@@ -54,7 +54,12 @@
             tools:layout="@layout/sensors_fragment">
         <action
                 android:id="@+id/action_sensors_to_permissions_dlg"
-                app:destination="@id/nav_permissions_dlg" />
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showContinue"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
     </fragment>
 
     <fragment
@@ -62,6 +67,10 @@
             android:name="com.alflabs.mpgpstrack.activity.PermissionsFragment"
             android:label="Permissions"
             tools:layout="@layout/permissions_fragment">
+        <argument
+                android:name="showContinue"
+                app:argType="boolean"
+                android:defaultValue="false" />
     </fragment>
 
     <!-- Same as nav_permission but as a dialog -->
@@ -70,6 +79,10 @@
             android:name="com.alflabs.mpgpstrack.activity.PermissionsFragment"
             android:label="Permissions"
             tools:layout="@layout/permissions_fragment">
+        <argument
+                android:name="showContinue"
+                app:argType="boolean"
+                android:defaultValue="true" />
     </dialog>
 
     <!-- TBD placeholder -->

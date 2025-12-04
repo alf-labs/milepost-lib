@@ -82,7 +82,8 @@ class SensorsFragment : Fragment() {
 
             if (!PermissionsFragment.allPermissionsGranted(requireContext())) {
                 Log.d(TAG, "START --> request permissions")
-                findNavController().navigate(R.id.action_sensors_to_permissions_dlg)
+                val action = SensorsFragmentDirections.actionSensorsToPermissionsDlg()
+                findNavController().navigate(action)
             } else {
                 setInitialMapZoom = true
                 requireActivity().startForegroundService(Intent(requireContext(), LocationService::class.java))
