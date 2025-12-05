@@ -1,14 +1,14 @@
-package com.alflabs.mpgpstrack.activity
+package com.alflabs.mpgpstrack.tracks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.alflabs.mpgpstrack.app.TrackData
-import com.alflabs.mpgpstrack.app.TrackDataDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.random.Random
 
 @HiltViewModel
@@ -25,8 +25,8 @@ class TracksViewModel @Inject constructor(
             val track = TrackData(
                 name = "Track ${Random.nextInt(1000)}",
                 date = Date().toString(),
-                minMP = kotlin.math.min(a, b),
-                maxMP = kotlin.math.max(a, b),
+                minMP = min(a, b),
+                maxMP = max(a, b),
             )
             trackDataDao.insert(track)
         }

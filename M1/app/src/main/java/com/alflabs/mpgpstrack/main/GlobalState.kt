@@ -1,5 +1,6 @@
-package com.alflabs.mpgpstrack.app
+package com.alflabs.mpgpstrack.main
 
+import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.IStream
 import com.alflabs.rx.Publishers

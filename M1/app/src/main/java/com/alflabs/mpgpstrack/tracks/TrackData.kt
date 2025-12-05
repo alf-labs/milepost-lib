@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.app
+package com.alflabs.mpgpstrack.tracks
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

@@ -1,11 +1,11 @@
-package com.alflabs.mpgpstrack.activity
+package com.alflabs.mpgpstrack.tracks
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.alflabs.mpgpstrack.app.TrackData
 import com.alflabs.mpgpstrack.databinding.TrackItemBinding
 
 class TrackAdapter(
@@ -42,7 +42,7 @@ class TrackAdapter(
             }
             binding.root.setOnLongClickListener {
                 currentTrack?.let { track ->
-                    val menu = android.widget.PopupMenu(itemView.context, itemView)
+                    val menu = PopupMenu(itemView.context, itemView)
                     menu.menu.add("Edit").setOnMenuItemClickListener {
                         onEdit(track)
                         true

@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.app
+package com.alflabs.mpgpstrack.location
 
 import android.Manifest
 import android.app.NotificationChannel
@@ -12,7 +12,9 @@ import android.os.Looper
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
-import com.alflabs.mpgpstrack.activity.MainActivity
+import com.alflabs.mpgpstrack.main.MainActivity
+import com.alflabs.mpgpstrack.main.GlobalState
+import com.alflabs.mpgpstrack.main.StatusData
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger

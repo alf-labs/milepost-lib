@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.activity
+package com.alflabs.mpgpstrack.fragments
 
 import android.Manifest
 import android.app.AlertDialog
