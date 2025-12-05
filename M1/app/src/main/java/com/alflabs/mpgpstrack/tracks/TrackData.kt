@@ -33,4 +33,7 @@ data class TrackData(
     // The max MilePost computed or set for this track.
     @ColumnInfo
     val maxMP: Float? = null,
+
+    @ColumnInfo(defaultValue = "[]")
+    val locationList: List<LocationData> = emptyList(),
 )
