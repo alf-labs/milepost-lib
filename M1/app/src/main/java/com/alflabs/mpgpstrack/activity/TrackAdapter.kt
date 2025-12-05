@@ -8,16 +8,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.mpgpstrack.app.TrackData
 import com.alflabs.mpgpstrack.databinding.TrackItemBinding
 
-class TrackAdapter : ListAdapter<TrackData, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
+class TrackAdapter(
+    private val onClick: (TrackData) -> Unit
+) : ListAdapter<TrackData, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
-        return TrackViewHolder(
-            TrackItemBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
+        val binding = TrackItemBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
         )
+        return TrackViewHolder(binding, onClick)
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
@@ -25,9 +26,20 @@ class TrackAdapter : ListAdapter<TrackData, TrackAdapter.TrackViewHolder>(TrackD
         holder.bind(track)
     }
 
-    class TrackViewHolder(private val binding: TrackItemBinding) :
-        RecyclerView.ViewHolder(binding.root) {
+    class TrackViewHolder(
+        private val binding: TrackItemBinding,
+        private val onClick: (TrackData) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
+        private var currentTrack: TrackData? = null
+
+        init {
+            binding.root.setOnClickListener {
+                currentTrack?.let(onClick)
+            }
+        }
+
         fun bind(track: TrackData) {
+            currentTrack = track
             binding.trackName.text = track.name
             binding.trackDate.text = track.date
             binding.trackMinMp.text = "Min MP: ${track.minMP}"

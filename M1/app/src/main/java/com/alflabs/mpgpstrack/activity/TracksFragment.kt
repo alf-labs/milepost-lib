@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,7 +30,13 @@ class TracksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = TrackAdapter()
+        val adapter = TrackAdapter { track ->
+            AlertDialog.Builder(requireContext())
+                .setTitle("Track Selected")
+                .setMessage(track.name)
+                .setPositiveButton("OK", null)
+                .show()
+        }
         binding.tracksView.adapter = adapter
         binding.tracksView.layoutManager = LinearLayoutManager(requireContext())
 
