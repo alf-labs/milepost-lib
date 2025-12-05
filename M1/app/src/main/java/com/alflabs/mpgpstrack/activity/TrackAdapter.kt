@@ -9,7 +9,9 @@ import com.alflabs.mpgpstrack.app.TrackData
 import com.alflabs.mpgpstrack.databinding.TrackItemBinding
 
 class TrackAdapter(
-    private val onClick: (TrackData) -> Unit
+    private val onClick: (TrackData) -> Unit,
+    private val onEdit: (TrackData) -> Unit,
+    private val onDelete: (TrackData) -> Unit
 ) : ListAdapter<TrackData, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
@@ -18,7 +20,7 @@ class TrackAdapter(
             parent,
             false
         )
-        return TrackViewHolder(binding, onClick)
+        return TrackViewHolder(binding, onClick, onEdit, onDelete)
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
@@ -28,13 +30,30 @@ class TrackAdapter(
 
     class TrackViewHolder(
         private val binding: TrackItemBinding,
-        private val onClick: (TrackData) -> Unit
+        private val onClick: (TrackData) -> Unit,
+        private val onEdit: (TrackData) -> Unit,
+        private val onDelete: (TrackData) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
         private var currentTrack: TrackData? = null
 
         init {
             binding.root.setOnClickListener {
                 currentTrack?.let(onClick)
+            }
+            binding.root.setOnLongClickListener {
+                currentTrack?.let { track ->
+                    val menu = android.widget.PopupMenu(itemView.context, itemView)
+                    menu.menu.add("Edit").setOnMenuItemClickListener {
+                        onEdit(track)
+                        true
+                    }
+                    menu.menu.add("Delete").setOnMenuItemClickListener {
+                        onDelete(track)
+                        true
+                    }
+                    menu.show()
+                }
+                true
             }
         }
 
