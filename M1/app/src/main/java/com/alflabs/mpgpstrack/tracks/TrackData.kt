@@ -3,25 +3,34 @@ package com.alflabs.mpgpstrack.tracks
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.alflabs.mpgpstrack.location.LocationData
 
 
 // Doc: https://developer.android.com/training/data-storage/room/defining-data
 
-
 @Entity(tableName = "tracks")
 data class TrackData(
+    // Note: according to the autoGenerate doc, setting the value to 0 forces it to be generated.
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
+    // Mandatory creation date as an ISO date string.
     @ColumnInfo
-    val name: String,
+    val createdDateISO: String,
 
-    @ColumnInfo(defaultValue = "")
-    val date: String = "",
+    // Optional last updated date as an ISO date string.
+    @ColumnInfo
+    val updateDateISO: String? = null,
 
-    @ColumnInfo(defaultValue = "0.0")
-    val minMP: Float = 0.0f,
+    // User label. Can be empty in which case we'll display "Track #id" as a label.
+    @ColumnInfo
+    val label: String? = null,
 
-    @ColumnInfo(defaultValue = "0.0")
-    val maxMP: Float = 0.0f,
+    // The min MilePost computed or set for this track.
+    @ColumnInfo
+    val minMP: Float? = null,
+
+    // The max MilePost computed or set for this track.
+    @ColumnInfo
+    val maxMP: Float? = null,
 )

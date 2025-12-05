@@ -36,7 +36,7 @@ class TracksFragment : Fragment() {
             onClick = { track ->
                 AlertDialog.Builder(requireContext())
                     .setTitle("Track Selected")
-                    .setMessage(track.name)
+                    .setMessage(track.label)
                     .setPositiveButton("OK", null)
                     .show()
             },
@@ -63,8 +63,8 @@ class TracksFragment : Fragment() {
         val layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             val nameInput = EditText(context).apply {
-                setText(track.name)
-                hint = "Name"
+                setText(track.label)
+                hint = "Label"
             }
             val minMpInput = EditText(context).apply {
                 setText(track.minMP.toString())
@@ -83,12 +83,12 @@ class TracksFragment : Fragment() {
             .setTitle("Edit Track")
             .setView(layout)
             .setPositiveButton("Save") { _, _ ->
-                val newName = (layout.getChildAt(0) as EditText).text.toString()
+                val newlabel = (layout.getChildAt(0) as EditText).text.toString()
                 val newMinMp = (layout.getChildAt(1) as EditText).text.toString().toFloatOrNull() ?: track.minMP
                 val newMaxMp = (layout.getChildAt(2) as EditText).text.toString().toFloatOrNull() ?: track.maxMP
                 viewModel.updateTrack(
                     track.copy(
-                        name = newName,
+                        label = newlabel,
                         minMP = newMinMp,
                         maxMP = newMaxMp
                     ))

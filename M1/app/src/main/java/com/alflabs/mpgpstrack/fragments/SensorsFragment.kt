@@ -192,37 +192,35 @@ class SensorsFragment : Fragment() {
         if (value == null) return
 
         val latLong = value.latLong
-        if (latLong != null) {
-            binding.locationText.text = String.format(
+        binding.locationText.text = String.format(
+            Locale.US,
+            "%.5f, %.5f",   // matches precision of google maps display
+            latLong.latitude, latLong.longitude)
+
+        val locationAccText = binding.locationAccText
+        latLong.accuracy?.let { meters ->
+            locationAccText.text = String.format(
                 Locale.US,
-                "%.5f, %.5f",   // matches precision of google maps display
-                latLong.latitude, latLong.longitude)
-
-            val locationAccText = binding.locationAccText
-            latLong.accuracy?.let { meters ->
-                locationAccText.text = String.format(
-                    Locale.US,
-                    "±%.2f m",
-                    meters)
-            }
-            locationAccText.setTextColor(accuracyColor(latLong.accuracy))
-
-            googleMap?.let { map ->
-                val position = LatLng(latLong.latitude, latLong.longitude)
-                map.clear()
-                map.addMarker(MarkerOptions().position(position))
-                val update = if (setInitialMapZoom) {
-                    setInitialMapZoom = false
-                    CameraUpdateFactory.newLatLngZoom(position, MAPS_ZOOM_LEVEL)
-                } else {
-                    CameraUpdateFactory.newLatLng(position)
-                }
-                map.moveCamera(update)
-            }
-
-            val instant = Instant.ofEpochMilli(latLong.timestampMillis)
-            binding.statusText.text = dateTimeFormatter.format(instant)
+                "±%.2f m",
+                meters)
         }
+        locationAccText.setTextColor(accuracyColor(latLong.accuracy))
+
+        googleMap?.let { map ->
+            val position = LatLng(latLong.latitude, latLong.longitude)
+            map.clear()
+            map.addMarker(MarkerOptions().position(position))
+            val update = if (setInitialMapZoom) {
+                setInitialMapZoom = false
+                CameraUpdateFactory.newLatLngZoom(position, MAPS_ZOOM_LEVEL)
+            } else {
+                CameraUpdateFactory.newLatLng(position)
+            }
+            map.moveCamera(update)
+        }
+
+        val instant = Instant.ofEpochMilli(latLong.timestampMillis)
+        binding.statusText.text = dateTimeFormatter.format(instant)
 
         val speedBearing = value.speedBearing
         if (speedBearing != null) {

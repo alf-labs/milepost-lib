@@ -59,8 +59,8 @@ class TrackAdapter(
 
         fun bind(track: TrackData) {
             currentTrack = track
-            binding.trackName.text = "${track.id} - ${track.name}"
-            binding.trackDate.text = track.date
+            binding.trackName.text = "${track.id} - ${track.label}"
+            binding.trackDate.text = track.createdDateISO
             binding.trackMinMp.text = "Min MP: ${track.minMP}"
             binding.trackMaxMp.text = "Max MP: ${track.maxMP}"
         }
