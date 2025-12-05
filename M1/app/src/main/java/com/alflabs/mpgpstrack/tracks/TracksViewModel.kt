@@ -22,25 +22,29 @@ class TracksViewModel @Inject constructor(
         val a = Random.nextInt( 1, 1000) / 10f
         val b = Random.nextInt(50, 1000) / 10f
         viewModelScope.launch {
-            val track = TrackData(
+            var track = TrackData(
                 name = "Track ${Random.nextInt(1000)}",
                 date = Date().toString(),
                 minMP = min(a, b),
                 maxMP = max(a, b),
             )
-            trackDataDao.insert(track)
+            val id = trackDataDao.insert(track)
+            track = track.copy(id = id)
+            println("@@ DB INSERT track = $track")
         }
     }
 
     fun updateTrack(track: TrackData) {
         viewModelScope.launch {
             trackDataDao.update(track)
+            println("@@ DB UPDATE track = $track")
         }
     }
 
     fun delete(track: TrackData) {
         viewModelScope.launch {
             trackDataDao.delete(track)
+            println("@@ DB DELETE track = $track")
         }
     }
 }
