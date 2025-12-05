@@ -80,8 +80,23 @@ class SensorsFragment : Fragment() {
         accuracyColorMissing = requireContext().getColor(R.color.accMissing)
         accuracyColorPresent = requireContext().getColor(R.color.accPresent)
 
+        binding.startButton.text = when (fragmentArgs.mode) {
+            StatusData.SENSOR -> "Start"
+            StatusData.RECORD -> "Record"
+            StatusData.PLAYBACK -> "Playback"
+            else -> "Error"
+        }
+
         binding.startButton.setOnClickListener {
             Log.d(TAG, "On click START button")
+
+            // Sanity check:
+            // - If the global state is already started, we should not be here.
+            // - If mode cannot start, we should not be here.
+            if (globalState.status.start || !fragmentArgs.mode.start) {
+                Log.d(TAG, "START --> already started / cannot start")
+                return@setOnClickListener
+            }
 
             if (!PermissionsFragment.allPermissionsGranted(requireContext())) {
                 Log.d(TAG, "START --> request permissions")
@@ -89,14 +104,10 @@ class SensorsFragment : Fragment() {
                 findNavController().navigate(action)
             } else {
                 setInitialMapZoom = true
-                requireActivity().startForegroundService(Intent(requireContext(), LocationService::class.java))
+                val intent = Intent(requireContext(), LocationService::class.java)
+                intent.putExtra(LocationService.EXTRA_STATUS, fragmentArgs.mode)
+                requireActivity().startForegroundService(intent)
             }
-        }
-        binding.startButton.text = when (fragmentArgs.mode) {
-            StatusData.SENSOR -> "Start"
-            StatusData.RECORD -> "Record"
-            StatusData.PLAYBACK -> "Playback"
-            else -> "**invalid state**"
         }
 
         binding.stopButton.setOnClickListener {
@@ -158,19 +169,21 @@ class SensorsFragment : Fragment() {
         }
     }
 
+    private fun updateButtons(runningState: StatusData) {
+        // Start button is enabled if running state is not already started
+        binding.startButton.isEnabled = !runningState.start
+        // Stop button is enabled if running state is not already stopped
+        binding.stopButton.isEnabled = !runningState.stop
+    }
+
     fun accuracyColor(value: Float?) : Int =
         if (value == null) accuracyColorMissing else accuracyColorPresent
 
     private fun onStatusChanged(state: StatusData?) {
         Log.d(TAG, "onStatusChanged: $state")
         if (state == null) return
-        binding.statusText.text = state.status
+        binding.statusText.text = state.label
         updateButtons(state)
-    }
-
-    private fun updateButtons(state: StatusData) {
-        binding.startButton.isEnabled = state == StatusData.STOPPED
-        binding.stopButton.isEnabled = state == StatusData.SENSOR
     }
 
     fun onLocationChanged(value: LocationData?) {

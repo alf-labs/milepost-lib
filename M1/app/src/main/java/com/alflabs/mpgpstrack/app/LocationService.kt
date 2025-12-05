@@ -27,24 +27,37 @@ import javax.inject.Inject
 class LocationService : Service() {
     private val TAG = LocationService::class.java.simpleName
 
+    companion object {
+        const val EXTRA_STATUS = "status"
+    }
+
     @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     @Inject lateinit var locationRequest: LocationRequest
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
 
     private lateinit var locationCallback: LocationCallback
-
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        logger.d(TAG, "onStartCommand: ")
+        logger.d(TAG, "onStartCommand: $intent")
+
+        val status = intent
+            ?.getSerializableExtra(EXTRA_STATUS, StatusData::class.java)
+            ?: StatusData.STOPPED
+
+        if (status == StatusData.STOPPED) {
+            globalState.updateStatus(StatusData.STOPPED)
+            stopSelf()
+            return START_NOT_STICKY
+        }
 
         val mainActivityIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, mainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
 
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Tracking location...")
-            .setContentText("Location: null")
+            .setContentText("Location: Waiting for first fix")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -61,9 +74,9 @@ class LocationService : Service() {
         startForeground(1, notification.build())
 
         globalState.locationStream.publishWith(locationPublisher)
-        val status = "Location Service: Getting first fix"
-        globalState.updateStatus(StatusData.SENSOR)
-        val updatedNotification = notification.setContentText(status)
+        val statusText = "Location Service: Getting first fix"
+        globalState.updateStatus(status)
+        val updatedNotification = notification.setContentText(statusText)
         notificationManager.notify(1, updatedNotification.build())
 
         locationCallback = object : LocationCallback() {
