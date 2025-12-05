@@ -13,7 +13,7 @@
                 android:icon="@drawable/ic_info_light"
                 android:title="About" />
         <item
-                android:id="@+id/nav_list_tracks"
+                android:id="@+id/nav_tracks"
                 android:icon="@drawable/ic_art_track_24"
                 android:title="Milepost Tracks" />
         <item

@@ -25,12 +25,11 @@
             tools:layout="@layout/about_fragment">
     </fragment>
 
-    <!-- TBD placeholder -->
     <fragment
-            android:id="@+id/nav_list_tracks"
-            android:name="com.alflabs.mpgpstrack.activity.PlaceholderFragment"
+            android:id="@+id/nav_tracks"
+            android:name="com.alflabs.mpgpstrack.activity.TracksFragment"
             android:label="Tracks"
-            tools:layout="@layout/placeholder_fragment">
+            tools:layout="@layout/tracks_fragment">
     </fragment>
 
     <fragment
