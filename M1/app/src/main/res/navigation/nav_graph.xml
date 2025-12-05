@@ -57,7 +57,7 @@
     <fragment
             android:id="@+id/nav_sensors"
             android:name="com.alflabs.mpgpstrack.activity.SensorsFragment"
-            android:label="Sensors"
+            android:label="Test Sensors"
             tools:layout="@layout/sensors_fragment">
         <argument
                 android:name="mode"

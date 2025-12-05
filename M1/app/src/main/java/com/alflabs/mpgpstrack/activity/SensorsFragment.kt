@@ -81,7 +81,7 @@ class SensorsFragment : Fragment() {
         accuracyColorPresent = requireContext().getColor(R.color.accPresent)
 
         binding.startButton.text = when (fragmentArgs.mode) {
-            StatusData.SENSOR -> "Start"
+            StatusData.SENSOR -> "Test"
             StatusData.RECORD -> "Record"
             StatusData.PLAYBACK -> "Playback"
             else -> "Error"

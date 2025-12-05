@@ -24,14 +24,14 @@
                 android:id="@+id/nav_play_track"
                 android:icon="@drawable/ic_autoplay"
                 android:title="Playback Track"  />
-        <item
-                android:id="@+id/nav_sensors"
-                android:icon="@drawable/ic_explore_light"
-                android:title="Sensors Data" />
     </group>
 
     <item android:title="More">
         <menu>
+            <item
+                    android:id="@+id/nav_sensors"
+                    android:icon="@drawable/ic_explore_light"
+                    android:title="Test Sensors" />
             <item
                     android:id="@+id/nav_permissions"
                     android:icon="@drawable/ic_report_problem_light"
