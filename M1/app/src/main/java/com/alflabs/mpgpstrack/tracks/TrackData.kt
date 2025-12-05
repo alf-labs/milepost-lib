@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.alflabs.mpgpstrack.location.LocationData
+import java.util.UUID
 
 
 // Doc: https://developer.android.com/training/data-storage/room/defining-data
@@ -13,6 +14,10 @@ data class TrackData(
     // Note: according to the autoGenerate doc, setting the value to 0 forces it to be generated.
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
+
+    // Mandatory UUID for this track.
+    @ColumnInfo
+    val uuid: String = UUID.randomUUID().toString(),
 
     // Mandatory creation date as an ISO date string.
     @ColumnInfo
