@@ -29,6 +29,9 @@ class TrackAdapter : ListAdapter<TrackData, TrackAdapter.TrackViewHolder>(TrackD
         RecyclerView.ViewHolder(binding.root) {
         fun bind(track: TrackData) {
             binding.trackName.text = track.name
+            binding.trackDate.text = track.date
+            binding.trackMinMp.text = "Min MP: ${track.minMP}"
+            binding.trackMaxMp.text = "Max MP: ${track.maxMP}"
         }
     }
 }

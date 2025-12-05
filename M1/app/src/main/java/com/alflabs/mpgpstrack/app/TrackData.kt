@@ -15,4 +15,13 @@ data class TrackData(
 
     @ColumnInfo
     val name: String,
+
+    @ColumnInfo(defaultValue = "")
+    val date: String = "",
+
+    @ColumnInfo(defaultValue = "0.0")
+    val minMP: Float = 0.0f,
+
+    @ColumnInfo(defaultValue = "0.0")
+    val maxMP: Float = 0.0f,
 )
