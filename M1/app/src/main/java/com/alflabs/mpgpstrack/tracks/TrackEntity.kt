@@ -3,7 +3,7 @@ package com.alflabs.mpgpstrack.tracks
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.alflabs.mpgpstrack.location.LocationData
+import com.alflabs.mpgpstrack.location.LocationDataList
 import java.util.UUID
 
 
@@ -39,6 +39,6 @@ data class TrackEntity(
     @ColumnInfo
     val maxMP: Float? = null,
 
-    @ColumnInfo(defaultValue = "[]")
-    val locationList: List<LocationData> = emptyList(),
+    @ColumnInfo
+    val locationList: LocationDataList? = null,
 )
