@@ -10,7 +10,7 @@ import java.util.UUID
 // Doc: https://developer.android.com/training/data-storage/room/defining-data
 
 @Entity(tableName = "tracks")
-data class TrackData(
+data class TrackEntity(
     // Note: according to the autoGenerate doc, setting the value to 0 forces it to be generated.
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

@@ -13,37 +13,37 @@ import kotlin.random.Random
 
 @HiltViewModel
 class TracksViewModel @Inject constructor(
-    private val trackDataDao: TrackDataDao
+    private val trackEntityDao: TrackEntityDao
 ) : ViewModel() {
 
-    val tracks = trackDataDao.getAll().asLiveData()
+    val tracks = trackEntityDao.getAll().asLiveData()
 
     fun createRandomTrack() {
         val a = Random.nextInt( 1, 1000) / 10f
         val b = Random.nextInt(50, 1000) / 10f
         viewModelScope.launch {
-            var track = TrackData(
+            var track = TrackEntity(
                 label = "Track ${Random.nextInt(1000)}",
                 createdDateISO = Date().toString(),
                 minMP = min(a, b),
                 maxMP = max(a, b),
             )
-            val id = trackDataDao.insert(track)
+            val id = trackEntityDao.insert(track)
             track = track.copy(id = id)
             println("@@ DB INSERT track = $track")
         }
     }
 
-    fun updateTrack(track: TrackData) {
+    fun updateTrack(track: TrackEntity) {
         viewModelScope.launch {
-            trackDataDao.update(track)
+            trackEntityDao.update(track)
             println("@@ DB UPDATE track = $track")
         }
     }
 
-    fun delete(track: TrackData) {
+    fun delete(track: TrackEntity) {
         viewModelScope.launch {
-            trackDataDao.delete(track)
+            trackEntityDao.delete(track)
             println("@@ DB DELETE track = $track")
         }
     }

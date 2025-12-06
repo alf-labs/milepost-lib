@@ -59,7 +59,7 @@ class TracksFragment : Fragment() {
         }
     }
 
-    private fun showEditDialog(track: TrackData) {
+    private fun showEditDialog(track: TrackEntity) {
         val layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             val nameInput = EditText(context).apply {

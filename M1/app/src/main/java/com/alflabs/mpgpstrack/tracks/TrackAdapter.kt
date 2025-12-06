@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.mpgpstrack.databinding.TrackItemBinding
 
 class TrackAdapter(
-    private val onClick: (TrackData) -> Unit,
-    private val onEdit: (TrackData) -> Unit,
-    private val onDelete: (TrackData) -> Unit
-) : ListAdapter<TrackData, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
+    private val onClick: (TrackEntity) -> Unit,
+    private val onEdit: (TrackEntity) -> Unit,
+    private val onDelete: (TrackEntity) -> Unit
+) : ListAdapter<TrackEntity, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
         val binding = TrackItemBinding.inflate(
@@ -30,11 +30,11 @@ class TrackAdapter(
 
     class TrackViewHolder(
         private val binding: TrackItemBinding,
-        private val onClick: (TrackData) -> Unit,
-        private val onEdit: (TrackData) -> Unit,
-        private val onDelete: (TrackData) -> Unit
+        private val onClick: (TrackEntity) -> Unit,
+        private val onEdit: (TrackEntity) -> Unit,
+        private val onDelete: (TrackEntity) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
-        private var currentTrack: TrackData? = null
+        private var currentTrack: TrackEntity? = null
 
         init {
             binding.root.setOnClickListener {
@@ -57,7 +57,7 @@ class TrackAdapter(
             }
         }
 
-        fun bind(track: TrackData) {
+        fun bind(track: TrackEntity) {
             currentTrack = track
             binding.trackName.text = "${track.id} - ${track.label}"
             binding.trackDate.text = track.createdDateISO
@@ -67,13 +67,13 @@ class TrackAdapter(
     }
 }
 
-class TrackDiffCallback : DiffUtil.ItemCallback<TrackData>() {
-    override fun areItemsTheSame(oldItem: TrackData, newItem: TrackData):
+class TrackDiffCallback : DiffUtil.ItemCallback<TrackEntity>() {
+    override fun areItemsTheSame(oldItem: TrackEntity, newItem: TrackEntity):
         Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: TrackData, newItem: TrackData):
+    override fun areContentsTheSame(oldItem: TrackEntity, newItem: TrackEntity):
         Boolean {
         return oldItem == newItem
     }
