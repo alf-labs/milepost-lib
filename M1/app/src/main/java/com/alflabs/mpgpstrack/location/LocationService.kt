@@ -85,42 +85,31 @@ class LocationService : Service() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
 
-                    val latLong = LatLongData(
-                        timestampMillis = location.time,
-                        latitude = location.latitude,
-                        longitude = location.longitude,
-                        accuracy = if (location.hasAccuracy()) {
-                            location.accuracy
-                        } else {
-                            null
-                        },
-                    )
+                    val ld = locationData {
+                        latLong = latLongData {
+                            timestampMillis = location.time
+                            latitude = location.latitude
+                            longitude = location.longitude
+                            if (location.hasAccuracy()) {
+                                accuracy = location.accuracy
+                            }
+                        }
 
-                    val speedBearing = if (location.hasSpeed() && location.hasBearing()) {
-                        SpeedBearingData(
-                            speedMps = location.speed,
-                            bearingDeg = location.bearing,
-                            speedAcc = if (location.hasSpeedAccuracy()) {
-                                location.speedAccuracyMetersPerSecond
-                            } else {
-                                null
-                            },
-                            bearingAcc = if (location.hasBearingAccuracy()) {
-                                location.bearingAccuracyDegrees
-                            } else {
-                                null
-                            },
-                        )
-                    } else {
-                        null
+                        if (location.hasSpeed() && location.hasBearing()) {
+                            speedBearing = speedBearingData {
+                                speedMps = location.speed
+                                bearingAcc = location.bearing
+                                if (location.hasSpeedAccuracy()) {
+                                    speedAcc = location.speedAccuracyMetersPerSecond
+                                }
+                                if (location.hasBearingAccuracy()) {
+                                    bearingAcc = location.bearingAccuracyDegrees
+                                }
+                            }
+                        }
                     }
 
-                    locationPublisher.publish(
-                        LocationData(
-                            latLong = latLong,
-                            speedBearing = speedBearing
-                        )
-                    )
+                    locationPublisher.publish(ld)
 
                     val msg = "Location: ${location.latitude}, ${location.longitude}"
                     val updatedNotification = notification.setContentText(msg)

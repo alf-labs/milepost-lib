@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package com.alflabs.mpgpstrack.location;
+
+option java_multiple_files = true;
+
+message LocationData {
+  LatLongData lat_long = 1;
+  optional SpeedBearingData speed_bearing = 2;
+  optional float mp = 3;
+  int32 flags = 4;
+}
+
+message LatLongData {
+  int64 timestamp_millis = 1;
+  double latitude = 2;
+  double longitude = 3;
+  optional float accuracy = 4;
+}
+
+message SpeedBearingData {
+  float speed_mps = 1;
+  float bearing_deg = 2;
+  optional float speed_acc = 3;
+  optional float bearing_acc = 4;
+}
