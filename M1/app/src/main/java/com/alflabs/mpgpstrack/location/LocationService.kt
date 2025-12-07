@@ -11,11 +11,16 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.viewModelScope
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.fragments.PermissionsFragment
 import com.alflabs.mpgpstrack.main.MainActivity
 import com.alflabs.mpgpstrack.main.GlobalState
 import com.alflabs.mpgpstrack.main.StatusData
+import com.alflabs.mpgpstrack.tracks.AppDatabase
+import com.alflabs.mpgpstrack.tracks.TrackEntity
+import com.alflabs.mpgpstrack.tracks.TrackEntityDao
+import com.alflabs.mpgpstrack.tracks.trackSummary
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -24,7 +29,14 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.random.Random
 
 
 @AndroidEntryPoint
@@ -40,9 +52,11 @@ class LocationService : Service() {
     @Inject lateinit var locationRequest: LocationRequest
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
+    @Inject lateinit var trackEntityDao: TrackEntityDao
 
     private lateinit var locationCallback: LocationCallback
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     @RequiresPermission(allOf = [
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -103,13 +117,28 @@ class LocationService : Service() {
             }
         }
 
-        // TBD: Add new TrackEntity to AppDatabase. Only call requestLocationUpdates() on completion.
+        scope.launch {
+            if (runningMode == StatusData.RECORD) {
+                val a = Random.nextInt(1, 1000) / 10f
+                val b = Random.nextInt(50, 1000) / 10f
+                var track = TrackEntity(
+                    label = "Record ${Random.nextInt(1000)}",
+                    createdDateISO = Date().toString(),
+                    summary = trackSummary {
+                        mpMin = min(a, b)
+                        mpMax = max(a, b)
+                    },
+                )
+                val id = trackEntityDao.insert(track)
+                logger.d(TAG, "@@ RECORD to $id")
+            }
 
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
+            fusedLocationProviderClient.requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+        }
 
         logger.d(TAG, "Started")
         return START_NOT_STICKY
