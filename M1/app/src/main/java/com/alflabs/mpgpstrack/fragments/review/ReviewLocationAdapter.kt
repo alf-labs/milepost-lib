@@ -30,7 +30,8 @@ class ReviewLocationAdapter : ListAdapter<LocationData, ReviewLocationAdapter.Re
             binding.index.text = adapterPosition.toString()
             binding.timestamp.text = item.latLong.timestampMillis.toString()
             binding.latLong.text = "${item.latLong.latitude}, ${item.latLong.longitude}"
-            binding.mp.text = item.mp.toString()
+            binding.mp.text = item.latLong.accuracy.toString()
+            // TBD -- binding.mp.text = item.mp.toString()
         }
     }
 }
