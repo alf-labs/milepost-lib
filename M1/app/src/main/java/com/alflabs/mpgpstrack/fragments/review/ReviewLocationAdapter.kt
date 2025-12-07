@@ -43,7 +43,7 @@ class ReviewLocationAdapter :
                 binding.latLong.text = "${ld.latLong.latitude}, ${ld.latLong.longitude}"
                 binding.distAcc.text = String.format("%.1f m", ld.latLong.accuracy)
                 binding.speed.text = String.format("%.1f mph", Units.mps_to_mph(ld.speedBearing.speedMps))
-                binding.mp.text = String.format("%.1f m", item.distanceMeters) // RM DEBUG
+                binding.mp.text = String.format("%.1f mi", Units.m_to_miles(item.distanceMeters)) // RM DEBUG
                 // binding.mp.text = ld.mp.toString() // TBD
             }
         }
