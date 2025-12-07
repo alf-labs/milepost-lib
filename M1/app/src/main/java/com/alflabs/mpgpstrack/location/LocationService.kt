@@ -43,7 +43,7 @@ class LocationService : Service() {
     companion object {
         const val EXTRA_RUNNING_MODE = "status"
         private const val NOTIFICATION_ID = 1000
-        private const val DISTANCE_ADD_THRESHOLD_METERS = 1.0f
+        private const val DISTANCE_ADD_THRESHOLD_METERS = 10.0f
     }
 
     @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -228,19 +228,36 @@ class LocationService : Service() {
         locationData: LocationData,
         location: Location,
     ) {
-        var shouldAdd = data.locationDataListBuilder.locationsCount == 0
+        val n = data.locationDataListBuilder.locationsCount
+        var shouldAdd = n == 0
+        var shouldReplace = -1
+
         if (!shouldAdd && data.lastLocation != null) {
             val distance = location.distanceTo(data.lastLocation!!)
             shouldAdd = (distance > DISTANCE_ADD_THRESHOLD_METERS)
+            data.lastLocation?.let { lastLoc ->
+                if (distance <= lastLoc.accuracy
+                        && location.accuracy < lastLoc.accuracy) {
+                    shouldReplace = n - 1
+                }
+            }
         }
 
-        if (shouldAdd) {
+        if (shouldReplace >= 0) {
+            data.locationDataListBuilder.setLocations(
+                shouldReplace,
+                locationData
+            )
+            data.lastLocation = location
+            data.locationUpdater(data.locationDataListBuilder)
+
+        } else if (shouldAdd) {
             data.locationDataListBuilder.addLocations(locationData)
             data.lastLocation = location
             data.locationUpdater(data.locationDataListBuilder)
 
             data.summaryUpdater(trackSummary {
-                lengthM = data.locationDataListBuilder.locationsCount.toFloat()
+                lengthM = n.toFloat()
             })
         }
     }
