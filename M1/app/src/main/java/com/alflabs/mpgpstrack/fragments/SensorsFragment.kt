@@ -16,6 +16,7 @@ import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationService
 import com.alflabs.mpgpstrack.main.GlobalState
 import com.alflabs.mpgpstrack.main.StatusData
+import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -36,9 +37,6 @@ open class SensorsFragment: Fragment() {
     companion object {
         private const val PERM_REQUEST_CODE = 1
         private const val MAPS_ZOOM_LEVEL = 15f
-        private const val SECONDS_PER_HOUR = 3600
-        private const val METERS_PER_MILE = 1609.344
-        private const val MPS_TO_MPH = SECONDS_PER_HOUR / METERS_PER_MILE
     }
 
     internal open val runningMode = StatusData.SENSOR
@@ -224,7 +222,7 @@ open class SensorsFragment: Fragment() {
 
         val speedBearing = value.speedBearing
         if (speedBearing != null) {
-            val spd_mph = speedBearing.speedMps * MPS_TO_MPH
+            val spd_mph = Units.mps_to_mph(speedBearing.speedMps)
             binding.speedText.text = String.format(Locale.US,
                 "%.1f MPH",
                 spd_mph)
@@ -235,7 +233,7 @@ open class SensorsFragment: Fragment() {
 
             val speedAccText = binding.speedAccText
             speedBearing.speedAcc?.let { mps ->
-                val acc_mph = mps * MPS_TO_MPH
+                val acc_mph = Units.mps_to_mph(mps)
                 speedAccText.text = String.format(Locale.US,
                     "±%.3f",
                     acc_mph)

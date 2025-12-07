@@ -6,9 +6,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.mpgpstrack.databinding.ReviewLocationItemBinding
-import com.alflabs.mpgpstrack.location.LocationData
+import com.alflabs.mpgpstrack.utils.Units
 
-class ReviewLocationAdapter : ListAdapter<LocationData, ReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
+class ReviewLocationAdapter :
+    ListAdapter<ReviewLocationData, ReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback())
+{
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
         val binding = ReviewLocationItemBinding.inflate(
@@ -26,20 +28,36 @@ class ReviewLocationAdapter : ListAdapter<LocationData, ReviewLocationAdapter.Re
     class ReviewViewHolder(val binding: ReviewLocationItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: LocationData) {
-            binding.index.text = adapterPosition.toString()
-            binding.timestamp.text = item.latLong.timestampMillis.toString()
-            binding.latLong.text = "${item.latLong.latitude}, ${item.latLong.longitude}"
-            binding.mp.text = item.latLong.accuracy.toString()
-            // TBD -- binding.mp.text = item.mp.toString()
+        fun bind(item: ReviewLocationData) {
+            val ld = item.data
+            if (ld == null) {
+                binding.index.text = "Idx"
+                binding.timestamp.text = "Time"
+                binding.latLong.text = "GPS"
+                binding.distAcc.text = "Acc."
+                binding.speed.text = "Speed"
+                binding.mp.text = "MP"
+            } else {
+                binding.index.text = adapterPosition.toString()
+                binding.timestamp.text = String.format("%.1f s", item.deltaTS/1000f)
+                binding.latLong.text = "${ld.latLong.latitude}, ${ld.latLong.longitude}"
+                binding.distAcc.text = String.format("%.1f m", ld.latLong.accuracy)
+                binding.speed.text = String.format("%.1f mph", Units.mps_to_mph(ld.speedBearing.speedMps))
+                binding.mp.text = String.format("%.1f m", item.distanceMeters) // RM DEBUG
+                // binding.mp.text = ld.mp.toString() // TBD
+            }
         }
     }
 }
 
-class LocationDiffCallback : DiffUtil.ItemCallback<LocationData>() {
-    override fun areItemsTheSame(oldItem: LocationData, newItem: LocationData):
-            Boolean = oldItem.latLong.timestampMillis == newItem.latLong.timestampMillis
+class LocationDiffCallback : DiffUtil.ItemCallback<ReviewLocationData>() {
+    override fun areItemsTheSame(oldItem: ReviewLocationData, newItem: ReviewLocationData):
+            Boolean {
+        val oldTS = oldItem.data?.latLong?.timestampMillis ?: -1
+        val newTS = newItem.data?.latLong?.timestampMillis ?: -1
+        return oldTS == newTS
+    }
 
-    override fun areContentsTheSame(oldItem: LocationData, newItem: LocationData):
+    override fun areContentsTheSame(oldItem: ReviewLocationData, newItem: ReviewLocationData):
             Boolean = oldItem == newItem
 }

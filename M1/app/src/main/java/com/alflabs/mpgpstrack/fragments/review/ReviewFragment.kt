@@ -1,5 +1,6 @@
 package com.alflabs.mpgpstrack.fragments.review
 
+import android.location.Location
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,8 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.ReviewFragmentBinding
+import com.alflabs.mpgpstrack.location.LatLongData
+import com.alflabs.mpgpstrack.location.LocationDataList
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -52,9 +55,7 @@ class ReviewFragment : Fragment() {
             binding.label.text = track?.label ?: "No track found"
             binding.summary.text = track?.summary?.toString() ?: "No summary found"
 
-            track?.locationList?.let {
-                adapter.submitList(it.locationsList)
-            }
+            adapter.submitList(convert(track?.locationList))
         }
 
         viewModel.loadTrack(fragmentArgs.trackId)
@@ -63,5 +64,49 @@ class ReviewFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun convert(locationDataList: LocationDataList?): List<ReviewLocationData> {
+        val result = mutableListOf<ReviewLocationData>()
+        if (locationDataList == null ) {
+            return result
+        }
+        val locationsList = locationDataList.locationsList
+        if (locationsList.isEmpty()) {
+            return result
+        }
+
+        // First row is a little dummy hack for headers
+        result.add(ReviewLocationData(
+            data = null
+        ))
+
+        val firstTS = locationsList[0].latLong.timestampMillis
+        var distResults = FloatArray(1)
+        var distanceMeters = 0f
+        var lastLatLong: LatLongData? = null
+        for (location in locationsList) {
+            val newLatLong = location.latLong
+            val deltaTS = newLatLong.timestampMillis - firstTS
+
+            lastLatLong?.let {
+                Location.distanceBetween(
+                    it.latitude, it.longitude,
+                    newLatLong.latitude, newLatLong.longitude,
+                    distResults)
+                // distanceMeters += distResults[0] // TBD
+                distanceMeters = distResults[0] // RM DEBUG
+            }
+
+            result.add(ReviewLocationData(
+                data = location,
+                deltaTS = deltaTS,
+                distanceMeters = distanceMeters
+            ))
+
+            lastLatLong = newLatLong
+        }
+
+        return result
     }
 }

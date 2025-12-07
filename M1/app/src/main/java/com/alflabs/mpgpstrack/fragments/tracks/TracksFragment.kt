@@ -37,11 +37,14 @@ class TracksFragment : Fragment() {
 
         val adapter = TrackAdapter(
             onClick = { track ->
+                showEditDialog(track)
+                /*
                 AlertDialog.Builder(requireContext())
                     .setTitle("Track Selected")
                     .setMessage(track.label)
                     .setPositiveButton("OK", null)
                     .show()
+                 */
             },
             onEdit = { track ->
                 showEditDialog(track)
