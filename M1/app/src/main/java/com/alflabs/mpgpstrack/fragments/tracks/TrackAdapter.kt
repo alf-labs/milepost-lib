@@ -60,10 +60,9 @@ class TrackAdapter(
 
         fun bind(track: TrackEntity) {
             currentTrack = track
-            binding.trackName.text = "${track.id} - ${track.label}"
+            binding.trackName.text = "[${track.id}] ${track.label}"
             binding.trackDate.text = track.createdDateISO
-            binding.trackMinMp.text = "Min MP: ${track.minMP}"
-            binding.trackMaxMp.text = "Max MP: ${track.maxMP}"
+            binding.trackSummary.text = track.summary?.toString() ?: "<>"
         }
     }
 }

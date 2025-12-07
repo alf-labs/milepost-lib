@@ -9,7 +9,6 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 class Converters {
     @TypeConverter
     fun fromLocationDataList(value: LocationDataList?): String? {
-        // Base 64 version:
         return value?.let {
             Base64.encode(it.toByteArray())
         }
@@ -18,9 +17,23 @@ class Converters {
     @TypeConverter
     fun toLocationDataList(value: String?): LocationDataList? {
         return value?.let {
-            // Base 64 version:
             val decoded = Base64.decode(it)
             LocationDataList.parseFrom(decoded)
+        }
+    }
+
+    @TypeConverter
+    fun fromTrackSummary(value: TrackSummary?): String? {
+        return value?.let {
+            Base64.encode(it.toByteArray())
+        }
+    }
+
+    @TypeConverter
+    fun toTrackSummary(value: String?): TrackSummary? {
+        return value?.let {
+            val decoded = Base64.decode(it)
+            TrackSummary.parseFrom(decoded)
         }
     }
 }

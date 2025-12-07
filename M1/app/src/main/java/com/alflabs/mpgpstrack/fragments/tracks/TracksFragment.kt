@@ -67,17 +67,7 @@ class TracksFragment : Fragment() {
                 setText(track.label)
                 hint = "Label"
             }
-            val minMpInput = EditText(context).apply {
-                setText(track.minMP.toString())
-                hint = "Min MP"
-            }
-            val maxMpInput = EditText(context).apply {
-                setText(track.maxMP.toString())
-                hint = "Max MP"
-            }
             addView(nameInput)
-            addView(minMpInput)
-            addView(maxMpInput)
         }
 
         AlertDialog.Builder(requireContext())
@@ -85,14 +75,7 @@ class TracksFragment : Fragment() {
             .setView(layout)
             .setPositiveButton("Save") { _, _ ->
                 val newlabel = (layout.getChildAt(0) as EditText).text.toString()
-                val newMinMp = (layout.getChildAt(1) as EditText).text.toString().toFloatOrNull() ?: track.minMP
-                val newMaxMp = (layout.getChildAt(2) as EditText).text.toString().toFloatOrNull() ?: track.maxMP
-                viewModel.updateTrack(
-                    track.copy(
-                        label = newlabel,
-                        minMP = newMinMp,
-                        maxMP = newMaxMp
-                    ))
+                viewModel.updateTrack(track.copy(label = newlabel))
             }
             .setNegativeButton("Cancel", null)
             .show()

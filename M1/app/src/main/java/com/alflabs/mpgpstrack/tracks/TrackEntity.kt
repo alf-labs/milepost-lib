@@ -31,14 +31,11 @@ data class TrackEntity(
     @ColumnInfo
     val label: String? = null,
 
-    // The min MilePost computed or set for this track.
+    // Optional summary info for list tracks fragment.
     @ColumnInfo
-    val minMP: Float? = null,
+    val summary: TrackSummary? = null,
 
-    // The max MilePost computed or set for this track.
-    @ColumnInfo
-    val maxMP: Float? = null,
-
+    // Actual location data (empty before first gps fix).
     @ColumnInfo
     val locationList: LocationDataList? = null,
 )

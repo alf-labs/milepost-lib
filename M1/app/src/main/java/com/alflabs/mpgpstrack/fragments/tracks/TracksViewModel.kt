@@ -5,6 +5,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.TrackEntityDao
+import com.alflabs.mpgpstrack.tracks.trackSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -27,8 +28,10 @@ class TracksViewModel @Inject constructor(
             var track = TrackEntity(
                 label = "Track ${Random.nextInt(1000)}",
                 createdDateISO = Date().toString(),
-                minMP = min(a, b),
-                maxMP = max(a, b),
+                summary = trackSummary {
+                    mpMin = min(a, b)
+                    mpMax = max(a, b)
+                },
             )
             val id = trackEntityDao.insert(track)
             track = track.copy(id = id)

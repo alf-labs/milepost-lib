@@ -18,13 +18,7 @@
         android:textAppearance="?attr/textAppearanceBody2" />
 
     <TextView
-        android:id="@+id/track_min_mp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceBody2" />
-
-    <TextView
-        android:id="@+id/track_max_mp"
+        android:id="@+id/track_summary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceBody2" />
