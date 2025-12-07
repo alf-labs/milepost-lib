@@ -7,12 +7,12 @@ class LocationDataTest {
 
     @Test
     fun testLatLongData() {
-        val latLongData = LatLongData.newBuilder()
-            .setTimestampMillis(1234567890L)
-            .setLatitude(34.0522)
-            .setLongitude(-118.2437)
-            .setAccuracy(10.0f)
-            .build()
+        val latLongData = latLongData {
+            timestampMillis = 1234567890L
+            latitude = 34.0522
+            longitude = -118.2437
+            accuracy = 10.0f
+        }
 
         assertThat(latLongData.timestampMillis).isEqualTo(1234567890L)
         assertThat(latLongData.latitude).isWithin(0.0).of(34.0522)
@@ -22,12 +22,12 @@ class LocationDataTest {
 
     @Test
     fun testSpeedBearingData() {
-        val speedBearingData = SpeedBearingData.newBuilder()
-            .setSpeedMps(25.0f)
-            .setBearingDeg(180.0f)
-            .setSpeedAcc(1.0f)
-            .setBearingAcc(5.0f)
-            .build()
+        val speedBearingData = speedBearingData {
+            speedMps = 25.0f
+            bearingDeg = 180.0f
+            speedAcc = 1.0f
+            bearingAcc = 5.0f
+        }
 
         assertThat(speedBearingData.speedMps).isWithin(0.0f).of(25.0f)
         assertThat(speedBearingData.bearingDeg).isWithin(0.0f).of(180.0f)
@@ -37,26 +37,26 @@ class LocationDataTest {
 
     @Test
     fun testLocationData() {
-        val latLongData = LatLongData.newBuilder()
-            .setTimestampMillis(1234567890L)
-            .setLatitude(34.0522)
-            .setLongitude(-118.2437)
-            .setAccuracy(10.0f)
-            .build()
+        val latLongData = latLongData {
+            timestampMillis = 1234567890L
+            latitude = 34.0522
+            longitude = -118.2437
+            accuracy = 10.0f
+        }
 
-        val speedBearingData = SpeedBearingData.newBuilder()
-            .setSpeedMps(25.0f)
-            .setBearingDeg(180.0f)
-            .setSpeedAcc(1.0f)
-            .setBearingAcc(5.0f)
-            .build()
+        val speedBearingData = speedBearingData {
+            speedMps = 25.0f
+            bearingDeg = 180.0f
+            speedAcc = 1.0f
+            bearingAcc = 5.0f
+        }
 
-        val locationData = LocationData.newBuilder()
-            .setLatLong(latLongData)
-            .setSpeedBearing(speedBearingData)
-            .setMp(100.0f)
-            .setFlags(1)
-            .build()
+        val locationData = locationData {
+            this.latLong = latLongData
+            this.speedBearing = speedBearingData
+            mp = 100.0f
+            flags = 1
+        }
 
         assertThat(locationData.latLong).isEqualTo(latLongData)
         assertThat(locationData.speedBearing).isEqualTo(speedBearingData)
@@ -66,13 +66,12 @@ class LocationDataTest {
 
     @Test
     fun testLocationDataList() {
-        val locationData1 = LocationData.newBuilder().setFlags(1).build()
-        val locationData2 = LocationData.newBuilder().setFlags(2).build()
+        val locationData1 = locationData { flags = 1 }
+        val locationData2 = locationData { flags = 2 }
 
-        val locationDataList = LocationDataList.newBuilder()
-            .addLocations(locationData1)
-            .addLocations(locationData2)
-            .build()
+        val locationDataList = locationDataList {
+            locations.addAll(listOf(locationData1, locationData2))
+        }
 
         assertThat(locationDataList.locationsCount).isEqualTo(2)
         assertThat(locationDataList.locationsList).containsExactly(locationData1, locationData2).inOrder()
