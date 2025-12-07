@@ -9,10 +9,10 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.TracksFragmentBinding
 import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
-import com.alflabs.mpgpstrack.tracks.TrackEntity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -62,6 +62,12 @@ class TracksFragment : Fragment() {
     }
 
     private fun showEditDialog(track: TrackDisplayInfo) {
+        findNavController().navigate(
+            TracksFragmentDirections.actionListToReview(track.id)
+        )
+
+        // Quick kludge to show an inline edit dialog for one property
+        /*
         val layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             val nameInput = EditText(context).apply {
@@ -80,6 +86,7 @@ class TracksFragment : Fragment() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+         */
     }
 
     override fun onDestroyView() {
