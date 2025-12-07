@@ -105,7 +105,7 @@ class SensorsFragment : Fragment() {
             } else {
                 setInitialMapZoom = true
                 val intent = Intent(requireContext(), LocationService::class.java)
-                intent.putExtra(LocationService.EXTRA_STATUS, fragmentArgs.mode)
+                intent.putExtra(LocationService.EXTRA_RUNNING_MODE, fragmentArgs.mode)
                 requireActivity().startForegroundService(intent)
             }
         }
