@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.tracks
+package com.alflabs.mpgpstrack.fragments.tracks
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.mpgpstrack.databinding.TrackItemBinding
+import com.alflabs.mpgpstrack.tracks.TrackEntity
 
 class TrackAdapter(
     private val onClick: (TrackEntity) -> Unit,

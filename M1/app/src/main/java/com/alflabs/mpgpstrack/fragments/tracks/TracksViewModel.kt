@@ -1,8 +1,10 @@
-package com.alflabs.mpgpstrack.tracks
+package com.alflabs.mpgpstrack.fragments.tracks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.alflabs.mpgpstrack.tracks.TrackEntity
+import com.alflabs.mpgpstrack.tracks.TrackEntityDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.Date

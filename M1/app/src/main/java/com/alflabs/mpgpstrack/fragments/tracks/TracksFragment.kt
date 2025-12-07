@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.tracks
+package com.alflabs.mpgpstrack.fragments.tracks
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.TracksFragmentBinding
+import com.alflabs.mpgpstrack.tracks.TrackEntity
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
