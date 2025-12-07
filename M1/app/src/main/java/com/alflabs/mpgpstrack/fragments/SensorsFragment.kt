@@ -8,14 +8,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.alflabs.mpgpstrack.R
+import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
+import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationService
 import com.alflabs.mpgpstrack.main.GlobalState
-import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.main.StatusData
-import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -29,9 +29,8 @@ import java.util.Locale
 import javax.inject.Inject
 
 
-
 @AndroidEntryPoint
-class SensorsFragment : Fragment() {
+open class SensorsFragment: Fragment() {
     private val TAG = SensorsFragment::class.java.simpleName
 
     companion object {
@@ -42,7 +41,10 @@ class SensorsFragment : Fragment() {
         private const val MPS_TO_MPH = SECONDS_PER_HOUR / METERS_PER_MILE
     }
 
-    private val fragmentArgs: SensorsFragmentArgs by navArgs()
+    internal open val runningMode = StatusData.SENSOR
+    internal open fun actionToPermissionsDlg(): NavDirections =
+        SensorsFragmentDirections.actionSensorsToPermissionsDlg()
+
     private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
     // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
 
@@ -62,7 +64,6 @@ class SensorsFragment : Fragment() {
     private var _binding: SensorsFragmentBinding? = null
     private val binding get() = _binding!!
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -80,7 +81,7 @@ class SensorsFragment : Fragment() {
         accuracyColorMissing = requireContext().getColor(R.color.accMissing)
         accuracyColorPresent = requireContext().getColor(R.color.accPresent)
 
-        binding.startButton.text = when (fragmentArgs.mode) {
+        binding.startButton.text = when (runningMode) {
             StatusData.SENSOR -> "Test"
             StatusData.RECORD -> "Record"
             StatusData.PLAYBACK -> "Playback"
@@ -93,19 +94,18 @@ class SensorsFragment : Fragment() {
             // Sanity check:
             // - If the global state is already started, we should not be here.
             // - If mode cannot start, we should not be here.
-            if (globalState.status.start || !fragmentArgs.mode.start) {
+            if (globalState.status.start || !runningMode.start) {
                 Log.d(TAG, "START --> already started / cannot start")
                 return@setOnClickListener
             }
 
             if (!PermissionsFragment.allPermissionsGranted(requireContext())) {
                 Log.d(TAG, "START --> request permissions")
-                val action = SensorsFragmentDirections.Companion.actionSensorsToPermissionsDlg()
-                findNavController().navigate(action)
+                findNavController().navigate(actionToPermissionsDlg())
             } else {
                 setInitialMapZoom = true
                 val intent = Intent(requireContext(), LocationService::class.java)
-                intent.putExtra(LocationService.EXTRA_RUNNING_MODE, fragmentArgs.mode)
+                intent.putExtra(LocationService.EXTRA_RUNNING_MODE, runningMode)
                 requireActivity().startForegroundService(intent)
             }
         }

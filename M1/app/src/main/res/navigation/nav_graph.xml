@@ -34,24 +34,32 @@
 
     <fragment
             android:id="@+id/nav_record_track"
-            android:name="com.alflabs.mpgpstrack.fragments.SensorsFragment"
+            android:name="com.alflabs.mpgpstrack.fragments.RecordFragment"
             android:label="Record Track"
             tools:layout="@layout/sensors_fragment">
-        <argument
-                android:name="mode"
-                app:argType="com.alflabs.mpgpstrack.main.StatusData"
-                android:defaultValue="RECORD" />
+        <action
+                android:id="@+id/action_record_to_permissions_dlg"
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showClose"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
     </fragment>
 
     <fragment
             android:id="@+id/nav_play_track"
-            android:name="com.alflabs.mpgpstrack.fragments.SensorsFragment"
+            android:name="com.alflabs.mpgpstrack.fragments.PlaybackFragment"
             android:label="Playback Track"
             tools:layout="@layout/sensors_fragment">
-        <argument
-                android:name="mode"
-                app:argType="com.alflabs.mpgpstrack.main.StatusData"
-                android:defaultValue="PLAYBACK" />
+        <action
+                android:id="@+id/action_play_to_permissions_dlg"
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showClose"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
     </fragment>
 
     <fragment
@@ -59,10 +67,6 @@
             android:name="com.alflabs.mpgpstrack.fragments.SensorsFragment"
             android:label="Test Sensors"
             tools:layout="@layout/sensors_fragment">
-        <argument
-                android:name="mode"
-                app:argType="com.alflabs.mpgpstrack.main.StatusData"
-                android:defaultValue="SENSOR" />
         <action
                 android:id="@+id/action_sensors_to_permissions_dlg"
                 app:destination="@id/nav_permissions_dlg">
