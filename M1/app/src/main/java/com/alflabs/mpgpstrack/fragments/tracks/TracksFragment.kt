@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.TracksFragmentBinding
 import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
@@ -49,8 +50,15 @@ class TracksFragment : Fragment() {
                 viewModel.delete(track)
             }
         )
+        val layoutManager = LinearLayoutManager(requireContext())
         binding.tracksList.adapter = adapter
-        binding.tracksList.layoutManager = LinearLayoutManager(requireContext())
+        binding.tracksList.layoutManager = layoutManager
+
+        val dividerItemDecoration = DividerItemDecoration(
+            requireContext(),
+            layoutManager.orientation
+        )
+        binding.tracksList.addItemDecoration(dividerItemDecoration)
 
         viewModel.tracks.observe(viewLifecycleOwner) {
             adapter.submitList(it)

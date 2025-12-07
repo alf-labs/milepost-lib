@@ -8,9 +8,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.ReviewFragmentBinding
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class ReviewFragment : Fragment() {
@@ -34,8 +36,15 @@ class ReviewFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = ReviewLocationAdapter()
+        val layoutManager = LinearLayoutManager(requireContext())
         binding.locationsList.adapter = adapter
-        binding.locationsList.layoutManager = LinearLayoutManager(requireContext())
+        binding.locationsList.layoutManager = layoutManager
+
+        val dividerItemDecoration = DividerItemDecoration(
+            requireContext(),
+            layoutManager.orientation
+        )
+        binding.locationsList.addItemDecoration(dividerItemDecoration)
 
         viewModel.track.observe(viewLifecycleOwner) { track ->
             Log.d(TAG, "Review observe track: ${track?.id} ${track?.label}")
