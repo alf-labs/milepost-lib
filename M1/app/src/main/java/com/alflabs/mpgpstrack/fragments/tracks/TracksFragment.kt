@@ -49,8 +49,8 @@ class TracksFragment : Fragment() {
                 viewModel.delete(track)
             }
         )
-        binding.tracksView.adapter = adapter
-        binding.tracksView.layoutManager = LinearLayoutManager(requireContext())
+        binding.tracksList.adapter = adapter
+        binding.tracksList.layoutManager = LinearLayoutManager(requireContext())
 
         viewModel.tracks.observe(viewLifecycleOwner) {
             adapter.submitList(it)
