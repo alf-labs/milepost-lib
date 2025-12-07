@@ -1,6 +1,7 @@
-package com.alflabs.mpgpstrack.fragments
+package com.alflabs.mpgpstrack.fragments.review
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,6 +36,11 @@ class ReviewFragment : Fragment() {
         binding.locationsList.adapter = adapter
 
         viewModel.track.observe(viewLifecycleOwner) { track ->
+            Log.d(TAG, "Review observe track: $track")
+
+            binding.label.text = track?.label ?: "No track found"
+            binding.summary.text = track?.summary?.toString() ?: "No summary found"
+
             track?.locationList?.let {
                 adapter.submitList(it.locationsList)
             }

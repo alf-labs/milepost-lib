@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.fragments
+package com.alflabs.mpgpstrack.fragments.review
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
