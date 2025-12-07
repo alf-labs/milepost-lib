@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.TracksFragmentBinding
+import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -60,7 +61,7 @@ class TracksFragment : Fragment() {
         }
     }
 
-    private fun showEditDialog(track: TrackEntity) {
+    private fun showEditDialog(track: TrackDisplayInfo) {
         val layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             val nameInput = EditText(context).apply {

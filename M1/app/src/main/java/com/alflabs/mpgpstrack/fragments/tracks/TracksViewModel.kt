@@ -3,6 +3,7 @@ package com.alflabs.mpgpstrack.fragments.tracks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.TrackEntityDao
 import com.alflabs.mpgpstrack.tracks.trackSummary
@@ -19,7 +20,7 @@ class TracksViewModel @Inject constructor(
     private val trackEntityDao: TrackEntityDao
 ) : ViewModel() {
 
-    val tracks = trackEntityDao.getAll().asLiveData()
+    val tracks = trackEntityDao.getAllDisplayInfo().asLiveData()
 
     fun createRandomTrack() {
         val a = Random.nextInt( 1, 1000) / 10f
@@ -39,17 +40,23 @@ class TracksViewModel @Inject constructor(
         }
     }
 
-    fun updateTrack(track: TrackEntity) {
+    fun updateTrack(trackInfo: TrackDisplayInfo) {
         viewModelScope.launch {
-            trackEntityDao.update(track)
-            println("@@ DB UPDATE track = $track")
+            val track = trackEntityDao.getById(trackInfo.id)
+            track?.let {
+                val newTrack = it.copy(
+                    label = trackInfo.label,
+                    summary = trackInfo.summary)
+                trackEntityDao.update(newTrack)
+                println("@@ DB UPDATE track = $newTrack")
+            }
         }
     }
 
-    fun delete(track: TrackEntity) {
+    fun delete(trackInfo: TrackDisplayInfo) {
         viewModelScope.launch {
-            trackEntityDao.delete(track)
-            println("@@ DB DELETE track = $track")
+            trackEntityDao.deleteById(trackInfo.id)
+            println("@@ DB DELETE track = $trackInfo")
         }
     }
 }

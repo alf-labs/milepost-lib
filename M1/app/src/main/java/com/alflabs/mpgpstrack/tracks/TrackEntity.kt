@@ -25,7 +25,7 @@ data class TrackEntity(
 
     // Optional last updated date as an ISO date string.
     @ColumnInfo
-    val updateDateISO: String? = null,
+    val updatedDateISO: String? = null,
 
     // User label. Can be empty in which case we'll display "Track #id" as a label.
     @ColumnInfo
@@ -38,4 +38,12 @@ data class TrackEntity(
     // Actual location data (empty before first gps fix).
     @ColumnInfo
     val locationList: LocationDataList? = null,
+)
+
+// A minimal version of TrackEntity for displaying in the TracksFragment.
+data class TrackDisplayInfo(
+    val id: Long = 0,
+    val createdDateISO: String,
+    val label: String? = null,
+    val summary: TrackSummary? = null,
 )

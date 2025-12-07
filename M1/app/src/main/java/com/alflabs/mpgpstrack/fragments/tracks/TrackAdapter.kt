@@ -7,13 +7,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.mpgpstrack.databinding.TrackItemBinding
-import com.alflabs.mpgpstrack.tracks.TrackEntity
+import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
 
 class TrackAdapter(
-    private val onClick: (TrackEntity) -> Unit,
-    private val onEdit: (TrackEntity) -> Unit,
-    private val onDelete: (TrackEntity) -> Unit
-) : ListAdapter<TrackEntity, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
+    private val onClick: (TrackDisplayInfo) -> Unit,
+    private val onEdit: (TrackDisplayInfo) -> Unit,
+    private val onDelete: (TrackDisplayInfo) -> Unit
+) : ListAdapter<TrackDisplayInfo, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
         val binding = TrackItemBinding.inflate(
@@ -31,11 +31,11 @@ class TrackAdapter(
 
     class TrackViewHolder(
         private val binding: TrackItemBinding,
-        private val onClick: (TrackEntity) -> Unit,
-        private val onEdit: (TrackEntity) -> Unit,
-        private val onDelete: (TrackEntity) -> Unit
+        private val onClick: (TrackDisplayInfo) -> Unit,
+        private val onEdit: (TrackDisplayInfo) -> Unit,
+        private val onDelete: (TrackDisplayInfo) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
-        private var currentTrack: TrackEntity? = null
+        private var currentTrack: TrackDisplayInfo? = null
 
         init {
             binding.root.setOnClickListener {
@@ -58,7 +58,7 @@ class TrackAdapter(
             }
         }
 
-        fun bind(track: TrackEntity) {
+        fun bind(track: TrackDisplayInfo) {
             currentTrack = track
             binding.trackName.text = "[${track.id}] ${track.label}"
             binding.trackDate.text = track.createdDateISO
@@ -67,13 +67,13 @@ class TrackAdapter(
     }
 }
 
-class TrackDiffCallback : DiffUtil.ItemCallback<TrackEntity>() {
-    override fun areItemsTheSame(oldItem: TrackEntity, newItem: TrackEntity):
+class TrackDiffCallback : DiffUtil.ItemCallback<TrackDisplayInfo>() {
+    override fun areItemsTheSame(oldItem: TrackDisplayInfo, newItem: TrackDisplayInfo):
         Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: TrackEntity, newItem: TrackEntity):
+    override fun areContentsTheSame(oldItem: TrackDisplayInfo, newItem: TrackDisplayInfo):
         Boolean {
         return oldItem == newItem
     }
