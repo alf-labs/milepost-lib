@@ -11,15 +11,14 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.viewModelScope
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.fragments.PermissionsFragment
 import com.alflabs.mpgpstrack.main.MainActivity
 import com.alflabs.mpgpstrack.main.GlobalState
 import com.alflabs.mpgpstrack.main.StatusData
-import com.alflabs.mpgpstrack.tracks.AppDatabase
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.TrackEntityDao
+import com.alflabs.mpgpstrack.tracks.TrackSummary
 import com.alflabs.mpgpstrack.tracks.trackSummary
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
@@ -34,8 +33,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.random.Random
 
 
@@ -46,6 +43,7 @@ class LocationService : Service() {
     companion object {
         const val EXTRA_RUNNING_MODE = "status"
         private const val NOTIFICATION_ID = 1000
+        private const val DISTANCE_ADD_THRESHOLD_METERS = 1.0f
     }
 
     @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -107,30 +105,48 @@ class LocationService : Service() {
 
         setInitialState(runningMode, notification, notificationManager)
 
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                for (location in locationResult.locations) {
-                    if (location != null) {
-                        onSingleLocationResult(location, notification, notificationManager)
-                    }
-                }
-            }
-        }
-
         scope.launch {
-            if (runningMode == StatusData.RECORD) {
-                val a = Random.nextInt(1, 1000) / 10f
-                val b = Random.nextInt(50, 1000) / 10f
-                var track = TrackEntity(
+            val track: TrackEntity? = when(runningMode) {
+                StatusData.RECORD -> TrackEntity(
                     label = "Record ${Random.nextInt(1000)}",
                     createdDateISO = Date().toString(),
-                    summary = trackSummary {
-                        mpMin = min(a, b)
-                        mpMax = max(a, b)
-                    },
                 )
-                val id = trackEntityDao.insert(track)
-                logger.d(TAG, "@@ RECORD to $id")
+                else -> null
+            }
+
+            val recordTempData: RecordTempData? = if (runningMode == StatusData.RECORD) {
+                val recordId = trackEntityDao.insert(track!!)
+                RecordTempData(
+                    recordId = recordId,
+                    locationDataListBuilder = LocationDataList.newBuilder(),
+                    locationUpdater = { builder -> scope.launch {
+                        trackEntityDao.updateLocationList(recordId, builder.build())
+                    } },
+                    summaryUpdater = { summary -> scope.launch {
+                        trackEntityDao.updateSummary(recordId, summary)
+                    } }
+                )
+            } else {
+                null
+            }
+
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    for (location in locationResult.locations) {
+                        if (location != null) {
+                            val ld = onSingleLocationResult(
+                                location,
+                                notification,
+                                notificationManager)
+                            recordTempData?.let {
+                                onRecordLocation(
+                                    it,
+                                    ld,
+                                    location)
+                            }
+                        }
+                    }
+                }
             }
 
             fusedLocationProviderClient.requestLocationUpdates(
@@ -173,7 +189,7 @@ class LocationService : Service() {
         location: Location,
         notification: NotificationCompat.Builder,
         notificationManager: NotificationManager,
-    ) {
+    ): LocationData {
         val ld = locationData {
             latLong = latLongData {
                 timestampMillis = location.time
@@ -203,5 +219,37 @@ class LocationService : Service() {
         val msg = "Location: ${location.latitude}, ${location.longitude}"
         val updatedNotification = notification.setContentText(msg)
         notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
+
+        return ld
+    }
+
+    private fun onRecordLocation(
+        data: RecordTempData,
+        locationData: LocationData,
+        location: Location,
+    ) {
+        var shouldAdd = data.locationDataListBuilder.locationsCount == 0
+        if (!shouldAdd && data.lastLocation != null) {
+            val distance = location.distanceTo(data.lastLocation!!)
+            shouldAdd = (distance > DISTANCE_ADD_THRESHOLD_METERS)
+        }
+
+        if (shouldAdd) {
+            data.locationDataListBuilder.addLocations(locationData)
+            data.lastLocation = location
+            data.locationUpdater(data.locationDataListBuilder)
+
+            data.summaryUpdater(trackSummary {
+                lengthM = data.locationDataListBuilder.locationsCount.toFloat()
+            })
+        }
     }
 }
+
+private data class RecordTempData(
+    val recordId: Long,
+    val locationDataListBuilder: LocationDataList.Builder,
+    val locationUpdater: (LocationDataList.Builder) -> Unit,
+    val summaryUpdater: (TrackSummary) -> Unit,
+    var lastLocation: Location? = null,
+)
