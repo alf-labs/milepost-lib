@@ -103,7 +103,7 @@ class LocationService : Service() {
 
         startForeground(NOTIFICATION_ID, notification.build())
 
-        setInitialState(runningMode, notification, notificationManager)
+        setNotification(notification, notificationManager)
 
         scope.launch {
             val track: TrackEntity? = when(runningMode) {
@@ -129,6 +129,12 @@ class LocationService : Service() {
             } else {
                 null
             }
+
+            globalState.locationStream.publishWith(locationPublisher)
+            globalState.updateStatus(
+                runningMode,
+                recordTempData?.recordId,
+                recordTempData?.locationDataListBuilder)
 
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
@@ -173,14 +179,11 @@ class LocationService : Service() {
         globalState.locationStream.remove(locationPublisher)
     }
 
-    private fun setInitialState(
-        status: StatusData,
+    private fun setNotification(
         notification: NotificationCompat.Builder,
         notificationManager: NotificationManager,
     ) {
-        globalState.locationStream.publishWith(locationPublisher)
         val statusText = "Location Service: Getting first fix"
-        globalState.updateStatus(status)
         val updatedNotification = notification.setContentText(statusText)
         notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
     }

@@ -12,6 +12,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
+import com.alflabs.mpgpstrack.fragments.tracks.TracksFragmentDirections
 import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationService
 import com.alflabs.mpgpstrack.main.GlobalState
@@ -42,6 +43,7 @@ open class SensorsFragment: Fragment() {
     internal open val runningMode = StatusData.SENSOR
     internal open fun actionToPermissionsDlg(): NavDirections =
         SensorsFragmentDirections.actionSensorsToPermissionsDlg()
+    internal open fun onStopButton(trackId: Long?) {}
 
     private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
     // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
@@ -110,7 +112,9 @@ open class SensorsFragment: Fragment() {
 
         binding.stopButton.setOnClickListener {
             Log.d(TAG, "On click STOP button")
+            val trackId = globalState.currentTrackId
             requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
+            onStopButton(trackId)
         }
 
         updateButtons(globalState.status)

@@ -82,7 +82,7 @@ class ReviewFragment : Fragment() {
         ))
 
         val firstTS = locationsList[0].latLong.timestampMillis
-        var distResults = FloatArray(1)
+        val distResults = FloatArray(1)
         var distanceMeters = 0f
         var lastLatLong: LatLongData? = null
         for (location in locationsList) {
@@ -94,8 +94,7 @@ class ReviewFragment : Fragment() {
                     it.latitude, it.longitude,
                     newLatLong.latitude, newLatLong.longitude,
                     distResults)
-                // distanceMeters += distResults[0] // TBD
-                distanceMeters = distResults[0] // RM DEBUG
+                distanceMeters += distResults[0]
             }
 
             result.add(ReviewLocationData(

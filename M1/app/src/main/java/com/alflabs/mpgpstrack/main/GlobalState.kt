@@ -1,6 +1,7 @@
 package com.alflabs.mpgpstrack.main
 
 import com.alflabs.mpgpstrack.location.LocationData
+import com.alflabs.mpgpstrack.location.LocationDataList
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.IStream
 import com.alflabs.rx.Publishers
@@ -19,16 +20,27 @@ class GlobalState @Inject constructor(
     val statusStream: IStream<StatusData?> = Streams.stream()
     val status: StatusData get() = _status ?: StatusData.STOPPED
 
+    var currentTrackId: Long? = null
+        private set
+    var currentLocationList: LocationDataList.Builder? = null
+        private set
+
     private var _status: StatusData? = null
     private val statusPublisher: IPublisher<StatusData?> = Publishers.latest()
 
 
-    fun updateStatus(status: StatusData) {
+    fun updateStatus(
+        status: StatusData,
+        trackId: Long? = null,
+        locationDataListBuilder: LocationDataList.Builder? = null
+    ) {
         if (_status == null) {
             logger.d(TAG, "GlobalState initialized: $this")
             statusStream.publishWith(statusPublisher)
         }
         _status = status
+        currentTrackId = trackId
+        currentLocationList = locationDataListBuilder
         statusPublisher.publish(status)
     }
 }
