@@ -12,7 +12,6 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
-import com.alflabs.mpgpstrack.fragments.tracks.TracksFragmentDirections
 import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationService
 import com.alflabs.mpgpstrack.main.GlobalState
