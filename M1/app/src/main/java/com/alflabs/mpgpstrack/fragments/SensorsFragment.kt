@@ -192,10 +192,12 @@ open class SensorsFragment: Fragment() {
         updateButtons(globalState.status) // TBD FIXME why is first status never received?
         if (value == null) return
 
+        val numPoints = globalState.currentLocationList?.locationsCount ?: 0
+
         val latLong = value.latLong
         binding.locationText.text = String.format(
             Locale.US,
-            "%.5f, %.5f",   // matches precision of google maps display
+            "%.5f, %.5f  # $numPoints",   // matches precision of google maps display
             latLong.latitude, latLong.longitude)
 
         val locationAccText = binding.locationAccText

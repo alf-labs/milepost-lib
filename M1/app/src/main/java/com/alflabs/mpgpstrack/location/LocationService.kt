@@ -44,6 +44,7 @@ class LocationService : Service() {
         const val EXTRA_RUNNING_MODE = "status"
         private const val NOTIFICATION_ID = 1000
         private const val DISTANCE_ADD_THRESHOLD_METERS = 10.0f
+        private const val SPEED_THRESHOLD_MPS = 0.25f
     }
 
     @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -232,16 +233,36 @@ class LocationService : Service() {
         location: Location,
     ) {
         val n = data.locationDataListBuilder.locationsCount
+        // Always add the first point.
         var shouldAdd = n == 0
         var shouldReplace = -1
 
         if (!shouldAdd && data.lastLocation != null) {
             val distance = location.distanceTo(data.lastLocation!!)
+            // New point added if we're above the distance threshold
             shouldAdd = (distance > DISTANCE_ADD_THRESHOLD_METERS)
+
             data.lastLocation?.let { lastLoc ->
                 if (distance <= lastLoc.accuracy
                         && location.accuracy < lastLoc.accuracy) {
+                    // If the distance delta is below the last point accuracy,
+                    // and the accuracy got better,
+                    // then consider it a better replacement for the same point.
                     shouldReplace = n - 1
+                } else if (!shouldAdd) {
+                    // If the point is closer than the threshold distance but the speed
+                    // is valid and has fallen under a 1 m/s threshold, consider adding it.
+                    var newSpeed = if (location.hasSpeed()) location.speed else -1f
+                    var lastSpeed = if (lastLoc.hasSpeed()) lastLoc.speed else -1f
+                    if (location.hasSpeedAccuracy() && newSpeed < location.speedAccuracyMetersPerSecond) {
+                        newSpeed = -1f
+                    }
+                    if (lastLoc.hasSpeedAccuracy() && lastSpeed < lastLoc.speedAccuracyMetersPerSecond) {
+                        lastSpeed = -1f
+                    }
+                    shouldAdd = lastSpeed > SPEED_THRESHOLD_MPS
+                        && newSpeed >= 0
+                        && newSpeed < SPEED_THRESHOLD_MPS
                 }
             }
         }
