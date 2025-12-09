@@ -25,6 +25,7 @@ class ReviewFragment : Fragment() {
     private val binding get() = _binding!!
     private val fragmentArgs: ReviewFragmentArgs by navArgs()
     private val viewModel: ReviewViewModel by viewModels()
+    private lateinit var locationList: List<ReviewLocationData>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,10 +56,18 @@ class ReviewFragment : Fragment() {
             binding.label.text = track?.label ?: "No track found"
             binding.summary.text = track?.summary?.toString() ?: "No summary found"
 
-            adapter.submitList(convert(track?.locationList))
+            locationList = convert(track?.locationList)
+            adapter.submitList(locationList)
         }
 
         viewModel.loadTrack(fragmentArgs.trackId)
+
+        binding.exportButton.setOnClickListener {
+            val exportFile = Exporter.createCsvExportFile(requireContext(), locationList)
+            exportFile?.let {
+                Exporter.shareFile(requireContext(), it)
+;            }
+        }
     }
 
     override fun onDestroyView() {
