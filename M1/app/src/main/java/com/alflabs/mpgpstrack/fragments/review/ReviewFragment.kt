@@ -71,7 +71,7 @@ class ReviewFragment : Fragment() {
             val exportFile = Exporter.createCsvExportFile(requireContext(), trackEntity)
             exportFile?.let {
                 Exporter.shareFile(requireContext(), it)
-;            }
+            }
         }
     }
 

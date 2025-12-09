@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.text.color
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
@@ -23,6 +24,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -192,7 +194,8 @@ open class SensorsFragment: Fragment() {
         updateButtons(globalState.status) // TBD FIXME why is first status never received?
         if (value == null) return
 
-        val numPoints = globalState.currentLocationList?.locationsCount ?: 0
+        val recordedLocationList = globalState.currentLocationList
+        val numPoints = recordedLocationList?.locationsCount ?: 0
 
         val latLong = value.latLong
         binding.locationText.text = String.format(
@@ -212,7 +215,29 @@ open class SensorsFragment: Fragment() {
         googleMap?.let { map ->
             val position = LatLng(latLong.latitude, latLong.longitude)
             map.clear()
+
+            // Compute the path of last 10 locations recorded
+            // Note that the last location recorded may not match the current LocationData.
+            recordedLocationList?.let {
+                val locations = it.locationsList ?: emptyList()
+                val recentLocations = locations.takeLast(10)
+                if (recentLocations.size > 1) {
+                    val lineColor = requireContext().getColor(R.color.colorPrimaryDark)
+                    val polylineOptions = PolylineOptions()
+                        .color(lineColor)
+                        .width(10f)
+
+                    for (location in recentLocations) {
+                        polylineOptions.add(
+                            LatLng(location.latLong.latitude, location.latLong.longitude))
+                    }
+                    map.addPolyline(polylineOptions)
+                }
+            }
+
+            // Place current marker
             map.addMarker(MarkerOptions().position(position))
+
             val update = if (setInitialMapZoom) {
                 setInitialMapZoom = false
                 CameraUpdateFactory.newLatLngZoom(position, MAPS_ZOOM_LEVEL)
