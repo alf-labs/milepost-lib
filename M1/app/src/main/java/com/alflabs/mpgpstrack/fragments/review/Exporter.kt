@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.content.FileProvider
+import com.alflabs.mpgpstrack.tracks.TrackEntity
 import java.io.File
 import java.io.FileOutputStream
 
@@ -13,20 +14,23 @@ import java.io.FileOutputStream
 object Exporter {
     private val TAG = Exporter::class.java.simpleName
 
-    fun createCsvExportFile(context: Context, locationDataList: List<ReviewLocationData>): File? {
+    fun createCsvExportFile(context: Context, trackEntity: TrackEntity?): File? {
         Log.d(TAG, "createCsvExportFile")
         val csvHeader = "timestamp_millis,latitude,longitude,speed_mps\n"
+
+        if (trackEntity == null) {
+            return null
+        }
+        val locationList = trackEntity.locationList ?: return null
 
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "location_export_${System.currentTimeMillis()}.csv")
+            val file = File(cacheDir, "track_${trackEntity.uuid}.csv")
 
             FileOutputStream(file).use {
                 it.write(csvHeader.toByteArray())
-                locationDataList
-                    .mapNotNull { it.data }
-                    .forEach { data ->
+                locationList.locationsList.forEach { data ->
                         val ll = data.latLong
                         val sb = data.speedBearing
                         val line = "${ll.timestampMillis},${ll.latitude},${ll.longitude},${sb?.speedMps ?: ""}\n"

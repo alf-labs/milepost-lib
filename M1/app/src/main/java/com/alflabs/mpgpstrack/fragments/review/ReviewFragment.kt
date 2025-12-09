@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.ReviewFragmentBinding
 import com.alflabs.mpgpstrack.location.LatLongData
 import com.alflabs.mpgpstrack.location.LocationDataList
+import com.alflabs.mpgpstrack.tracks.TrackEntity
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -25,7 +26,8 @@ class ReviewFragment : Fragment() {
     private val binding get() = _binding!!
     private val fragmentArgs: ReviewFragmentArgs by navArgs()
     private val viewModel: ReviewViewModel by viewModels()
-    private lateinit var locationList: List<ReviewLocationData>
+    private var trackEntity: TrackEntity? = null
+    private lateinit var reviewList: List<ReviewLocationData>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,14 +58,17 @@ class ReviewFragment : Fragment() {
             binding.label.text = track?.label ?: "No track found"
             binding.summary.text = track?.summary?.toString() ?: "No summary found"
 
-            locationList = convert(track?.locationList)
-            adapter.submitList(locationList)
+            trackEntity = track
+            reviewList = convert(track?.locationList)
+            adapter.submitList(reviewList)
+            binding.exportButton.isEnabled = trackEntity != null
         }
 
         viewModel.loadTrack(fragmentArgs.trackId)
 
+        binding.exportButton.isEnabled = trackEntity != null
         binding.exportButton.setOnClickListener {
-            val exportFile = Exporter.createCsvExportFile(requireContext(), locationList)
+            val exportFile = Exporter.createCsvExportFile(requireContext(), trackEntity)
             exportFile?.let {
                 Exporter.shareFile(requireContext(), it)
 ;            }
