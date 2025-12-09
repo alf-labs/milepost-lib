@@ -5,18 +5,28 @@ import android.content.Intent
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.alflabs.mpgpstrack.tracks.TrackEntity
+import com.alflabs.mpgpstrack.utils.Units
 import java.io.File
 import java.io.FileOutputStream
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
+/*
+    Export a GPS track.
 
-// ... inside your data handling class
+    Google My Maps supported formats:
+    https://support.google.com/mymaps/answer/3024836
+    with a friendly description here including some CSV examples:
+    https://www.google.com/earth/outreach/learn/visualize-your-data-on-a-custom-map-using-google-my-maps/
+
+*/
 
 object Exporter {
     private val TAG = Exporter::class.java.simpleName
 
     fun createCsvExportFile(context: Context, trackEntity: TrackEntity?): File? {
         Log.d(TAG, "createCsvExportFile")
-        val csvHeader = "timestamp_millis,latitude,longitude,speed_mps\n"
+        val csvHeader = "isoDateTime,latitude,longitude,speed_mph\n"
 
         if (trackEntity == null) {
             return null
@@ -28,13 +38,20 @@ object Exporter {
             val cacheDir = context.cacheDir
             val file = File(cacheDir, "track_${trackEntity.uuid}.csv")
 
-            FileOutputStream(file).use {
-                it.write(csvHeader.toByteArray())
+            val formatter = DateTimeFormatter.ISO_INSTANT
+
+            FileOutputStream(file).use { fos ->
+                fos.write(csvHeader.toByteArray())
                 locationList.locationsList.forEach { data ->
                         val ll = data.latLong
                         val sb = data.speedBearing
-                        val line = "${ll.timestampMillis},${ll.latitude},${ll.longitude},${sb?.speedMps ?: ""}\n"
-                        it.write(line.toByteArray())
+                        val speed = if (sb != null) Units.mps_to_mph(sb.speedMps) else ""
+
+                        val instant = Instant.ofEpochMilli(ll.timestampMillis)
+                        val isoDT = formatter.format(instant)
+
+                        val line = "${isoDT},${ll.latitude},${ll.longitude},${speed}\n"
+                        fos.write(line.toByteArray())
                     }
             }
             file // Return the created file
@@ -63,6 +80,10 @@ object Exporter {
 
         // Start the activity to show the share sheet
         context.startActivity(Intent.createChooser(shareIntent, "Export Location Track"))
+
+        // TBD Questions:
+        // - Can I know when the chooser finished?
+        // - How do I cleanup the temp files?
     }
 }
 
