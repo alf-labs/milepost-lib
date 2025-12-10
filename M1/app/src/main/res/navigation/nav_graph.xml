@@ -126,7 +126,7 @@
 
     <fragment
             android:id="@+id/nav_settings"
-            android:name="com.alflabs.mpgpstrack.fragments.settings.SettingsFragment"
+            android:name="com.alflabs.mpgpstrack.fragments.SettingsFragment"
             android:label="Settings"
             tools:layout="@layout/settings_fragment">
     </fragment>

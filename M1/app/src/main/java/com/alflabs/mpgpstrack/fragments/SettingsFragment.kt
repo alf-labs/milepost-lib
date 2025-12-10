@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.fragments.settings
+package com.alflabs.mpgpstrack.fragments
 
 import android.os.Bundle
 import android.util.Log
@@ -41,7 +41,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 /**
  * A PreferenceDataStore implementation that stores preferences in a Jetpack Preferences DataStore.
- * Insipired by discussions from https://stackoverflow.com/questions/65396998
+ * Inspired by discussions from https://stackoverflow.com/questions/65396998
  */
 class AdapterPreferenceDataStore(
     val dataStore: DataStore<Preferences>,
