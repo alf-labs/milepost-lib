@@ -4,18 +4,23 @@
     <PreferenceCategory app:title="Location Settings">
 
         <SwitchPreferenceCompat
-            app:key="use_imperial_units"
-            app:title="Use Imperial Units" />
+                app:key="use_imperial_units"
+                app:title="Use Imperial Units"
+                />
 
         <EditTextPreference
-            app:key="threshold_distance_meters"
-            app:title="Threshold Distance (meters)"
-            app:dialogTitle="Set threshold distance in meters" />
+                app:key="threshold_distance_meters"
+                app:title="Threshold Distance (meters)"
+                app:dialogTitle="Set threshold distance in meters"
+                app:useSimpleSummaryProvider="true"
+                />
 
         <EditTextPreference
-            app:key="threshold_speed_mps"
-            app:title="Threshold Speed (m/s)"
-            app:dialogTitle="Set threshold speed in meters per second" />
+                app:key="threshold_speed_mps"
+                app:title="Threshold Speed (m/s)"
+                app:dialogTitle="Set threshold speed in meters per second"
+                app:useSimpleSummaryProvider="true"
+                />
 
     </PreferenceCategory>
 

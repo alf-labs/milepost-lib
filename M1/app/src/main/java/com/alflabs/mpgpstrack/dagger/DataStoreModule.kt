@@ -2,9 +2,8 @@ package com.alflabs.mpgpstrack.dagger
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStore
-import com.alflabs.mpgpstrack.main.AppSettingsSerializer
-import com.alflabs.mpgpstrack.settings.AppSettings
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,20 +15,17 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-    private const val APP_SETTINGS_FILE_NAME = "app_settings.pb"
+    private const val APP_SETTINGS_FILE_NAME = "app_settings.xml"
 
     // Note: this creates the DataStore wrapper around the pb file.
     // All accesses should be done via this singleton instance to ensure file consistency.
     // (the weird Context. syntax is because this is really a Kotlin extension function
     // that takes a Context as argument).
-    private val Context.appSettingsDataStore: DataStore<AppSettings> by dataStore(
-        fileName = APP_SETTINGS_FILE_NAME,
-        serializer = AppSettingsSerializer
-    )
+    private val Context.appSettingsDataStore by preferencesDataStore(APP_SETTINGS_FILE_NAME)
 
     @Provides
     @Singleton
-    fun provideAppSettingsDataStore(@ApplicationContext context: Context): DataStore<AppSettings> {
+    fun provideAppSettingsDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
         return context.appSettingsDataStore
     }
 }

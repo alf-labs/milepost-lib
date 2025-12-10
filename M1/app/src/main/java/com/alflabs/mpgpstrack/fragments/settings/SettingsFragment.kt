@@ -1,26 +1,33 @@
 package com.alflabs.mpgpstrack.fragments.settings
 
 import android.os.Bundle
+import android.util.Log
 import androidx.datastore.core.DataStore
-import androidx.fragment.app.viewModels
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceDataStore
 import androidx.preference.PreferenceFragmentCompat
 import com.alflabs.mpgpstrack.R
-import com.alflabs.mpgpstrack.settings.AppSettings
-import com.alflabs.mpgpstrack.settings.copy
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
-    private val TAG = SettingsFragment::class.java.simpleName
+    companion object {
+        internal val TAG = SettingsFragment::class.java.simpleName
+    }
 
-    @Inject lateinit var appSettingsDataStore: DataStore<AppSettings>
+    @Inject lateinit var appSettingsDataStore: DataStore<Preferences>
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.preferences, rootKey)
@@ -33,137 +40,64 @@ class SettingsFragment : PreferenceFragmentCompat() {
 }
 
 /**
- * A PreferenceDataStore implementation that stores preferences in a Jetpack Proto DataStore.
+ * A PreferenceDataStore implementation that stores preferences in a Jetpack Preferences DataStore.
+ * Insipired by discussions from https://stackoverflow.com/questions/65396998
  */
 class AdapterPreferenceDataStore(
-    val appSettings: DataStore<AppSettings>,
+    val dataStore: DataStore<Preferences>,
     val lifecycleScope: LifecycleCoroutineScope
 ) : PreferenceDataStore() {
 
-    override fun putBoolean(key: String, value: Boolean) {
+    private fun <T> putPreference(key: Preferences.Key<T>, value: T?) {
         lifecycleScope.launch {
-            appSettings.updateData { prefs ->
-                when (key) {
-                    "use_imperial_units" -> prefs.copy {
-                        locationSettings = locationSettings.copy {
-                            useImperialUnits = value
-                        }
-                    }
-                    else -> prefs
+            dataStore.edit {
+                Log.d(SettingsFragment.TAG, "PUT preference $key with value $value")
+                if (value == null) {
+                    it.remove(key)
+                } else {
+                    it[key] = value
                 }
             }
         }
     }
 
-    override fun getBoolean(key: String, defValue: Boolean): Boolean {
-        var storedValue = defValue
-        runBlocking {
-            lifecycleScope.launch {
-                val prefs = appSettings.data.first()
-                storedValue = when (key) {
-                    "use_imperial_units" -> if (prefs.locationSettings.hasUseImperialUnits()) {
-                        prefs.locationSettings.useImperialUnits
-                    } else {
-                        defValue
-                    }
-                    else -> defValue
-                }
-            }.join()
+    private fun <T> getBlocking(
+        key: Preferences.Key<T>,
+        defValue: T
+    ): T {
+        Log.d(SettingsFragment.TAG, "GET preference $key")
+        val value = runBlocking {
+            dataStore.data.map { it[key] ?: defValue }.first()
         }
-        return storedValue
-    }
-
-    override fun putFloat(key: String?, value: Float) {
-        lifecycleScope.launch {
-            appSettings.updateData { prefs ->
-                when (key) {
-                    "threshold_distance_meters" -> prefs.copy {
-                        locationSettings = locationSettings.copy {
-                            thresholdDistanceMeters = value
-                        }
-                    }
-                    "threshold_speed_mps" -> prefs.copy {
-                        locationSettings = locationSettings.copy {
-                            thresholdSpeedMps = value
-                        }
-                    }
-                    else -> prefs
-                }
-            }
-        }
-    }
-
-    override fun getFloat(key: String?, defValue: Float): Float {
-        var storedValue = defValue
-        runBlocking {
-            lifecycleScope.launch {
-                val prefs = appSettings.data.first()
-                storedValue = when (key) {
-                    "threshold_distance_meters" -> if (prefs.locationSettings.hasThresholdDistanceMeters()) {
-                        prefs.locationSettings.thresholdDistanceMeters
-                    } else {
-                        defValue
-                    }
-                    "threshold_speed_mps" -> if (prefs.locationSettings.hasThresholdSpeedMps()) {
-                        prefs.locationSettings.thresholdSpeedMps
-                    } else {
-                        defValue
-                    }
-                    else -> defValue
-                }
-            }.join()
-        }
-        return storedValue
+        Log.d(SettingsFragment.TAG, "GET preference $key --> value $value")
+        return value
     }
 
     override fun putString(key: String, value: String?) {
-        lifecycleScope.launch {
-            appSettings.updateData { prefs ->
-                // Map the key to the correct field in your proto
-                when (key) {
-                    // "placeholder" -> prefs.toBuilder().setPlaceholder(value).build()
-                    else -> prefs
-                }
-            }
-        }
+        putPreference(stringPreferencesKey(key), value)
     }
 
-    override fun getString(key: String, defValue: String?): String? {
-        var storedValue = defValue
-        runBlocking {
-            lifecycleScope.launch {
-                val prefs = appSettings.data.first()
-                storedValue = when (key) {
-                    // "placeholder" -> prefs.placeholder.ifEmpty { defValue }
-                    else -> defValue
-                }
-            }.join()
-        }
-        return storedValue
+    override fun getString(key: String, defValue: String?): String =
+        getBlocking(stringPreferencesKey(key), defValue ?: "")
+
+    override fun putBoolean(key: String, value: Boolean) {
+        putPreference(booleanPreferencesKey(key), value)
     }
+
+    override fun getBoolean(key: String, defValue: Boolean): Boolean =
+        getBlocking(booleanPreferencesKey(key), defValue)
 
     override fun putInt(key: String, value: Int) {
-        lifecycleScope.launch {
-            appSettings.updateData { prefs ->
-                when (key) {
-                    // "placeholder" -> prefs.toBuilder().setPlaceholder(value).build()
-                    else -> prefs
-                }
-            }
-        }
+        putPreference(intPreferencesKey(key), value)
     }
 
-    override fun getInt(key: String, defValue: Int): Int {
-        var storedValue = defValue
-        runBlocking {
-            lifecycleScope.launch {
-                val prefs = appSettings.data.first()
-                storedValue = when (key) {
-                    // "placeholder" -> if (prefs.hasPlaceholder()) prefs.placeholder else defValue
-                    else -> defValue
-                }
-            }.join()
-        }
-        return storedValue
+    override fun getInt(key: String, defValue: Int): Int =
+        getBlocking(intPreferencesKey(key), defValue)
+
+    override fun putFloat(key: String, value: Float) {
+        putPreference(floatPreferencesKey(key), value)
     }
+
+    override fun getFloat(key: String, defValue: Float): Float =
+        getBlocking(floatPreferencesKey(key), defValue)
 }
