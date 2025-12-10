@@ -18,6 +18,10 @@ import javax.inject.Singleton
 object DataStoreModule {
     private const val APP_SETTINGS_FILE_NAME = "app_settings.pb"
 
+    // Note: this creates the DataStore wrapper around the pb file.
+    // All accesses should be done via this singleton instance to ensure file consistency.
+    // (the weird Context. syntax is because this is really a Kotlin extension function
+    // that takes a Context as argument).
     private val Context.appSettingsDataStore: DataStore<AppSettings> by dataStore(
         fileName = APP_SETTINGS_FILE_NAME,
         serializer = AppSettingsSerializer
