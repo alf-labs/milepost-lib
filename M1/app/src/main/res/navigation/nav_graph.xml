@@ -124,12 +124,11 @@
                 android:defaultValue="true" />
     </dialog>
 
-    <!-- TBD placeholder -->
     <fragment
             android:id="@+id/nav_settings"
-            android:name="com.alflabs.mpgpstrack.fragments.PlaceholderFragment"
+            android:name="com.alflabs.mpgpstrack.fragments.SettingsFragment"
             android:label="Settings"
-            tools:layout="@layout/placeholder_fragment">
+            tools:layout="@layout/sensors_fragment">
     </fragment>
 
 </navigation>
