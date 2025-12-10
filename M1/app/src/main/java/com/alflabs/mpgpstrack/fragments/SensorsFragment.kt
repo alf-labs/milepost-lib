@@ -2,12 +2,13 @@ package com.alflabs.mpgpstrack.fragments
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.text.color
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
@@ -20,9 +21,11 @@ import com.alflabs.mpgpstrack.main.StatusData
 import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
+import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,6 +57,7 @@ open class SensorsFragment: Fragment() {
     private val statusSubscriber: ISubscriber<in StatusData?> =
         ISubscriber<StatusData?> { _, event -> onStatusChanged(event) }
 
+    @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
 
     private var setInitialMapZoom = true
@@ -69,7 +73,7 @@ open class SensorsFragment: Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.d(TAG, "onCreateView")
+        logger.d(TAG, "onCreateView")
         _binding = SensorsFragmentBinding.inflate(inflater, container, false)
         return binding.root
 
@@ -77,7 +81,7 @@ open class SensorsFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d(TAG, "onViewCreated")
+        logger.d(TAG, "onViewCreated")
 
         accuracyColorMissing = requireContext().getColor(R.color.accMissing)
         accuracyColorPresent = requireContext().getColor(R.color.accPresent)
@@ -90,18 +94,18 @@ open class SensorsFragment: Fragment() {
         }
 
         binding.startButton.setOnClickListener {
-            Log.d(TAG, "On click START button")
+            logger.d(TAG, "On click START button")
 
             // Sanity check:
             // - If the global state is already started, we should not be here.
             // - If mode cannot start, we should not be here.
             if (globalState.status.start || !runningMode.start) {
-                Log.d(TAG, "START --> already started / cannot start")
+                logger.d(TAG, "START --> already started / cannot start")
                 return@setOnClickListener
             }
 
             if (!PermissionsFragment.allPermissionsGranted(requireContext())) {
-                Log.d(TAG, "START --> request permissions")
+                logger.d(TAG, "START --> request permissions")
                 findNavController().navigate(actionToPermissionsDlg())
             } else {
                 setInitialMapZoom = true
@@ -112,7 +116,7 @@ open class SensorsFragment: Fragment() {
         }
 
         binding.stopButton.setOnClickListener {
-            Log.d(TAG, "On click STOP button")
+            logger.d(TAG, "On click STOP button")
             val trackId = globalState.currentTrackId
             requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
             onStopButton(trackId)
@@ -123,12 +127,13 @@ open class SensorsFragment: Fragment() {
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync { map ->
             googleMap = map
+            googleMap?.let { applyMapStyle(it) }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume")
+        logger.d(TAG, "onResume")
         binding.mapView.onResume()
         globalState.statusStream.subscribe(AndroidSchedulers.mainThread(), statusSubscriber)
         globalState.locationStream.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
@@ -137,7 +142,7 @@ open class SensorsFragment: Fragment() {
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause")
+        logger.d(TAG, "onPause")
         binding.mapView.onPause()
         globalState.locationStream.remove(locationSubscriber)
         globalState.statusStream.remove(statusSubscriber)
@@ -150,7 +155,7 @@ open class SensorsFragment: Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d(TAG, "onDestroyView")
+        logger.d(TAG, "onDestroyView")
         binding.mapView.onDestroy()
         _binding = null
     }
@@ -159,16 +164,16 @@ open class SensorsFragment: Fragment() {
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<out String>,
                                             grantResults: IntArray) {
-        Log.d(TAG, "onRequestPermissionsResult: $requestCode, $permissions, $grantResults")
+        logger.d(TAG, "onRequestPermissionsResult: $requestCode, $permissions, $grantResults")
         if (requestCode == PERM_REQUEST_CODE
             && grantResults.isNotEmpty()
             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "onRequestPermissionsResult --> GRANTED")
+            logger.d(TAG, "onRequestPermissionsResult --> GRANTED")
 
             requireActivity()
                 .startForegroundService(Intent(requireContext(), LocationService::class.java))
         } else {
-            Log.d(TAG, "onRequestPermissionsResult --> NOT granted")
+            logger.d(TAG, "onRequestPermissionsResult --> NOT granted")
         }
     }
 
@@ -179,18 +184,45 @@ open class SensorsFragment: Fragment() {
         binding.stopButton.isEnabled = !runningState.stop
     }
 
+    private fun applyMapStyle(map: GoogleMap) {
+        // Google Maps is stylized using a JSON file. Doc with night style examples:
+        // https://developers.google.com/maps/documentation/javascript/examples/style-array
+
+        // Only apply dark theme when in night mode
+        val configuration = requireContext().resources.configuration
+        val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (currentNightMode != Configuration.UI_MODE_NIGHT_YES) {
+            return
+        }
+
+        try {
+            // Customise the styling of the base map using a JSON object defined
+            // in a raw resource file.
+            val success = map.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    requireContext(), R.raw.map_style_night
+                )
+            )
+            if (!success) {
+                logger.d(TAG, "Map Style parsing failed.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            logger.d(TAG, "Map Style: Can't find style. Error: ", e)
+        }
+    }
+
     fun accuracyColor(value: Float?) : Int =
         if (value == null) accuracyColorMissing else accuracyColorPresent
 
     private fun onStatusChanged(state: StatusData?) {
-        Log.d(TAG, "onStatusChanged: $state")
+        logger.d(TAG, "onStatusChanged: $state")
         if (state == null) return
         binding.statusText.text = state.label
         updateButtons(state)
     }
 
     fun onLocationChanged(value: LocationData?) {
-        Log.d(TAG, "onLocationChanged: $value")
+        logger.d(TAG, "onLocationChanged: $value")
         updateButtons(globalState.status) // TBD FIXME why is first status never received?
         if (value == null) return
 
