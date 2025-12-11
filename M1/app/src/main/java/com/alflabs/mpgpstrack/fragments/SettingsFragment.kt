@@ -9,12 +9,12 @@ import android.view.ViewGroup
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.EditTextPreference
-import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.utils.Units
 import dagger.hilt.android.AndroidEntryPoint
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -35,33 +35,31 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         thresholdDistancePref =
             findPreference<ImperialEditTextPreference>(AppSettings.THRESHOLD_DISTANCE_METERS.name)
-
-        thresholdSpeedPref =
-            findPreference<ImperialEditTextPreference>(AppSettings.THRESHOLD_SPEED_MPS.name)
-
-        thresholdDistancePref?.summaryProvider =
-            Preference.SummaryProvider<EditTextPreference> { preference ->
+            ?.withSummaryProvider { preference ->
                 val text = preference.text
                 val value = text?.toFloatOrNull()
                 if (value == null) {
                     "Invalid number: $text"
                 } else if (useImperialUnits) {
-                    String.format("%,.1f meters (%,.3f miles)", value, Units.m_to_miles(value))
+                    "${prettyFloat(value, 3)} meters (${prettyFloat(Units.m_to_miles(value), 3)} miles)"
+                } else if (value >= 1000) {
+                    "${prettyFloat(value, 3)} meters (${prettyFloat(Units.m_to_km(value), 3)} km)"
                 } else {
-                    String.format("%,.1f meters (%,.3f km)", value, Units.m_to_km(value))
+                    "${prettyFloat(value, 3)} meters"
                 }
             }
 
-        thresholdSpeedPref?.summaryProvider =
-            Preference.SummaryProvider<EditTextPreference> { preference ->
+        thresholdSpeedPref =
+            findPreference<ImperialEditTextPreference>(AppSettings.THRESHOLD_SPEED_MPS.name)
+            ?.withSummaryProvider { preference ->
                 val text = preference.text
                 val value = text?.toFloatOrNull()
                 if (value == null) {
                     "Invalid number: $text"
                 } else if (useImperialUnits) {
-                    String.format("%,.1f m/s (%,.3f mph)", value, Units.mps_to_mph(value))
+                    "${prettyFloat(value, 3)} m/s (${prettyFloat(Units.mps_to_mph(value), 3)} MPH)"
                 } else {
-                    String.format("%,.1f m/s (%,.3f km/h)", value, Units.mps_to_mph(value))
+                    "${prettyFloat(value, 3)} m/s (${prettyFloat(Units.mps_to_kmh(value), 3)} km/h)"
                 }
             }
     }
@@ -88,19 +86,51 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         return view
     }
+
+    /** Formats the float to the given precision and removes all trailing zeroes. */
+    fun prettyFloat(value: Float, precision: Int): String {
+        val s = String.format("%.${precision}f", value)
+
+        // First implementation:
+        // val suffix = ".${"0".repeat(precision)}"
+        // if (s.endsWith(suffix)) {
+        //     s = s.dropLast(suffix.length)
+        // }
+
+        // Second implementation:
+        return BigDecimal(s).stripTrailingZeros().toPlainString()
+    }
 }
 
-class ImperialEditTextPreference @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
-) : EditTextPreference(context, attrs, defStyleAttr, defStyleRes) {
+class ImperialEditTextPreference : EditTextPreference {
+    constructor(context: Context,
+                attrs: AttributeSet?,
+                defStyleAttr: Int,
+                defStyleRes: Int,
+    ) : super(context, attrs, defStyleAttr, defStyleRes)
+
+    constructor(context: Context,
+                attrs: AttributeSet?,
+                defStyleAttr: Int,
+    ) : super(context, attrs, defStyleAttr)
+
+    constructor(context: Context,
+                attrs: AttributeSet?,
+    ) : super(context, attrs)
+
+    constructor(context: Context,
+    ) : super(context)
+
     private var useImperialUnits: Boolean = false
 
     fun setUseImperialUnits(useImperialUnits: Boolean) {
         this.useImperialUnits = useImperialUnits
         notifyChanged()
+    }
+
+    fun withSummaryProvider(summaryProvider: SummaryProvider<EditTextPreference>): ImperialEditTextPreference {
+        this.summaryProvider = summaryProvider
+        return this
     }
 
 }

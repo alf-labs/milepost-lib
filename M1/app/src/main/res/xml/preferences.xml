@@ -18,7 +18,6 @@
                 app:key="threshold_speed_mps"
                 app:title="Threshold Speed (m/s)"
                 app:dialogTitle="Set threshold speed in meters per second"
-                app:useSimpleSummaryProvider="true"
                 />
 
     </PreferenceCategory>

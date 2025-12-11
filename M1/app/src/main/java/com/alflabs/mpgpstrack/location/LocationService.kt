@@ -43,7 +43,7 @@ class LocationService : Service() {
     companion object {
         const val EXTRA_RUNNING_MODE = "status"
         private const val NOTIFICATION_ID = 1000
-        private const val DISTANCE_ADD_THRESHOLD_METERS = 10.0f
+        private const val DISTANCE_ADD_THRESHOLD_METERS = 100.0f
         private const val SPEED_THRESHOLD_MPS = 0.25f
     }
 

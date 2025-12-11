@@ -38,7 +38,7 @@ class AppSettings @Inject constructor(
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
 
-        const val THRESHOLD_DISTANCE_METERS_DEFAULT = 250.0f
+        const val THRESHOLD_DISTANCE_METERS_DEFAULT = 100.0f
         const val THRESHOLD_SPEED_MPS_DEFAULT = 0.25f
     }
 
