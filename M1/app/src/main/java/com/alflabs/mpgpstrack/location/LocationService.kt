@@ -13,6 +13,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.fragments.PermissionsFragment
+import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.main.MainActivity
 import com.alflabs.mpgpstrack.main.GlobalState
 import com.alflabs.mpgpstrack.main.StatusData
@@ -43,8 +44,6 @@ class LocationService : Service() {
     companion object {
         const val EXTRA_RUNNING_MODE = "status"
         private const val NOTIFICATION_ID = 1000
-        private const val DISTANCE_ADD_THRESHOLD_METERS = 100.0f
-        private const val SPEED_THRESHOLD_MPS = 0.25f
     }
 
     @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -52,8 +51,11 @@ class LocationService : Service() {
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
     @Inject lateinit var trackEntityDao: TrackEntityDao
+    @Inject lateinit var appSettings: AppSettings
 
     private lateinit var locationCallback: LocationCallback
+    private var thresholdDistanceMeters = AppSettings.THRESHOLD_DISTANCE_METERS_DEFAULT
+    private var thresholdSpeedMps = AppSettings.THRESHOLD_SPEED_MPS_DEFAULT
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -105,6 +107,9 @@ class LocationService : Service() {
         startForeground(NOTIFICATION_ID, notification.build())
 
         setNotification(notification, notificationManager)
+
+        thresholdDistanceMeters = appSettings.thresholdDistanceMeters(scope)
+        thresholdSpeedMps = appSettings.thresholdSpeedMps(scope)
 
         scope.launch {
             val track: TrackEntity? = when(runningMode) {
@@ -240,7 +245,7 @@ class LocationService : Service() {
         if (!shouldAdd && data.lastLocation != null) {
             val distance = location.distanceTo(data.lastLocation!!)
             // New point added if we're above the distance threshold
-            shouldAdd = (distance > DISTANCE_ADD_THRESHOLD_METERS)
+            shouldAdd = (distance > thresholdDistanceMeters)
 
             data.lastLocation?.let { lastLoc ->
                 if (distance <= lastLoc.accuracy
@@ -260,9 +265,9 @@ class LocationService : Service() {
                     if (lastLoc.hasSpeedAccuracy() && lastSpeed < lastLoc.speedAccuracyMetersPerSecond) {
                         lastSpeed = -1f
                     }
-                    shouldAdd = lastSpeed > SPEED_THRESHOLD_MPS
+                    shouldAdd = lastSpeed > thresholdSpeedMps
                         && newSpeed >= 0
-                        && newSpeed < SPEED_THRESHOLD_MPS
+                        && newSpeed < thresholdSpeedMps
                 }
             }
         }
