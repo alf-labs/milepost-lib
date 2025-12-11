@@ -10,12 +10,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.databinding.SensorsFragmentBinding
 import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationService
+import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.main.GlobalState
 import com.alflabs.mpgpstrack.main.StatusData
 import com.alflabs.mpgpstrack.utils.Units
@@ -59,11 +61,13 @@ open class SensorsFragment: Fragment() {
 
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
+    @Inject lateinit var appSettings: AppSettings
 
     private var setInitialMapZoom = true
     private var googleMap: GoogleMap? = null
     private var accuracyColorMissing: Int = 0
     private var accuracyColorPresent: Int = 0
+    private var useImperialUnits = false
 
     // This property is only valid between onCreateView and onDestroyView.
     private var _binding: SensorsFragmentBinding? = null
@@ -83,6 +87,7 @@ open class SensorsFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         logger.d(TAG, "onViewCreated")
 
+        useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
         accuracyColorMissing = requireContext().getColor(R.color.accMissing)
         accuracyColorPresent = requireContext().getColor(R.color.accPresent)
 
@@ -284,10 +289,21 @@ open class SensorsFragment: Fragment() {
 
         val speedBearing = value.speedBearing
         if (speedBearing != null) {
-            val spd_mph = Units.mps_to_mph(speedBearing.speedMps)
-            binding.speedText.text = String.format(Locale.US,
-                "%.1f MPH",
-                spd_mph)
+            if (useImperialUnits) {
+                val spd_mph = Units.mps_to_mph(speedBearing.speedMps)
+                binding.speedText.text = String.format(
+                    Locale.US,
+                    "%.1f MPH",
+                    spd_mph
+                )
+            } else {
+                val spd_kmh = Units.mps_to_kmh(speedBearing.speedMps)
+                binding.speedText.text = String.format(
+                    Locale.US,
+                    "%.1f km/h",
+                    spd_kmh
+                )
+            }
 
             binding.bearingText.text = String.format(Locale.US,
                 "%.1f°",
