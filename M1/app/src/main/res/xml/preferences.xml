@@ -8,14 +8,13 @@
                 app:title="Use Imperial Units"
                 />
 
-        <EditTextPreference
+        <com.alflabs.mpgpstrack.fragments.ImperialEditTextPreference
                 app:key="threshold_distance_meters"
                 app:title="Threshold Distance (meters)"
                 app:dialogTitle="Set threshold distance in meters"
-                app:useSimpleSummaryProvider="true"
                 />
 
-        <EditTextPreference
+        <com.alflabs.mpgpstrack.fragments.ImperialEditTextPreference
                 app:key="threshold_speed_mps"
                 app:title="Threshold Speed (m/s)"
                 app:dialogTitle="Set threshold speed in meters per second"

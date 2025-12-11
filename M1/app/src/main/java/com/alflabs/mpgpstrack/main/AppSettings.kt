@@ -34,14 +34,36 @@ class AppSettings @Inject constructor(
         // as stringPreferencesKey, and then provide an app-specific getter that does the
         // type conversion (e.g. toFloat, etc., with a reasonable fallback default value.)
 
-        object PreferencesKeys {
-            val USE_IMPERIAL_UNITS = booleanPreferencesKey("use_imperial_units")
-            val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
-            val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
-        }
+        val USE_IMPERIAL_UNITS = booleanPreferencesKey("use_imperial_units")
+        val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
+        val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
+
+        const val THRESHOLD_DISTANCE_METERS_DEFAULT = 250.0f
+        const val THRESHOLD_SPEED_MPS_DEFAULT = 0.25f
     }
 
     @Inject lateinit var appSettingsDataStore: DataStore<Preferences>
+
+    // Preferences access
+
+    fun useImperialUnits(coroutineScope: CoroutineScope): Boolean {
+        val adapter = createAdapter(coroutineScope)
+        return adapter.getBoolean(USE_IMPERIAL_UNITS.name, false)
+    }
+
+    fun thresholdDistanceMeters(coroutineScope: CoroutineScope): Float {
+        val adapter = createAdapter(coroutineScope)
+        return adapter.getString(THRESHOLD_DISTANCE_METERS.name, "").toFloatOrNull()
+            ?: THRESHOLD_DISTANCE_METERS_DEFAULT
+    }
+
+    fun thresholdSpeedMps(coroutineScope: CoroutineScope): Float {
+        val adapter = createAdapter(coroutineScope)
+        return adapter.getString(THRESHOLD_SPEED_MPS.name, "").toFloatOrNull()
+            ?: THRESHOLD_SPEED_MPS_DEFAULT
+    }
+
+    // ------
 
     fun createAdapter(coroutineScope: CoroutineScope): AdapterPreferenceDataStore {
         return AdapterPreferenceDataStore(
@@ -54,16 +76,18 @@ class AppSettings @Inject constructor(
         coroutineScope.launch {
             val values: Preferences = appSettingsDataStore.data.first()
 
-            if (!values.contains(PreferencesKeys.USE_IMPERIAL_UNITS)) {
-                adapter.putBoolean(PreferencesKeys.USE_IMPERIAL_UNITS.name, isUsTimezone())
+            if (!values.contains(USE_IMPERIAL_UNITS)) {
+                adapter.putBoolean(USE_IMPERIAL_UNITS.name, isUsTimezone())
             }
 
-            if (!values.contains(PreferencesKeys.THRESHOLD_DISTANCE_METERS)) {
-                adapter.putString(PreferencesKeys.THRESHOLD_DISTANCE_METERS.name, "250")
+            if (!values.contains(THRESHOLD_DISTANCE_METERS)) {
+                adapter.putString(THRESHOLD_DISTANCE_METERS.name,
+                    THRESHOLD_DISTANCE_METERS_DEFAULT.toString())
             }
 
-            if (!values.contains(PreferencesKeys.THRESHOLD_SPEED_MPS)) {
-                adapter.putString(PreferencesKeys.THRESHOLD_SPEED_MPS.name, "0.25")
+            if (!values.contains(THRESHOLD_SPEED_MPS)) {
+                adapter.putString(THRESHOLD_SPEED_MPS.name,
+                    THRESHOLD_SPEED_MPS_DEFAULT.toString())
             }
         }
     }
