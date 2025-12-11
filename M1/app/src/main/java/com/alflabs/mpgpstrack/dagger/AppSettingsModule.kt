@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DataStoreModule {
+object AppSettingsModule {
     private const val APP_SETTINGS_FILE_NAME = "app_settings.xml"
 
     // Note: this creates the DataStore wrapper around the pb file.
