@@ -11,22 +11,38 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.databinding.ReviewFragmentBinding
 import com.alflabs.mpgpstrack.location.LatLongData
+import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationDataList
 import com.alflabs.mpgpstrack.tracks.TrackEntity
+import com.alflabs.mpgpstrack.utils.MapStyle
+import com.alflabs.utils.ILogger
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class ReviewFragment : Fragment() {
-    private val TAG = ReviewFragment::class.java.simpleName
+    companion object {
+        private val TAG = ReviewFragment::class.java.simpleName
+        private const val MAPS_ZOOM_LEVEL = 15f
+    }
+
+    @Inject lateinit var logger: ILogger
 
     private var _binding: ReviewFragmentBinding? = null
     private val binding get() = _binding!!
     private val fragmentArgs: ReviewFragmentArgs by navArgs()
     private val viewModel: ReviewViewModel by viewModels()
     private var trackEntity: TrackEntity? = null
+    private var googleMap: GoogleMap? = null
     private lateinit var reviewList: List<ReviewLocationData>
 
     override fun onCreateView(
@@ -62,6 +78,7 @@ class ReviewFragment : Fragment() {
             reviewList = convert(track?.locationList)
             adapter.submitList(reviewList)
             binding.exportButton.isEnabled = trackEntity != null
+            loadMapTrack()
         }
 
         viewModel.loadTrack(fragmentArgs.trackId)
@@ -72,6 +89,16 @@ class ReviewFragment : Fragment() {
             exportFile?.let {
                 Exporter.shareFile(requireContext(), it)
             }
+        }
+
+        binding.mapView?.onCreate(savedInstanceState)
+        binding.mapView?.getMapAsync { map ->
+            googleMap = map
+            googleMap?.let { MapStyle.applyMapStyle(
+                requireContext(),
+                it,
+                logger) }
+            loadMapTrack()
         }
     }
 
@@ -122,4 +149,50 @@ class ReviewFragment : Fragment() {
 
         return result
     }
+
+    fun loadMapTrack() {
+        val map = googleMap ?: return
+        val track = trackEntity ?: return
+
+        map.clear()
+
+        var movePos: LatLng? = null
+        var startPos: LatLng? = null
+        var endPos: LatLng? = null
+        val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
+        if (locations.size == 1) {
+            val location = locations[0]
+            movePos = LatLng(location.latLong.latitude, location.latLong.longitude)
+            startPos = movePos
+        } else if (locations.size > 1) {
+            val lineColor = requireContext().getColor(R.color.colorPrimaryDark)
+            val polylineOptions = PolylineOptions()
+                .color(lineColor)
+                .width(10f)
+
+            for (location in locations) {
+                polylineOptions.add(
+                    LatLng(location.latLong.latitude, location.latLong.longitude)
+                )
+            }
+            map.addPolyline(polylineOptions)
+
+            val location0 = locations.first()
+            val location1 = locations[locations.size / 2]
+            val location2 = locations.last()
+            startPos = LatLng(location0.latLong.latitude, location0.latLong.longitude)
+            movePos = LatLng(location1.latLong.latitude, location1.latLong.longitude)
+            endPos = LatLng(location2.latLong.latitude, location2.latLong.longitude)
+        }
+
+        val markerOptions = MarkerOptions()
+        startPos?.let { map.addMarker(markerOptions.position(it)) }
+        endPos?.let { map.addMarker(markerOptions.position(it)) }
+
+        movePos?.let {
+            val update = CameraUpdateFactory.newLatLngZoom(it, MAPS_ZOOM_LEVEL)
+            map.moveCamera(update)
+        }
+    }
+
 }

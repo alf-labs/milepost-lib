@@ -2,10 +2,7 @@ package com.alflabs.mpgpstrack.fragments
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +17,7 @@ import com.alflabs.mpgpstrack.location.LocationService
 import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.main.GlobalState
 import com.alflabs.mpgpstrack.main.StatusData
+import com.alflabs.mpgpstrack.utils.MapStyle
 import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
@@ -27,7 +25,6 @@ import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,9 +36,9 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 open class SensorsFragment: Fragment() {
-    private val TAG = SensorsFragment::class.java.simpleName
 
     companion object {
+        private val TAG = SensorsFragment::class.java.simpleName
         private const val PERM_REQUEST_CODE = 1
         private const val MAPS_ZOOM_LEVEL = 15f
     }
@@ -132,7 +129,10 @@ open class SensorsFragment: Fragment() {
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync { map ->
             googleMap = map
-            googleMap?.let { applyMapStyle(it) }
+            googleMap?.let { MapStyle.applyMapStyle(
+                requireContext(),
+                it,
+                logger) }
         }
     }
 
@@ -187,33 +187,6 @@ open class SensorsFragment: Fragment() {
         binding.startButton.isEnabled = !runningState.start
         // Stop button is enabled if running state is not already stopped
         binding.stopButton.isEnabled = !runningState.stop
-    }
-
-    private fun applyMapStyle(map: GoogleMap) {
-        // Google Maps is stylized using a JSON file. Doc with night style examples:
-        // https://developers.google.com/maps/documentation/javascript/examples/style-array
-
-        // Only apply dark theme when in night mode
-        val configuration = requireContext().resources.configuration
-        val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        if (currentNightMode != Configuration.UI_MODE_NIGHT_YES) {
-            return
-        }
-
-        try {
-            // Customise the styling of the base map using a JSON object defined
-            // in a raw resource file.
-            val success = map.setMapStyle(
-                MapStyleOptions.loadRawResourceStyle(
-                    requireContext(), R.raw.map_style_night
-                )
-            )
-            if (!success) {
-                logger.d(TAG, "Map Style parsing failed.")
-            }
-        } catch (e: Resources.NotFoundException) {
-            logger.d(TAG, "Map Style: Can't find style. Error: ", e)
-        }
     }
 
     fun accuracyColor(value: Float?) : Int =
