@@ -2,15 +2,16 @@ package com.alflabs.mpgpstrack.fragments.review
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.content.FileProvider
 import com.alflabs.mpgpstrack.tracks.TrackEntity
+import com.alflabs.mpgpstrack.utils.ProtobufLiteSerializer
 import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.google.protobuf.Message
 import java.io.File
-import java.io.FileOutputStream
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -102,6 +103,10 @@ class Exporter @Inject constructor(
             val file = File(cacheDir, "track_${trackEntity.uuid}.json")
 
             val objectMapper = ObjectMapper()
+            val module = SimpleModule()
+            module.addSerializer(Message::class.java, ProtobufLiteSerializer())
+            objectMapper.registerModule(module)
+
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
                 objectMapper.writeValue(writer, trackEntity)
             }
