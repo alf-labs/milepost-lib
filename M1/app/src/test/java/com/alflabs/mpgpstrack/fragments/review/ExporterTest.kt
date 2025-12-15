@@ -110,12 +110,58 @@ class ExporterTest {
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).isEqualTo("/tmp/track_test-uuid-1234.json")
-        assertThat(fakeFileOps.toString(file, Charsets.UTF_8)).isEqualTo(
+        assertThat(fakeFileOps.toString(file, Charsets.UTF_8).replace("\r\n", "\n")).isEqualTo(
             """
-            iso_date_time,latitude,longitude,speed_mps,mp
-            2020-01-02T03:04:05Z,37.5805,121.9652,4.4,10.0
-            2020-01-02T03:14:05Z,37.58725,121.92685,,
-            2020-01-02T03:24:05Z,37.594,121.8885,8.9,42.0
-        """.trimIndent())
+            {
+              "id" : 0,
+              "uuid" : "test-uuid-1234",
+              "createdDateISO" : "2021-02-03T04:05:06Z",
+              "updatedDateISO" : "2022-03-04T05:06:07Z",
+              "label" : "Test Track",
+              "locationList" : {
+                "locations" : [ {
+                  "latLong" : {
+                    "timestampMillis" : 1577934245000,
+                    "latitude" : 37.5805,
+                    "longitude" : 121.9652,
+                    "accuracy" : null
+                  },
+                  "speedBearing" : {
+                    "speedMps" : 4.4704,
+                    "bearingDeg" : 0.0,
+                    "speedAcc" : null,
+                    "bearingAcc" : null
+                  },
+                  "mp" : 10.0,
+                  "flags" : 0
+                }, {
+                  "latLong" : {
+                    "timestampMillis" : 1577934845000,
+                    "latitude" : 37.58725,
+                    "longitude" : 121.92685,
+                    "accuracy" : null
+                  },
+                  "speedBearing" : null,
+                  "mp" : null,
+                  "flags" : 0
+                }, {
+                  "latLong" : {
+                    "timestampMillis" : 1577935445000,
+                    "latitude" : 37.594,
+                    "longitude" : 121.8885,
+                    "accuracy" : null
+                  },
+                  "speedBearing" : {
+                    "speedMps" : 8.9408,
+                    "bearingDeg" : 0.0,
+                    "speedAcc" : null,
+                    "bearingAcc" : null
+                  },
+                  "mp" : 42.0,
+                  "flags" : 0
+                } ]
+              }
+            }
+        """.trimIndent().replace("\r\n", "\n"))
     }
 }

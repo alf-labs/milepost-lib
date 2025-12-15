@@ -4,13 +4,10 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.alflabs.mpgpstrack.tracks.TrackEntity
-import com.alflabs.mpgpstrack.utils.ProtobufLiteSerializer
 import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.google.protobuf.Message
 import java.io.File
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -97,18 +94,16 @@ class Exporter @Inject constructor(
             return null
         }
 
+        trackEntity.fillPojo()
+
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
             val file = File(cacheDir, "track_${trackEntity.uuid}.json")
 
             val objectMapper = ObjectMapper()
-            val module = SimpleModule()
-            module.addSerializer(Message::class.java, ProtobufLiteSerializer())
-            objectMapper.registerModule(module)
-
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
-                objectMapper.writeValue(writer, trackEntity)
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, trackEntity)
             }
 
             file // Return the created file
