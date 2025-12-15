@@ -36,6 +36,8 @@ class ReviewFragment : Fragment() {
     }
 
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var exporter: Exporter
+
 
     private var _binding: ReviewFragmentBinding? = null
     private val binding get() = _binding!!
@@ -85,9 +87,9 @@ class ReviewFragment : Fragment() {
 
         binding.exportButton.isEnabled = trackEntity != null
         binding.exportButton.setOnClickListener {
-            val exportFile = Exporter.createCsvExportFile(requireContext(), trackEntity)
+            val exportFile = exporter.createCsvExportFile(requireContext(), trackEntity)
             exportFile?.let {
-                Exporter.shareFile(requireContext(), it)
+                exporter.shareFile(requireContext(), it)
             }
         }
 

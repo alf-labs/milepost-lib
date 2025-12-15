@@ -6,11 +6,15 @@ import android.util.Log
 import androidx.core.content.FileProvider
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.utils.Units
+import com.alflabs.utils.FileOps
+import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.io.FileOutputStream
 import java.time.Instant
 import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+import javax.inject.Singleton
 
 
 /**
@@ -30,14 +34,21 @@ import java.time.format.DateTimeFormatter
  * with a friendly description here including some CSV examples:
  * - https://www.google.com/earth/outreach/learn/visualize-your-data-on-a-custom-map-using-google-my-maps/
  */
-object Exporter {
-    private val TAG = Exporter::class.java.simpleName
+@Singleton
+class Exporter @Inject constructor(
+    val logger: ILogger,
+    val fileOps: FileOps,
+) {
+
+    companion object {
+        private val TAG = Exporter::class.java.simpleName
+    }
 
     /**
      * Export a GPS track as CSV for Google My Maps.
     */
     fun createCsvExportFile(context: Context, trackEntity: TrackEntity?): File? {
-        Log.d(TAG, "createCsvExportFile")
+        logger.d(TAG, "createCsvExportFile")
         val csvHeader = "isoDateTime,latitude,longitude,speed_mph,mp\n"
 
         if (trackEntity == null) {
@@ -52,11 +63,11 @@ object Exporter {
 
             val formatter = DateTimeFormatter.ISO_INSTANT
 
-            FileOutputStream(file).use { fos ->
-                fos.write(csvHeader.toByteArray())
+            fileOps.openFileWriter(file, /*append=*/false).use { writer ->
+                writer.write(csvHeader)
                 locationList.locationsList.forEach { data ->
                     val ll = data.latLong
-                    val sb = data.speedBearing
+                    val sb = if (data.hasSpeedBearing()) data.speedBearing else null
                     val speed = if (sb != null) Units.mps_to_mph(sb.speedMps) else ""
                     val mp = if (data.hasMp()) data.mp.toString() else ""
 
@@ -64,13 +75,13 @@ object Exporter {
                     val isoDT = formatter.format(instant)
 
                     val line = "${isoDT},${ll.latitude},${ll.longitude},${speed},${mp}\n"
-                    fos.write(line.toByteArray())
+                    writer.write(line)
                 }
             }
             file // Return the created file
         } catch (e: Exception) {
             // Handle file creation error
-            Log.d(TAG, "createCsvExportFile: error", e)
+            logger.d(TAG, "createCsvExportFile: error", e)
             null
         }
     }
@@ -79,7 +90,7 @@ object Exporter {
      * Export a GPS track as JSON.
      */
     fun createJsonExportFile(context: Context, trackEntity: TrackEntity?): File? {
-        Log.d(TAG, "createJsonExportFile")
+        logger.d(TAG, "createJsonExportFile")
 
         if (trackEntity == null) {
             return null
@@ -91,19 +102,21 @@ object Exporter {
             val file = File(cacheDir, "track_${trackEntity.uuid}.json")
 
             val objectMapper = ObjectMapper()
-            objectMapper.writeValue(file, trackEntity)
+            fileOps.openFileWriter(file, /*append=*/false).use { writer ->
+                objectMapper.writeValue(writer, trackEntity)
+            }
 
             file // Return the created file
         } catch (e: Exception) {
             // Handle file creation error
-            Log.d(TAG, "createJsonExportFile: error", e)
+            logger.d(TAG, "createJsonExportFile: error", e)
             null
         }
     }
 
     internal fun shareFile(context: Context, file: File) {
         val userType = if (file.extension == "json") "JSON" else "CSV"
-        Log.d(TAG, "shareFile: $file as $userType")
+        logger.d(TAG, "shareFile: $file as $userType")
 
         val uri = FileProvider.getUriForFile(
             context,
