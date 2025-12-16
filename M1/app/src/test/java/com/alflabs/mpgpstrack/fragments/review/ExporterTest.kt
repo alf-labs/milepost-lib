@@ -9,6 +9,7 @@ import com.alflabs.mpgpstrack.location.locationDataList
 import com.alflabs.mpgpstrack.location.speedBearingData
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.trackSummary
+import com.alflabs.mpgpstrack.utils.Exporter
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat

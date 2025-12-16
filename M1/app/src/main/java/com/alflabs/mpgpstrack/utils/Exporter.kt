@@ -1,10 +1,9 @@
-package com.alflabs.mpgpstrack.fragments.review
+package com.alflabs.mpgpstrack.utils
 
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.alflabs.mpgpstrack.tracks.TrackEntity
-import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -13,7 +12,6 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
-
 
 /**
  * Import/Export of Tracks.
