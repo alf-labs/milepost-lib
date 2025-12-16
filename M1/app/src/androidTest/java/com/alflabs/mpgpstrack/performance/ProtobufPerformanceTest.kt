@@ -1,12 +1,14 @@
 package com.alflabs.mpgpstrack.performance
 
 import android.os.Debug
+import android.os.SystemClock
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.alflabs.mpgpstrack.location.LocationDataList
 import com.alflabs.mpgpstrack.location.latLongData
 import com.alflabs.mpgpstrack.location.locationData
 import com.alflabs.mpgpstrack.location.speedBearingData
+import com.alflabs.mpgpstrack.tracks.Converters
 import com.google.common.truth.Expect
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +40,7 @@ class ProtobufPerformanceTest {
         val totalPss1 = memInfo1.totalPss * 1024
 
         repeat(NUM_ENT) {
-            entities.add(createEntity())
+            entities.add(createLocList())
         }
 
         System.gc()
@@ -49,21 +51,61 @@ class ProtobufPerformanceTest {
         val totalPss2 = memInfo2.totalPss * 1024
         Log.d(TAG, "@@ Num entities: ${entities.size}, hash ${entities.hashCode()}")
 
-        Log.w(TAG, "@@ FreeMem : $freeMem1 -> $freeMem2, delta ${freeMem2 - freeMem1} / ${(freeMem2 - freeMem1)/NUM_ENT}")
-        Log.w(TAG, "@@ TotalPSS: $totalPss1 -> $totalPss2, delta ${totalPss2 - totalPss1} / ${(totalPss2 - totalPss1)/NUM_ENT}")
+        val memPerEntLoc = (freeMem2 - freeMem1).toDouble() / NUM_ENT / NUM_LOC
+        val pssPerEntLoc = (totalPss2 - totalPss1).toDouble() / NUM_ENT / NUM_LOC
+        Log.w(TAG, "@@ FreeMem : $freeMem1 -> $freeMem2, delta ${freeMem2 - freeMem1} ==> $memPerEntLoc")
+        Log.w(TAG, "@@ TotalPSS: $totalPss1 -> $totalPss2, delta ${totalPss2 - totalPss1} ==> $pssPerEntLoc")
         Log.w(TAG, "@@ Mem Info Stats 1: ${memInfo1.memoryStats}")
         Log.w(TAG, "@@ Mem Info Stats 2: ${memInfo2.memoryStats}")
-        expect.that(freeMem1).isLessThan(freeMem2)
 
         // Numbers:
         // loc   /  ent
-        //  1,000/  100: FreeMem += 256,192/ent -- TotalPSS +=   103,761/ent
-        //  1,000/1,000: FreeMem +=  75,497/ent -- TotalPSS +=   138,951/ent
-        // 10,000/  100: FreeMem += 754,974/ent -- TotalPSS += 1,389,824/ent
+        //  1,000/  100: FreeMem += 256,192/ent -- TotalPSS +=   103,761/ent -- 256~103/ent/loc
+        //  1,000/1,000: FreeMem +=  75,497/ent -- TotalPSS +=   138,951/ent --  75~138/ent/loc
+        // 10,000/  100: FreeMem += 754,974/ent -- TotalPSS += 1,389,824/ent --  75~138/ent/loc
         // 10,000/  200: OOM
+
+        expect.that(freeMem1).isLessThan(freeMem2)
+        expect.that(memPerEntLoc).isIn( 75.. 76)
+        expect.that(pssPerEntLoc).isIn(135..145)
     }
 
-    fun createEntity(): LocationDataList {
+    @Test
+    fun serializationSize() {
+        val entity = createLocList()
+        val serialized = Converters().fromLocationDataList(entity)
+        val size = serialized?.length ?: -1
+        val szPerLoc = size.toDouble() / NUM_LOC
+        Log.w(TAG, "@@ Serialized size: $size ==> $szPerLoc")
+        expect.that(size).isEqualTo(493164)
+        expect.that(szPerLoc).isWithin(1.0).of(49.0)
+    }
+
+    @Test
+    fun serializationTime() {
+        val entity = createLocList()
+        var dummy = 0
+
+        System.gc()
+        System.gc()
+        System.gc()
+        val now1 = SystemClock.currentThreadTimeMillis()
+
+        repeat(NUM_ENT) {
+            val serialized = Converters().fromLocationDataList(entity)
+            val deserialized = Converters().toLocationDataList(serialized)
+            dummy += deserialized?.locationsCount ?: 0 // to create a need for the result
+        }
+
+        val now2 = SystemClock.currentThreadTimeMillis()
+        val msPerEnt    = (now2 - now1).toDouble() / NUM_ENT
+        val msPerEntLoc = msPerEnt / NUM_LOC
+        Log.w(TAG, "@@ Serialization Time : $msPerEnt ms/ent ==> $msPerEntLoc ms/ent/loc")
+        expect.that(msPerEnt).isWithin(5.0).of(59.0)
+        expect.that(msPerEntLoc).isWithin(0.0005).of(0.0059)
+    }
+
+    fun createLocList(): LocationDataList {
         // Note: the code here is made to vaguely look like the one in LocationService.
         val locationDataListBuilder = LocationDataList.newBuilder()
 
