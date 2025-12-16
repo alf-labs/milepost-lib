@@ -240,7 +240,7 @@ class LocationService : Service() {
         val n = data.locationDataListBuilder.locationsCount
         // Always add the first point.
         var shouldAdd = n == 0
-        var shouldReplace = -1
+        var replaceIndex = -1
 
         if (!shouldAdd && data.lastLocation != null) {
             val distance = location.distanceTo(data.lastLocation!!)
@@ -253,7 +253,7 @@ class LocationService : Service() {
                     // If the distance delta is below the last point accuracy,
                     // and the accuracy got better,
                     // then consider it a better replacement for the same point.
-                    shouldReplace = n - 1
+                    replaceIndex = n - 1
                 } else if (!shouldAdd) {
                     // If the point is closer than the threshold distance but the speed
                     // is valid and has fallen under a 1 m/s threshold, consider adding it.
@@ -272,9 +272,9 @@ class LocationService : Service() {
             }
         }
 
-        if (shouldReplace >= 0) {
+        if (replaceIndex >= 0) {
             data.locationDataListBuilder.setLocations(
-                shouldReplace,
+                replaceIndex,
                 locationData
             )
             data.lastLocation = location
