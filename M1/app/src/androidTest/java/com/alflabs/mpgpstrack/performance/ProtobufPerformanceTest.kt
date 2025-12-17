@@ -10,6 +10,7 @@ import com.alflabs.mpgpstrack.location.locationData
 import com.alflabs.mpgpstrack.location.speedBearingData
 import com.alflabs.mpgpstrack.tracks.Converters
 import com.google.common.truth.Expect
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -84,7 +85,7 @@ class ProtobufPerformanceTest {
     @Test
     fun serializationTime() {
         val entity = createLocList()
-        var dummy = 0
+        var locCounter = 0
 
         System.gc()
         System.gc()
@@ -94,7 +95,7 @@ class ProtobufPerformanceTest {
         repeat(NUM_ENT) {
             val serialized = Converters().fromLocationDataList(entity)
             val deserialized = Converters().toLocationDataList(serialized)
-            dummy += deserialized?.locationsCount ?: 0 // to create a need for the result
+            locCounter += deserialized?.locationsCount ?: 0 // to create a need for the result
         }
 
         val now2 = SystemClock.currentThreadTimeMillis()
@@ -102,7 +103,8 @@ class ProtobufPerformanceTest {
         val msPerEntLoc = msPerEnt / NUM_LOC
         Log.w(TAG, "@@ Serialization Time : $msPerEnt ms/ent ==> $msPerEntLoc ms/ent/loc")
         expect.that(msPerEnt).isWithin(10.0).of(74.0)
-        expect.that(msPerEntLoc).isWithin(0.001).of(0.0074)
+        expect.that(msPerEntLoc).isWithin(0.0010).of(0.0074)
+        assertThat(locCounter).isEqualTo(NUM_ENT * NUM_LOC)
     }
 
     fun createLocList(): LocationDataList {

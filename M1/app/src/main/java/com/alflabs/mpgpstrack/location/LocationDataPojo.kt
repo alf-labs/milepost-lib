@@ -1,11 +1,34 @@
 package com.alflabs.mpgpstrack.location
 
+import com.alflabs.serial.SerialReader
+import com.alflabs.serial.SerialWriter
+
 data class LocationDataListPojo(
     val locations: List<LocationDataPojo>,
 ) {
     constructor(proto: LocationDataList) : this(
         proto.locationsList.map { LocationDataPojo(it) },
     )
+
+    fun toSerial(): SerialWriter {
+        val writer = SerialWriter()
+        writer.addInt("size", locations.size)
+        var i = 1
+        locations.forEach {
+            val subWriter = SerialWriter()
+            it.saveInto(subWriter)
+            writer.addSerial("L$i", subWriter)
+            i++
+        }
+        return writer
+    }
+
+    constructor(reader: SerialReader) : this(
+        List(reader.getInt("size")) { index ->
+            LocationDataPojo(reader.getSerial("L${index + 1}"))
+        },
+    )
+
 }
 
 data class LocationDataPojo(
@@ -19,6 +42,20 @@ data class LocationDataPojo(
         if (proto.hasSpeedBearing()) SpeedBearingDataPojo(proto.speedBearing) else null,
         if (proto.hasMp()) proto.mp else null,
         proto.flags,
+    )
+
+    fun saveInto(writer: SerialWriter) {
+        latLong.saveInto(writer)
+        speedBearing?.saveInto(writer)
+        mp?.let { writer.addFloat("mp", it) }
+        writer.addInt("flags", flags)
+    }
+
+    constructor(reader: SerialReader) : this(
+        LatLongDataPojo(reader),
+        if (reader.hasName("speedBearing")) SpeedBearingDataPojo(reader) else null,
+        if (reader.hasName("mp")) reader.getFloat("mp") else null,
+        reader.getInt("flags"),
     )
 }
 
@@ -34,6 +71,20 @@ data class LatLongDataPojo(
         proto.longitude,
         if (proto.hasAccuracy()) proto.accuracy else null,
     )
+
+    fun saveInto(writer: SerialWriter) {
+        timestampMillis?.let { writer.addLong("timestampMillis", it) }
+        latitude?.let { writer.addDouble("latitude", it) }
+        longitude?.let { writer.addDouble("longitude", it) }
+        accuracy?.let { writer.addFloat("accuracy", it) }
+    }
+
+    constructor(reader: SerialReader) : this(
+        if (reader.hasName("timestampMillis")) reader.getLong("timestampMillis") else null,
+        if (reader.hasName("latitude")) reader.getDouble("latitude") else null,
+        if (reader.hasName("longitude")) reader.getDouble("longitude") else null,
+        if (reader.hasName("accuracy")) reader.getFloat("accuracy") else null,
+    )
 }
 
 data class SpeedBearingDataPojo(
@@ -47,5 +98,19 @@ data class SpeedBearingDataPojo(
         proto.bearingDeg,
         if (proto.hasSpeedAcc()) proto.speedAcc else null,
         if (proto.hasBearingAcc()) proto.bearingAcc else null,
+    )
+
+    fun saveInto(writer: SerialWriter) {
+        speedMps?.let { writer.addFloat("speedMps", it) }
+        bearingDeg?.let { writer.addFloat("bearingDeg", it) }
+        speedAcc?.let { writer.addFloat("speedAcc", it) }
+        bearingAcc?.let { writer.addFloat("bearingAcc", it) }
+    }
+
+    constructor(reader: SerialReader) : this(
+        if (reader.hasName("speedMps")) reader.getFloat("speedMps") else null,
+        if (reader.hasName("bearingDeg")) reader.getFloat("bearingDeg") else null,
+        if (reader.hasName("speedAcc")) reader.getFloat("speedAcc") else null,
+        if (reader.hasName("bearingAcc")) reader.getFloat("bearingAcc") else null,
     )
 }

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.google.common.truth.Expect
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -84,7 +85,7 @@ class PojoPerformanceTest {
         )
 
         val entity = createLocList()
-        var dummy = 0
+        var locCounter = 0
 
         System.gc()
         System.gc()
@@ -95,15 +96,16 @@ class PojoPerformanceTest {
             val serialized = objectMapper.writeValueAsString(entity)
             val deserialized = objectMapper.readValue<LocationDataListPojo>(serialized)
 
-            dummy += deserialized.locations.size // to create a need for the result
+            locCounter += deserialized.locations.size // to create a need for the result
         }
 
         val now2 = SystemClock.currentThreadTimeMillis()
         val msPerEnt    = (now2 - now1).toDouble() / NUM_ENT
         val msPerEntLoc = msPerEnt / NUM_LOC
         Log.w(TAG, "@@ Serialization Time : $msPerEnt ms/ent ==> $msPerEntLoc ms/ent/loc")
-        expect.that(msPerEnt).isWithin(10.0).of(769.8)
-        expect.that(msPerEntLoc).isWithin(0.001).of(0.0769)
+        expect.that(msPerEnt    in 660.0..770.0).isTrue()
+        expect.that(msPerEntLoc in 0.066..0.077).isTrue()
+        assertThat(locCounter).isEqualTo(NUM_ENT * NUM_LOC)
     }
 
     fun createLocList(): LocationDataListPojo {
