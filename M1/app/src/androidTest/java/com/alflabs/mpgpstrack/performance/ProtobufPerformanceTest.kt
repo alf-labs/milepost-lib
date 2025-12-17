@@ -41,7 +41,7 @@ class ProtobufPerformanceTest {
         val totalPss1 = memInfo1.totalPss * 1024
 
         repeat(NUM_ENT) {
-            entities.add(createLocList())
+            entities.add(createLocList(NUM_LOC))
         }
 
         System.gc()
@@ -72,8 +72,29 @@ class ProtobufPerformanceTest {
     }
 
     @Test
+    fun exhaustMemoryCount() {
+        var numLoc = 10 * NUM_LOC
+
+        while (true) {
+            try {
+                System.gc()
+                val entity = createLocList(numLoc)
+                assertThat(numLoc).isEqualTo(entity.locationsCount)
+                Log.w(TAG, "@@ OOM Test: $numLoc --> ${entity.locationsCount}")
+                numLoc += 10 * NUM_LOC
+            } catch (e: OutOfMemoryError) {
+                System.gc()
+                Log.w(TAG, "@@ OOM at $numLoc: $e")
+                break
+            }
+        }
+
+        assertThat(numLoc).isEqualTo(1_000_000)
+    }
+
+    @Test
     fun serializationSize() {
-        val entity = createLocList()
+        val entity = createLocList(NUM_LOC)
         val serialized = Converters().fromLocationDataList(entity)
         val size = serialized?.length ?: -1
         val szPerLoc = size.toDouble() / NUM_LOC
@@ -84,7 +105,7 @@ class ProtobufPerformanceTest {
 
     @Test
     fun serializationTime() {
-        val entity = createLocList()
+        val entity = createLocList(NUM_LOC)
         var locCounter = 0
 
         System.gc()
@@ -107,14 +128,14 @@ class ProtobufPerformanceTest {
         assertThat(locCounter).isEqualTo(NUM_ENT * NUM_LOC)
     }
 
-    fun createLocList(): LocationDataList {
+    fun createLocList(numLoc: Int): LocationDataList {
         // Note: the code here is made to vaguely look like the one in LocationService.
         val locationDataListBuilder = LocationDataList.newBuilder()
 
         var longVal = 1L
         var fltVal = 0.5f
         var dblVal = 0.5
-        repeat(NUM_LOC) {
+        repeat(numLoc) {
             val location = locationData {
                 latLong = latLongData {
                     latitude = dblVal++

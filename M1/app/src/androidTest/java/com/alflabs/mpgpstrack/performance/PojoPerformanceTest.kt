@@ -43,7 +43,7 @@ class PojoPerformanceTest {
         val totalPss1 = memInfo1.totalPss * 1024
 
         repeat(NUM_ENT) {
-            entities.add(createLocList())
+            entities.add(createLocList(NUM_LOC))
         }
 
         System.gc()
@@ -67,8 +67,29 @@ class PojoPerformanceTest {
     }
 
     @Test
+    fun exhaustMemoryCount() {
+        var numLoc = 10 * NUM_LOC
+
+        while (true) {
+            try {
+                System.gc()
+                val entity = createLocList(numLoc)
+                assertThat(numLoc).isEqualTo(entity.locations.size)
+                Log.w(TAG, "@@ OOM Test: $numLoc --> ${entity.locations.size}")
+                numLoc += 10 * NUM_LOC
+            } catch (e: OutOfMemoryError) {
+                System.gc()
+                Log.w(TAG, "@@ OOM at $numLoc: $e")
+                break
+            }
+        }
+
+        assertThat(numLoc).isEqualTo(700_000)
+    }
+
+    @Test
     fun serializationSize() {
-        val entity = createLocList()
+        val entity = createLocList(NUM_LOC)
         val objectMapper = ObjectMapper()
         val serialized = objectMapper.writeValueAsString(entity)
         val size = serialized?.length ?: -1
@@ -84,7 +105,7 @@ class PojoPerformanceTest {
             KotlinModule.Builder().build()
         )
 
-        val entity = createLocList()
+        val entity = createLocList(NUM_LOC)
         var locCounter = 0
 
         System.gc()
@@ -108,14 +129,14 @@ class PojoPerformanceTest {
         assertThat(locCounter).isEqualTo(NUM_ENT * NUM_LOC)
     }
 
-    fun createLocList(): LocationDataListPojo {
+    fun createLocList(numLoc: Int): LocationDataListPojo {
         // Note: the code here is made to vaguely look like the one in LocationService.
         val locationList = mutableListOf<LocationDataPojo>()
 
         var longVal = 1L
         var fltVal = 0.5f
         var dblVal = 0.5
-        repeat(NUM_LOC) {
+        repeat(numLoc) {
             val location = LocationDataPojo(
                 latLong = LatLongDataPojo(
                     latitude = dblVal++,
