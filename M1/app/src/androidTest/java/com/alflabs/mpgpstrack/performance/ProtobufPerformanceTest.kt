@@ -77,8 +77,8 @@ class ProtobufPerformanceTest {
         val size = serialized?.length ?: -1
         val szPerLoc = size.toDouble() / NUM_LOC
         Log.w(TAG, "@@ Serialized size: $size ==> $szPerLoc")
-        expect.that(size).isEqualTo(493164)
-        expect.that(szPerLoc).isWithin(1.0).of(49.0)
+        expect.that(size).isEqualTo(786_500)
+        expect.that(szPerLoc).isWithin(1.0).of(78.6)
     }
 
     @Test
@@ -101,8 +101,8 @@ class ProtobufPerformanceTest {
         val msPerEnt    = (now2 - now1).toDouble() / NUM_ENT
         val msPerEntLoc = msPerEnt / NUM_LOC
         Log.w(TAG, "@@ Serialization Time : $msPerEnt ms/ent ==> $msPerEntLoc ms/ent/loc")
-        expect.that(msPerEnt).isWithin(5.0).of(59.0)
-        expect.that(msPerEntLoc).isWithin(0.0005).of(0.0059)
+        expect.that(msPerEnt).isWithin(10.0).of(74.0)
+        expect.that(msPerEntLoc).isWithin(0.001).of(0.0074)
     }
 
     fun createLocList(): LocationDataList {
@@ -118,11 +118,16 @@ class ProtobufPerformanceTest {
                     latitude = dblVal++
                     longitude = dblVal++
                     timestampMillis = longVal++
+                    accuracy = fltVal++
                 }
                 speedBearing = speedBearingData {
                     speedMps = fltVal++
+                    bearingDeg = fltVal++
+                    speedAcc = fltVal++
+                    bearingAcc = fltVal++
                 }
                 mp = fltVal++
+                flags = 4
             }
             locationDataListBuilder.addLocations(location)
         }
