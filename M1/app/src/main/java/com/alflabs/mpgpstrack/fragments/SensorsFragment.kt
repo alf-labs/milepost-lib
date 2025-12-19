@@ -262,21 +262,12 @@ open class SensorsFragment: Fragment() {
 
         val speedBearing = value.speedBearing
         if (speedBearing != null) {
-            if (useImperialUnits) {
-                val spd_mph = Units.mps_to_mph(speedBearing.speedMps)
-                binding.speedText.text = String.format(
-                    Locale.US,
-                    "%.1f MPH",
-                    spd_mph
-                )
-            } else {
-                val spd_kmh = Units.mps_to_kmh(speedBearing.speedMps)
-                binding.speedText.text = String.format(
-                    Locale.US,
-                    "%.1f km/h",
-                    spd_kmh
-                )
-            }
+            binding.speedText.text = String.format(
+                Locale.US,
+                "%.1f %s",
+                Units.mpsToUnit(speedBearing.speedMps, useImperialUnits),
+                Units.mpsUnitName(useImperialUnits)
+            )
 
             binding.bearingText.text = String.format(Locale.US,
                 "%.1f°",
@@ -284,10 +275,9 @@ open class SensorsFragment: Fragment() {
 
             val speedAccText = binding.speedAccText
             speedBearing.speedAcc?.let { mps ->
-                val acc_mph = Units.mps_to_mph(mps)
                 speedAccText.text = String.format(Locale.US,
                     "±%.3f",
-                    acc_mph)
+                    Units.mpsToUnit(mps, useImperialUnits))
             }
             speedAccText.setTextColor(accuracyColor(speedBearing.speedAcc))
 

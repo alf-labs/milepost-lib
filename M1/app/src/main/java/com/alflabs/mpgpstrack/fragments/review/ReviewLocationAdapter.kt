@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.mpgpstrack.databinding.ReviewLocationItemBinding
 import com.alflabs.mpgpstrack.utils.Units
 
-class ReviewLocationAdapter :
+class ReviewLocationAdapter(val useImperialUnits: Boolean) :
     ListAdapter<ReviewLocationData, ReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback())
 {
 
@@ -17,7 +17,7 @@ class ReviewLocationAdapter :
             LayoutInflater.from(parent.context),
             parent,
             false)
-        return ReviewViewHolder(binding)
+        return ReviewViewHolder(binding, useImperialUnits)
     }
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
@@ -25,7 +25,7 @@ class ReviewLocationAdapter :
         holder.bind(item)
     }
 
-    class ReviewViewHolder(val binding: ReviewLocationItemBinding) :
+    class ReviewViewHolder(val binding: ReviewLocationItemBinding, val useImperialUnits: Boolean) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ReviewLocationData) {
@@ -42,9 +42,9 @@ class ReviewLocationAdapter :
                 binding.timestamp.text = String.format("%.1f s", item.deltaTS/1000f)
                 binding.latLong.text = "${ld.latLong.latitude}, ${ld.latLong.longitude}"
                 binding.distAcc.text = String.format("%.1f m", ld.latLong.accuracy)
-                binding.speed.text = String.format("%.1f mph", Units.mps_to_mph(ld.speedBearing.speedMps))
-                binding.mp.text = String.format("%.1f mi", Units.m_to_miles(item.distanceMeters)) // RM DEBUG
-                // binding.mp.text = ld.mp.toString() // TBD
+                // TBD we need to use useImperialUnits here
+                binding.speed.text = String.format("%.1f mph", Units.mpsToUnit(ld.speedBearing.speedMps, useImperialUnits))
+                binding.mp.text = String.format("%.1f mi", ld.mp)
             }
         }
     }

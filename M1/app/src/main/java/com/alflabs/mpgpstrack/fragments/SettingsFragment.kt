@@ -56,10 +56,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 val value = text?.toFloatOrNull()
                 if (value == null) {
                     "Invalid number: $text"
-                } else if (useImperialUnits) {
-                    "${prettyFloat(value, 3)} m/s (${prettyFloat(Units.mps_to_mph(value), 3)} MPH)"
                 } else {
-                    "${prettyFloat(value, 3)} m/s (${prettyFloat(Units.mps_to_kmh(value), 3)} km/h)"
+                    "${prettyFloat(value, 3)} m/s (${prettyFloat(Units.mpsToUnit(value, useImperialUnits), 3)} ${Units.mpsUnitName(useImperialUnits)})"
                 }
             }
     }

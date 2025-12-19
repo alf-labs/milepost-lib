@@ -14,4 +14,18 @@ object Units {
     fun m_to_miles(m: Float): Float = m / METERS_PER_MILE
 
     fun m_to_km(m: Float): Float = m / METERS_PER_KM
+
+    fun mToUnit(m: Float, useImperialUnits: Boolean): Float =
+        if (useImperialUnits) m_to_miles(m)
+        else m_to_km(m)
+
+    fun mpsToUnit(mps: Float, useImperialUnits: Boolean): Float =
+        if (useImperialUnits) mps_to_mph(mps)
+        else mps_to_kmh(mps)
+
+    fun mUnitName(useImperialUnits: Boolean): String =
+        if (useImperialUnits) "mi" else "km"
+
+    fun mpsUnitName(useImperialUnits: Boolean): String =
+        if (useImperialUnits) "mph" else "km/h"
 }
