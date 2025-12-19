@@ -41,14 +41,24 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
                 android:layout_below="@id/summary"
-                android:layout_above="@+id/export_button"
+                android:layout_above="@+id/export_csv_button"
                 />
 
         <Button
-                android:id="@+id/export_button"
+                android:id="@+id/export_json_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Export"
+                android:text="Export JSON"
+                android:layout_marginEnd="8dp"
+                android:layout_toStartOf="@+id/export_csv_button"
+                android:layout_alignBaseline="@+id/export_csv_button"
+                />
+
+        <Button
+                android:id="@+id/export_csv_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Export CSV"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
                 />

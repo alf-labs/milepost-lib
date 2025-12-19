@@ -124,14 +124,11 @@ class ExporterTest {
                   "latLong" : {
                     "timestampMillis" : 1577934245000,
                     "latitude" : 37.5805,
-                    "longitude" : 121.9652,
-                    "accuracy" : null
+                    "longitude" : 121.9652
                   },
                   "speedBearing" : {
                     "speedMps" : 4.4704,
-                    "bearingDeg" : 0.0,
-                    "speedAcc" : null,
-                    "bearingAcc" : null
+                    "bearingDeg" : 0.0
                   },
                   "mp" : 10.0,
                   "flags" : 0
@@ -139,24 +136,18 @@ class ExporterTest {
                   "latLong" : {
                     "timestampMillis" : 1577934845000,
                     "latitude" : 37.58725,
-                    "longitude" : 121.92685,
-                    "accuracy" : null
+                    "longitude" : 121.92685
                   },
-                  "speedBearing" : null,
-                  "mp" : null,
                   "flags" : 0
                 }, {
                   "latLong" : {
                     "timestampMillis" : 1577935445000,
                     "latitude" : 37.594,
-                    "longitude" : 121.8885,
-                    "accuracy" : null
+                    "longitude" : 121.8885
                   },
                   "speedBearing" : {
                     "speedMps" : 8.9408,
-                    "bearingDeg" : 0.0,
-                    "speedAcc" : null,
-                    "bearingAcc" : null
+                    "bearingDeg" : 0.0
                   },
                   "mp" : 42.0,
                   "flags" : 0

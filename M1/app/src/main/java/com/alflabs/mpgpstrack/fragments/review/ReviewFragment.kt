@@ -80,15 +80,23 @@ class ReviewFragment : Fragment() {
             trackEntity = track
             reviewList = convert(track?.locationList)
             adapter.submitList(reviewList)
-            binding.exportButton.isEnabled = trackEntity != null
+            binding.exportCsvButton.isEnabled = trackEntity != null
+            binding.exportJsonButton.isEnabled = trackEntity != null
             loadMapTrack()
         }
 
         viewModel.loadTrack(fragmentArgs.trackId)
 
-        binding.exportButton.isEnabled = trackEntity != null
-        binding.exportButton.setOnClickListener {
+        binding.exportCsvButton.isEnabled = trackEntity != null
+        binding.exportCsvButton.setOnClickListener {
             val exportFile = exporter.createCsvExportFile(requireContext(), trackEntity)
+            exportFile?.let {
+                exporter.shareFile(requireContext(), it)
+            }
+        }
+        binding.exportJsonButton.isEnabled = trackEntity != null
+        binding.exportJsonButton.setOnClickListener {
+            val exportFile = exporter.createJsonExportFile(requireContext(), trackEntity)
             exportFile?.let {
                 exporter.shareFile(requireContext(), it)
             }

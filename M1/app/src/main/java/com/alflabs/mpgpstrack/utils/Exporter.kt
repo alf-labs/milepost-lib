@@ -6,6 +6,7 @@ import androidx.core.content.FileProvider
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.time.Instant
@@ -100,6 +101,7 @@ class Exporter @Inject constructor(
             val file = File(cacheDir, "track_${trackEntity.uuid}.json")
 
             val objectMapper = ObjectMapper()
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, trackEntity)
             }

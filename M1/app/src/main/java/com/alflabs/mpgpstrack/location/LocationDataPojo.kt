@@ -2,6 +2,7 @@ package com.alflabs.mpgpstrack.location
 
 import com.alflabs.serial.SerialReader
 import com.alflabs.serial.SerialWriter
+import com.fasterxml.jackson.annotation.JsonInclude
 
 data class LocationDataListPojo(
     val locations: List<LocationDataPojo>,
@@ -31,6 +32,7 @@ data class LocationDataListPojo(
 
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class LocationDataPojo(
     val latLong: LatLongDataPojo,
     val speedBearing: SpeedBearingDataPojo? = null,
@@ -59,6 +61,7 @@ data class LocationDataPojo(
     )
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class LatLongDataPojo(
     val timestampMillis: Long? = null,
     val latitude: Double? = null,
@@ -87,6 +90,7 @@ data class LatLongDataPojo(
     )
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeedBearingDataPojo(
     val speedMps: Float? = null,
     val bearingDeg: Float? = null,
