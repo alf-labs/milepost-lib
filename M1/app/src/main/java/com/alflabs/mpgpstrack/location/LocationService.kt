@@ -14,13 +14,11 @@ import androidx.core.app.NotificationCompat
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.fragments.PermissionsFragment
 import com.alflabs.mpgpstrack.main.AppSettings
-import com.alflabs.mpgpstrack.main.MainActivity
 import com.alflabs.mpgpstrack.main.GlobalState
+import com.alflabs.mpgpstrack.main.MainActivity
 import com.alflabs.mpgpstrack.main.StatusData
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.TrackEntityDao
-import com.alflabs.mpgpstrack.tracks.TrackSummary
-import com.alflabs.mpgpstrack.tracks.trackSummary
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -128,9 +126,6 @@ class LocationService : Service() {
                     locationUpdater = { builder -> scope.launch {
                         trackEntityDao.updateLocationList(recordId, builder.build())
                     } },
-                    summaryUpdater = { summary -> scope.launch {
-                        trackEntityDao.updateSummary(recordId, summary)
-                    } }
                 )
             } else {
                 null
@@ -284,10 +279,6 @@ class LocationService : Service() {
             data.locationDataListBuilder.addLocations(locationData)
             data.lastLocation = location
             data.locationUpdater(data.locationDataListBuilder)
-
-            data.summaryUpdater(trackSummary {
-                lengthM = n.toFloat()
-            })
         }
     }
 }
@@ -296,6 +287,5 @@ private data class RecordTempData(
     val recordId: Long,
     val locationDataListBuilder: LocationDataList.Builder,
     val locationUpdater: (LocationDataList.Builder) -> Unit,
-    val summaryUpdater: (TrackSummary) -> Unit,
     var lastLocation: Location? = null,
 )

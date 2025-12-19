@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,9 +17,14 @@ import com.alflabs.mpgpstrack.databinding.ReviewFragmentBinding
 import com.alflabs.mpgpstrack.location.LatLongData
 import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationDataList
+import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.tracks.TrackEntity
+import com.alflabs.mpgpstrack.tracks.TrackEntityDao
+import com.alflabs.mpgpstrack.tracks.TrackSummary
+import com.alflabs.mpgpstrack.tracks.trackSummary
 import com.alflabs.mpgpstrack.utils.Exporter
 import com.alflabs.mpgpstrack.utils.MapStyle
+import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -26,6 +32,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -38,7 +45,8 @@ class ReviewFragment : Fragment() {
 
     @Inject lateinit var logger: ILogger
     @Inject lateinit var exporter: Exporter
-
+    @Inject lateinit var appSettings: AppSettings
+    @Inject lateinit var trackEntityDao: TrackEntityDao
 
     private var _binding: ReviewFragmentBinding? = null
     private val binding get() = _binding!!
@@ -46,6 +54,7 @@ class ReviewFragment : Fragment() {
     private val viewModel: ReviewViewModel by viewModels()
     private var trackEntity: TrackEntity? = null
     private var googleMap: GoogleMap? = null
+    private var useImperialUnits = false
     private lateinit var reviewList: List<ReviewLocationData>
 
     override fun onCreateView(
@@ -60,7 +69,9 @@ class ReviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = ReviewLocationAdapter()
+        useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
+
+        val adapter = ReviewLocationAdapter(useImperialUnits)
         val layoutManager = LinearLayoutManager(requireContext())
         binding.locationsList.adapter = adapter
         binding.locationsList.layoutManager = layoutManager
@@ -75,7 +86,7 @@ class ReviewFragment : Fragment() {
             Log.d(TAG, "Review observe track: ${track?.id} ${track?.label}")
 
             binding.label.text = track?.label ?: "No track found"
-            binding.summary.text = track?.summary?.toString() ?: "No summary found"
+            binding.summary.text = getTextSummary(track?.summary)
 
             trackEntity = track
             reviewList = convert(track?.locationList)
@@ -83,6 +94,7 @@ class ReviewFragment : Fragment() {
             binding.exportCsvButton.isEnabled = trackEntity != null
             binding.exportJsonButton.isEnabled = trackEntity != null
             loadMapTrack()
+            updateTrackSummary(track)
         }
 
         viewModel.loadTrack(fragmentArgs.trackId)
@@ -203,6 +215,81 @@ class ReviewFragment : Fragment() {
         movePos?.let {
             val update = CameraUpdateFactory.newLatLngZoom(it, MAPS_ZOOM_LEVEL)
             map.moveCamera(update)
+        }
+    }
+
+    private fun getTextSummary(summary: TrackSummary?): CharSequence {
+        if (summary == null) return "No summary found"
+        val s = summary
+        return String.format(
+            "MP: %s - %s, %s %s, %s s",
+            if (s.hasMpMin()) String.format("%.1f", s.mpMin) else "??",
+            if (s.hasMpMax()) String.format("%.1f", s.mpMax) else "??",
+            if (s.hasLengthM()) String.format("%.1f", Units.mToUnit(s.lengthM, useImperialUnits)) else "??",
+            Units.mUnitName(useImperialUnits),
+            s.durationS,
+        )
+    }
+
+    fun updateTrackSummary(track: TrackEntity?) {
+        if (track == null) return
+
+        val currentSummary = track.summary ?: TrackSummary.getDefaultInstance()
+
+        // Do nothing if all fields are set
+        if (currentSummary.hasMpMin()
+            && currentSummary.hasMpMax()
+            && currentSummary.hasLengthM()
+            && currentSummary.hasDurationS()) {
+            return
+        }
+
+        var mpMin : Float? = if (currentSummary.hasMpMin()) currentSummary.mpMin else null
+        var mpMax : Float? = if (currentSummary.hasMpMax()) currentSummary.mpMax else null
+        var lengthM = 0f
+        var durationS = if (currentSummary.hasDurationS()) currentSummary.durationS else 0f)
+
+        val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
+
+        if (locations.size > 1) {
+            val first = locations.first()
+            val last = locations.last()
+            durationS = (last.latLong.timestampMillis - first.latLong.timestampMillis)/1000f
+        }
+
+        var lastLatLong: LatLongData? = null
+        val distResults = FloatArray(1)
+        locations.forEach { data ->
+            if (data.hasMp()) {
+                val mp = data.mp
+                mpMin = mpMin?.coerceAtMost(mp) ?: mp
+                mpMax = mpMax?.coerceAtLeast(mp) ?: mp
+            }
+
+            val ll = data.latLong
+            lastLatLong?.let {
+                Location.distanceBetween(
+                    it.latitude, it.longitude,
+                    ll.latitude, ll.longitude,
+                    distResults)
+                lengthM += distResults[0]
+            }
+            lastLatLong = ll
+        }
+
+        val newSummary = trackSummary {
+            mpMin?.let { this.mpMin = it }
+            mpMax?.let { this.mpMax = it }
+            this.lengthM = lengthM
+            this.durationS = durationS
+        }
+
+        // Write it back to the DAO if summary has changed
+        if (newSummary != currentSummary) {
+            lifecycleScope.launch {
+                logger.d(TAG, "@@ Update Summary from [${getTextSummary(currentSummary)}] to [${getTextSummary(newSummary)}]")
+                trackEntityDao.updateSummary(track.id, newSummary)
+            }
         }
     }
 
