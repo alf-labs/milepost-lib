@@ -2,7 +2,9 @@ package com.alflabs.mpgpstrack.utils
 
 import android.content.Context
 import android.content.Intent
+import android.location.Location
 import androidx.core.content.FileProvider
+import com.alflabs.mpgpstrack.location.LatLongData
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
@@ -59,20 +61,37 @@ class Exporter @Inject constructor(
             val file = File(cacheDir, "track_${trackEntity.uuid}.csv")
 
             val formatter = DateTimeFormatter.ISO_INSTANT
+            val distResults = FloatArray(1)
 
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
                 writer.write(csvHeader)
+                var lastLatLong: LatLongData? = null
+                var lastMp = 0f
                 locationList.locationsList.forEach { data ->
                     val ll = data.latLong
                     val sb = if (data.hasSpeedBearing()) data.speedBearing else null
                     val speed = if (sb != null) Units.mps_to_mph(sb.speedMps) else ""
-                    val mp = if (data.hasMp()) data.mp.toString() else ""
+                    val mp = if (data.hasMp()) {
+                        lastMp = data.mp
+                        data.mp.toString()
+                    } else {
+                        lastLatLong?.let {
+                            Location.distanceBetween(
+                                it.latitude, it.longitude,
+                                ll.latitude, ll.longitude,
+                                distResults)
+                            lastMp += Units.m_to_miles(distResults[0])
+                        }
+                        lastMp.toString()
+                    }
 
                     val instant = Instant.ofEpochMilli(ll.timestampMillis)
                     val isoDT = formatter.format(instant)
 
                     val line = "${isoDT},${ll.latitude},${ll.longitude},${speed},${mp}\n"
                     writer.write(line)
+
+                    lastLatLong = ll
                 }
             }
             file // Return the created file
