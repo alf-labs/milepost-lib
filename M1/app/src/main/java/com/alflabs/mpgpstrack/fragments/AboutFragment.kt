@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebViewClient
 import androidx.fragment.app.Fragment
+import androidx.webkit.WebViewClientCompat
 import com.alflabs.mpgpstrack.databinding.AboutFragmentBinding
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -31,7 +32,7 @@ class AboutFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.webview.webViewClient = WebViewClient()
+        binding.webview.webViewClient = WebViewClientCompat()
         binding.webview.settings.javaScriptEnabled = true
 
         val jsVersion = JSVersion(requireContext())
