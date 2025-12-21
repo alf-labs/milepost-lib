@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.R
 import com.alflabs.mpgpstrack.databinding.ReviewFragmentBinding
+import com.alflabs.mpgpstrack.fragments.tracks.toText
 import com.alflabs.mpgpstrack.location.LatLongData
 import com.alflabs.mpgpstrack.location.LocationData
 import com.alflabs.mpgpstrack.location.LocationDataList
@@ -24,7 +25,6 @@ import com.alflabs.mpgpstrack.tracks.TrackSummary
 import com.alflabs.mpgpstrack.tracks.trackSummary
 import com.alflabs.mpgpstrack.utils.Exporter
 import com.alflabs.mpgpstrack.utils.MapStyle
-import com.alflabs.mpgpstrack.utils.Units
 import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -86,7 +86,7 @@ class ReviewFragment : Fragment() {
             Log.d(TAG, "Review observe track: ${track?.id} ${track?.label}")
 
             binding.label.text = track?.label ?: "No track found"
-            binding.summary.text = getTextSummary(track?.summary)
+            binding.summary.text = track?.summary.toText(useImperialUnits)
 
             trackEntity = track
             reviewList = convert(track?.locationList)
@@ -218,19 +218,6 @@ class ReviewFragment : Fragment() {
         }
     }
 
-    private fun getTextSummary(summary: TrackSummary?): CharSequence {
-        if (summary == null) return "No summary found"
-        val s = summary
-        return String.format(
-            "MP: %s - %s, %s %s, %s s",
-            if (s.hasMpMin()) String.format("%.1f", s.mpMin) else "??",
-            if (s.hasMpMax()) String.format("%.1f", s.mpMax) else "??",
-            if (s.hasLengthM()) String.format("%.1f", Units.mToUnit(s.lengthM, useImperialUnits)) else "??",
-            Units.mUnitName(useImperialUnits),
-            s.durationS,
-        )
-    }
-
     fun updateTrackSummary(track: TrackEntity?) {
         if (track == null) return
 
@@ -247,7 +234,7 @@ class ReviewFragment : Fragment() {
         var mpMin : Float? = if (currentSummary.hasMpMin()) currentSummary.mpMin else null
         var mpMax : Float? = if (currentSummary.hasMpMax()) currentSummary.mpMax else null
         var lengthM = 0f
-        var durationS = if (currentSummary.hasDurationS()) currentSummary.durationS else 0f)
+        var durationS = if (currentSummary.hasDurationS()) currentSummary.durationS else 0f
 
         val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
 
@@ -287,7 +274,9 @@ class ReviewFragment : Fragment() {
         // Write it back to the DAO if summary has changed
         if (newSummary != currentSummary) {
             lifecycleScope.launch {
-                logger.d(TAG, "@@ Update Summary from [${getTextSummary(currentSummary)}] to [${getTextSummary(newSummary)}]")
+                logger.d(TAG, "@@ Update Summary from [${
+                    currentSummary.toText(useImperialUnits)}] to [${
+                    newSummary.toText(useImperialUnits)}]")
                 trackEntityDao.updateSummary(track.id, newSummary)
             }
         }

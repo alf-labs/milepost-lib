@@ -12,7 +12,8 @@ import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
 class TrackAdapter(
     private val onClick: (TrackDisplayInfo) -> Unit,
     private val onEdit: (TrackDisplayInfo) -> Unit,
-    private val onDelete: (TrackDisplayInfo) -> Unit
+    private val onDelete: (TrackDisplayInfo) -> Unit,
+    private val useImperialUnits: Boolean
 ) : ListAdapter<TrackDisplayInfo, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
@@ -21,7 +22,7 @@ class TrackAdapter(
             parent,
             false
         )
-        return TrackViewHolder(binding, onClick, onEdit, onDelete)
+        return TrackViewHolder(binding, onClick, onEdit, onDelete, useImperialUnits)
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
@@ -33,7 +34,8 @@ class TrackAdapter(
         private val binding: TrackItemBinding,
         private val onClick: (TrackDisplayInfo) -> Unit,
         private val onEdit: (TrackDisplayInfo) -> Unit,
-        private val onDelete: (TrackDisplayInfo) -> Unit
+        private val onDelete: (TrackDisplayInfo) -> Unit,
+        private val useImperialUnits: Boolean
     ) : RecyclerView.ViewHolder(binding.root) {
         private var currentTrack: TrackDisplayInfo? = null
 
@@ -62,7 +64,7 @@ class TrackAdapter(
             currentTrack = track
             binding.trackName.text = "[${track.id}] ${track.label}"
             binding.trackDate.text = track.createdDateISO
-            binding.trackSummary.text = track.summary?.toString() ?: "<>"
+            binding.trackSummary.text = track.summary?.toText(useImperialUnits)
         }
     }
 }

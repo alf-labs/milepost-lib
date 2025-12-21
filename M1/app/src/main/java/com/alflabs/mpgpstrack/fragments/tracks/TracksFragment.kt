@@ -4,25 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.LinearLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.TracksFragmentBinding
+import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class TracksFragment : Fragment() {
 
+    @Inject lateinit var appSettings: AppSettings
+
     private var _binding: TracksFragmentBinding? = null
     private val binding get() = _binding!!
-
     private val viewModel: TracksViewModel by viewModels()
+    private var useImperialUnits = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,6 +37,8 @@ class TracksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
 
         val adapter = TrackAdapter(
             onClick = { track ->
@@ -51,7 +56,8 @@ class TracksFragment : Fragment() {
             },
             onDelete = { track ->
                 viewModel.delete(track)
-            }
+            },
+            useImperialUnits,
         )
         val layoutManager = LinearLayoutManager(requireContext())
         binding.tracksList.adapter = adapter
