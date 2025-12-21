@@ -40,19 +40,6 @@ class TracksViewModel @Inject constructor(
         }
     }
 
-    fun updateTrack(trackInfo: TrackDisplayInfo) {
-        viewModelScope.launch {
-            val track = trackEntityDao.getById(trackInfo.id)
-            track?.let {
-                val newTrack = it.copy(
-                    label = trackInfo.label,
-                    summary = trackInfo.summary)
-                trackEntityDao.update(newTrack)
-                println("@@ DB UPDATE track = $newTrack")
-            }
-        }
-    }
-
     fun delete(trackInfo: TrackDisplayInfo) {
         viewModelScope.launch {
             trackEntityDao.deleteById(trackInfo.id)
