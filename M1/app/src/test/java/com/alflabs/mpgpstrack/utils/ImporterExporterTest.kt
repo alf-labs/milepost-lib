@@ -119,7 +119,6 @@ class ImporterExporterTest {
         assertThat(fakeFileOps.toString(file, Charsets.UTF_8).replace("\r\n", "\n")).isEqualTo(
             """
             {
-              "id" : 0,
               "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
               "updatedDateISO" : "2022-03-04T05:06:07Z",

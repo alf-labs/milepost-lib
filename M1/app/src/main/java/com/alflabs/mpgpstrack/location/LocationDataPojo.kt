@@ -2,10 +2,12 @@ package com.alflabs.mpgpstrack.location
 
 import com.alflabs.serial.SerialReader
 import com.alflabs.serial.SerialWriter
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 
-data class LocationDataListPojo(
-    val locations: List<LocationDataPojo>,
+data class LocationDataListPojo @JsonCreator constructor(
+    @param:JsonProperty("locations") val locations: List<LocationDataPojo>,
 ) {
     constructor(proto: LocationDataList) : this(
         proto.locationsList.map { LocationDataPojo(it) },
@@ -37,11 +39,11 @@ data class LocationDataListPojo(
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class LocationDataPojo(
-    val latLong: LatLongDataPojo,
-    val speedBearing: SpeedBearingDataPojo? = null,
-    val mp: Float? = null,
-    val flags: Int = 0,
+data class LocationDataPojo @JsonCreator constructor(
+    @param:JsonProperty("latLong")      val latLong: LatLongDataPojo,
+    @param:JsonProperty("speedBearing") val speedBearing: SpeedBearingDataPojo? = null,
+    @param:JsonProperty("mp")           val mp: Float? = null,
+    @param:JsonProperty("flags")        val flags: Int = 0,
 ) {
     constructor(proto: LocationData) : this(
         LatLongDataPojo(proto.latLong),
@@ -73,11 +75,11 @@ data class LocationDataPojo(
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class LatLongDataPojo(
-    val timestampMillis: Long? = null,
-    val latitude: Double? = null,
-    val longitude: Double? = null,
-    val accuracy: Float? = null,
+data class LatLongDataPojo @JsonCreator constructor(
+    @param:JsonProperty("timestampMillis")  val timestampMillis: Long? = null,
+    @param:JsonProperty("latitude")         val latitude: Double? = null,
+    @param:JsonProperty("longitude")        val longitude: Double? = null,
+    @param:JsonProperty("accuracy")         val accuracy: Float? = null,
 ) {
     constructor(proto: LatLongData) : this(
         proto.timestampMillis,
@@ -109,11 +111,11 @@ data class LatLongDataPojo(
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class SpeedBearingDataPojo(
-    val speedMps: Float? = null,
-    val bearingDeg: Float? = null,
-    val speedAcc: Float? = null,
-    val bearingAcc: Float? = null,
+data class SpeedBearingDataPojo @JsonCreator constructor(
+    @param:JsonProperty("speedMps")     val speedMps: Float? = null,
+    @param:JsonProperty("bearingDeg")   val bearingDeg: Float? = null,
+    @param:JsonProperty("speedAcc")     val speedAcc: Float? = null,
+    @param:JsonProperty("bearingAcc")   val bearingAcc: Float? = null,
 ) {
     constructor(proto: SpeedBearingData) : this(
         proto.speedMps,

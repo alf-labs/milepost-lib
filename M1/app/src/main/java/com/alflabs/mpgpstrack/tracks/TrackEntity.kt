@@ -2,12 +2,11 @@ package com.alflabs.mpgpstrack.tracks
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.alflabs.mpgpstrack.location.LocationDataList
 import com.alflabs.mpgpstrack.location.LocationDataListPojo
-import com.alflabs.mpgpstrack.location.locationDataList
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.UUID
 
@@ -38,45 +37,38 @@ data class TrackEntity(
 
     // Optional summary info for list tracks fragment.
     @ColumnInfo
-    @JsonIgnore
     val summary: TrackSummary? = null,
 
     // Actual location data (empty before first gps fix).
     @ColumnInfo
-    @JsonIgnore
     val locationList: LocationDataList? = null,
-
-    @Ignore
-    @field:JsonProperty("locationList")
-    val locationListPojo: LocationDataListPojo? = null,
 ) {
-    // Room DAO needs a constructor without the ignored fields.
-    constructor(
-        id: Long,
-        uuid: String,
-        createdDateISO: String,
-        updatedDateISO: String?,
-        label: String?,
-        summary: TrackSummary?,
-        locationList: LocationDataList?,
-    ) : this(
-        id,
-        uuid,
-        createdDateISO,
-        updatedDateISO,
-        label,
-        summary,
-        locationList,
-        null)
-
-    fun toPojo(): TrackEntity = this.copy(
-        locationList = null,
-        locationListPojo = locationList?.let { LocationDataListPojo(it) },
+    fun toPojo() = TrackEntityPojo(
+        uuid = uuid,
+        createdDateISO = createdDateISO,
+        updatedDateISO = updatedDateISO,
+        label = label,
+        locationList = locationList?.let { LocationDataListPojo(it) },
     )
+}
 
-    fun toProto(): TrackEntity = this.copy(
-        locationList = locationListPojo?.toProto(),
-        locationListPojo = null,
+/// A mirror of [TrackEntity] for JSON import/export.
+@JsonIgnoreProperties(value = ["id"])
+data class TrackEntityPojo @JsonCreator constructor(
+    @param:JsonProperty("uuid")             val uuid: String,
+    @param:JsonProperty("createdDateISO")   val createdDateISO: String,
+    @param:JsonProperty("updatedDateISO")   val updatedDateISO: String? = null,
+    @param:JsonProperty("label")            val label: String? = null,
+    @param:JsonProperty("locationList")     val locationList: LocationDataListPojo? = null,
+) {
+    fun toProto() = TrackEntity(
+        id = 0,
+        uuid = uuid,
+        createdDateISO = createdDateISO,
+        updatedDateISO = updatedDateISO,
+        label = label,
+        summary = null,
+        locationList = locationList?.toProto(),
     )
 }
 
