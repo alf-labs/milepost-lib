@@ -11,6 +11,10 @@ data class LocationDataListPojo(
         proto.locationsList.map { LocationDataPojo(it) },
     )
 
+    fun toProto(): LocationDataList = locationDataList {
+        this@LocationDataListPojo.locations.forEach { locations.add(it.toProto()) }
+    }
+
     fun toSerial(): SerialWriter {
         val writer = SerialWriter()
         writer.addInt("size", locations.size)
@@ -46,6 +50,13 @@ data class LocationDataPojo(
         proto.flags,
     )
 
+    fun toProto(): LocationData = locationData {
+        latLong = this@LocationDataPojo.latLong.toProto()
+        this@LocationDataPojo.speedBearing?.let { speedBearing = it.toProto() }
+        this@LocationDataPojo.mp?.let { mp = it }
+        flags = this@LocationDataPojo.flags
+    }
+
     fun saveInto(writer: SerialWriter) {
         latLong.saveInto(writer)
         speedBearing?.saveInto(writer)
@@ -75,6 +86,13 @@ data class LatLongDataPojo(
         if (proto.hasAccuracy()) proto.accuracy else null,
     )
 
+    fun toProto(): LatLongData = latLongData {
+        this@LatLongDataPojo.timestampMillis?.let { timestampMillis = it }
+        this@LatLongDataPojo.latitude?.let { latitude = it }
+        this@LatLongDataPojo.longitude?.let { longitude = it }
+        this@LatLongDataPojo.accuracy?.let { accuracy = it }
+    }
+
     fun saveInto(writer: SerialWriter) {
         timestampMillis?.let { writer.addLong("timestampMillis", it) }
         latitude?.let { writer.addDouble("latitude", it) }
@@ -103,6 +121,13 @@ data class SpeedBearingDataPojo(
         if (proto.hasSpeedAcc()) proto.speedAcc else null,
         if (proto.hasBearingAcc()) proto.bearingAcc else null,
     )
+
+    fun toProto(): SpeedBearingData = speedBearingData {
+        this@SpeedBearingDataPojo.speedMps?.let { speedMps = it }
+        this@SpeedBearingDataPojo.bearingDeg?.let { bearingDeg = it }
+        this@SpeedBearingDataPojo.speedAcc?.let { speedAcc = it }
+        this@SpeedBearingDataPojo.bearingAcc?.let { bearingAcc = it }
+    }
 
     fun saveInto(writer: SerialWriter) {
         speedMps?.let { writer.addFloat("speedMps", it) }

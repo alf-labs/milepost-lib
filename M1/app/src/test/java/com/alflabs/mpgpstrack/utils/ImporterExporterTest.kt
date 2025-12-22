@@ -1,4 +1,4 @@
-package com.alflabs.mpgpstrack.fragments.review
+package com.alflabs.mpgpstrack.utils
 
 import android.content.Context
 import com.alflabs.mpgpstrack.dagger.FakeFileOpsModule
@@ -9,7 +9,6 @@ import com.alflabs.mpgpstrack.location.locationDataList
 import com.alflabs.mpgpstrack.location.speedBearingData
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.trackSummary
-import com.alflabs.mpgpstrack.utils.ImporterExporter
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat
@@ -20,7 +19,7 @@ import org.mockito.kotlin.mock
 import java.io.File
 import java.time.Instant
 
-class ExporterTest {
+class ImporterExporterTest {
     private val fakeLogger = FakeLoggerModule.providesLogger() as StringLogger
     private val fakeFileOps = FakeFileOpsModule.providesFileOps() as FakeFileOps
     private val importerExporter = ImporterExporter(fakeLogger, fakeFileOps)
@@ -90,7 +89,7 @@ class ExporterTest {
     @Test
     fun createCsvExportFile_createsCorrectCsvFile() {
         val file = importerExporter.createCsvExportFile(context, trackEntity)
-        assertThat(fakeLogger.string.trim()).isEqualTo("Exporter: createCsvExportFile")
+        assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createCsvExportFile")
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).isEqualTo("/tmp/track_test-uuid-1234.csv")
@@ -107,7 +106,7 @@ class ExporterTest {
     @Test
     fun createJsonExportFile_createsCorrectJsonFile() {
         val file = importerExporter.createJsonExportFile(context, trackEntity)
-        assertThat(fakeLogger.string.trim()).isEqualTo("Exporter: createJsonExportFile")
+        assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createJsonExportFile")
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).isEqualTo("/tmp/track_test-uuid-1234.json")

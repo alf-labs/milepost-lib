@@ -3,6 +3,7 @@ package com.alflabs.mpgpstrack.utils
 import android.content.Context
 import android.content.Intent
 import android.location.Location
+import android.net.Uri
 import androidx.core.content.FileProvider
 import com.alflabs.mpgpstrack.location.LatLongData
 import com.alflabs.mpgpstrack.tracks.TrackEntity
@@ -112,23 +113,41 @@ class ImporterExporter @Inject constructor(
             return null
         }
 
-        trackEntity.fillPojo()
+        val exported = trackEntity.toPojo()
 
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "track_${trackEntity.uuid}.json")
+            val file = File(cacheDir, "track_${exported.uuid}.json")
 
             val objectMapper = ObjectMapper()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, trackEntity)
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, exported)
             }
 
             file // Return the created file
         } catch (e: Exception) {
             // Handle file creation error
             logger.d(TAG, "createJsonExportFile: error", e)
+            null
+        }
+    }
+
+    /**
+     * Import a GPS track from JSON.
+     */
+    fun loadTrackEntityFromUri(context: Context, uri: Uri): TrackEntity? {
+        logger.d(TAG, "loadTrackEntityFromUri: $uri")
+
+        return try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val objectMapper = ObjectMapper()
+                val imported = objectMapper.readValue(inputStream, TrackEntity::class.java)
+                return imported.toProto()
+            }
+        } catch (e: Exception) {
+            logger.d(TAG, "loadTrackEntityFromUri: error", e)
             null
         }
     }

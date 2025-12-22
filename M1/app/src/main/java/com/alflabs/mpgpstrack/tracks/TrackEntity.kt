@@ -6,6 +6,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.alflabs.mpgpstrack.location.LocationDataList
 import com.alflabs.mpgpstrack.location.LocationDataListPojo
+import com.alflabs.mpgpstrack.location.locationDataList
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.UUID
@@ -47,7 +48,7 @@ data class TrackEntity(
 
     @Ignore
     @field:JsonProperty("locationList")
-    var locationListPojo: LocationDataListPojo? = null,
+    val locationListPojo: LocationDataListPojo? = null,
 ) {
     // Room DAO needs a constructor without the ignored fields.
     constructor(
@@ -68,9 +69,15 @@ data class TrackEntity(
         locationList,
         null)
 
-    fun fillPojo() {
-        locationListPojo = locationList?.let { LocationDataListPojo(it) }
-    }
+    fun toPojo(): TrackEntity = this.copy(
+        locationList = null,
+        locationListPojo = locationList?.let { LocationDataListPojo(it) },
+    )
+
+    fun toProto(): TrackEntity = this.copy(
+        locationList = locationListPojo?.toProto(),
+        locationListPojo = null,
+    )
 }
 
 // A minimal version of TrackEntity for displaying in the TracksFragment.

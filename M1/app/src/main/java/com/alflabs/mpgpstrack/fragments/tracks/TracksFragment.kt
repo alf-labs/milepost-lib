@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.TracksFragmentBinding
 import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
+import com.alflabs.mpgpstrack.utils.ImporterExporter
 import com.alflabs.utils.ILogger
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -28,6 +30,7 @@ class TracksFragment : Fragment() {
 
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var importerExporter: ImporterExporter
 
     private var _binding: TracksFragmentBinding? = null
     private val binding get() = _binding!!
@@ -98,9 +101,14 @@ class TracksFragment : Fragment() {
 
     private fun importJsonLoadUri(uri: Uri) {
         // 2- When a file is selected, load it in memory using the Jackson library for TrackEntity.class
-        // 3- If the TrackEntity.id already exists in the database, ask the user if they want to override it or create a new record.
-        // 4- Either update the database (same id) or insert a new record (new id).
         logger.d(TAG, "@@ ImportJSON 2 - Load URI: $uri")
+        val entity = importerExporter.loadTrackEntityFromUri(requireContext(), uri)
+        if (entity == null) {
+            Toast.makeText(requireContext(), "Invalid JSON", Toast.LENGTH_LONG).show()
+        } else {
+            // 3- If the TrackEntity.id already exists in the database, ask the user if they want to override it or create a new record.
+            // 4- Either update the database (same id) or insert a new record (new id).
+        }
     }
 
     private fun showEditDialog(track: TrackDisplayInfo) {
