@@ -1,9 +1,11 @@
 package com.alflabs.mpgpstrack.fragments.tracks
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -13,19 +15,29 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.mpgpstrack.databinding.TracksFragmentBinding
 import com.alflabs.mpgpstrack.main.AppSettings
 import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
+import com.alflabs.utils.ILogger
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class TracksFragment : Fragment() {
 
+    companion object {
+        private val TAG = TracksFragment::class.java.simpleName
+    }
+
     @Inject lateinit var appSettings: AppSettings
+    @Inject lateinit var logger: ILogger
 
     private var _binding: TracksFragmentBinding? = null
     private val binding get() = _binding!!
     private val viewModel: TracksViewModel by viewModels()
     private var useImperialUnits = false
 
+    private val selectJsonFileLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { importJsonLoadUri(it) }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -74,16 +86,21 @@ class TracksFragment : Fragment() {
         }
 
         binding.importButton.setOnClickListener {
-            importFromJsonFile()
+            importJsonSelectFile()
         }
     }
 
-    private fun importFromJsonFile() {
-        // TODO:
-        // 1- Ask user to select a JSON file using the appropriate Android API (the inverse of ImporterExporter.shareFile()).
+    private fun importJsonSelectFile() {
+        logger.d(TAG, "@@ ImportJSON 1 - Select File")
+        // 1- Ask user to select a JSON file using the Storage Access Framework (SAF).
+        selectJsonFileLauncher.launch("application/json")
+    }
+
+    private fun importJsonLoadUri(uri: Uri) {
         // 2- When a file is selected, load it in memory using the Jackson library for TrackEntity.class
         // 3- If the TrackEntity.id already exists in the database, ask the user if they want to override it or create a new record.
         // 4- Either update the database (same id) or insert a new record (new id).
+        logger.d(TAG, "@@ ImportJSON 2 - Load URI: $uri")
     }
 
     private fun showEditDialog(track: TrackDisplayInfo) {
