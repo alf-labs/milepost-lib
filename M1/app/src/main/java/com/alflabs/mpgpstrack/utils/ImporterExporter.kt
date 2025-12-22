@@ -34,13 +34,13 @@ import javax.inject.Singleton
  * - https://www.google.com/earth/outreach/learn/visualize-your-data-on-a-custom-map-using-google-my-maps/
  */
 @Singleton
-class Exporter @Inject constructor(
+class ImporterExporter @Inject constructor(
     val logger: ILogger,
     val fileOps: FileOps,
 ) {
 
     companion object {
-        private val TAG = Exporter::class.java.simpleName
+        private val TAG = ImporterExporter::class.java.simpleName
     }
 
     /**

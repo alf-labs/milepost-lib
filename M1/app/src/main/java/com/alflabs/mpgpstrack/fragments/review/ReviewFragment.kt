@@ -23,7 +23,7 @@ import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.TrackEntityDao
 import com.alflabs.mpgpstrack.tracks.TrackSummary
 import com.alflabs.mpgpstrack.tracks.trackSummary
-import com.alflabs.mpgpstrack.utils.Exporter
+import com.alflabs.mpgpstrack.utils.ImporterExporter
 import com.alflabs.mpgpstrack.utils.MapStyle
 import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -44,7 +44,7 @@ class ReviewFragment : Fragment() {
     }
 
     @Inject lateinit var logger: ILogger
-    @Inject lateinit var exporter: Exporter
+    @Inject lateinit var importerExporter: ImporterExporter
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var trackEntityDao: TrackEntityDao
 
@@ -101,16 +101,16 @@ class ReviewFragment : Fragment() {
 
         binding.exportCsvButton.isEnabled = trackEntity != null
         binding.exportCsvButton.setOnClickListener {
-            val exportFile = exporter.createCsvExportFile(requireContext(), trackEntity)
+            val exportFile = importerExporter.createCsvExportFile(requireContext(), trackEntity)
             exportFile?.let {
-                exporter.shareFile(requireContext(), it)
+                importerExporter.shareFile(requireContext(), it)
             }
         }
         binding.exportJsonButton.isEnabled = trackEntity != null
         binding.exportJsonButton.setOnClickListener {
-            val exportFile = exporter.createJsonExportFile(requireContext(), trackEntity)
+            val exportFile = importerExporter.createJsonExportFile(requireContext(), trackEntity)
             exportFile?.let {
-                exporter.shareFile(requireContext(), it)
+                importerExporter.shareFile(requireContext(), it)
             }
         }
 

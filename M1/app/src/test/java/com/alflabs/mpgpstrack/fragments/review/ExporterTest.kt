@@ -9,7 +9,7 @@ import com.alflabs.mpgpstrack.location.locationDataList
 import com.alflabs.mpgpstrack.location.speedBearingData
 import com.alflabs.mpgpstrack.tracks.TrackEntity
 import com.alflabs.mpgpstrack.tracks.trackSummary
-import com.alflabs.mpgpstrack.utils.Exporter
+import com.alflabs.mpgpstrack.utils.ImporterExporter
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat
@@ -23,7 +23,7 @@ import java.time.Instant
 class ExporterTest {
     private val fakeLogger = FakeLoggerModule.providesLogger() as StringLogger
     private val fakeFileOps = FakeFileOpsModule.providesFileOps() as FakeFileOps
-    private val exporter = Exporter(fakeLogger, fakeFileOps)
+    private val importerExporter = ImporterExporter(fakeLogger, fakeFileOps)
     private lateinit var context: Context
     private lateinit var trackEntity: TrackEntity
 
@@ -89,7 +89,7 @@ class ExporterTest {
 
     @Test
     fun createCsvExportFile_createsCorrectCsvFile() {
-        val file = exporter.createCsvExportFile(context, trackEntity)
+        val file = importerExporter.createCsvExportFile(context, trackEntity)
         assertThat(fakeLogger.string.trim()).isEqualTo("Exporter: createCsvExportFile")
         assertThat(file).isNotNull()
         file!!
@@ -106,7 +106,7 @@ class ExporterTest {
 
     @Test
     fun createJsonExportFile_createsCorrectJsonFile() {
-        val file = exporter.createJsonExportFile(context, trackEntity)
+        val file = importerExporter.createJsonExportFile(context, trackEntity)
         assertThat(fakeLogger.string.trim()).isEqualTo("Exporter: createJsonExportFile")
         assertThat(file).isNotNull()
         file!!

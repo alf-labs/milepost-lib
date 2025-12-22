@@ -73,9 +73,17 @@ class TracksFragment : Fragment() {
             adapter.submitList(it)
         }
 
-        binding.addButton.setOnClickListener {
-            viewModel.createRandomTrack()
+        binding.importButton.setOnClickListener {
+            importFromJsonFile()
         }
+    }
+
+    private fun importFromJsonFile() {
+        // TODO:
+        // 1- Ask user to select a JSON file using the appropriate Android API (the inverse of ImporterExporter.shareFile()).
+        // 2- When a file is selected, load it in memory using the Jackson library for TrackEntity.class
+        // 3- If the TrackEntity.id already exists in the database, ask the user if they want to override it or create a new record.
+        // 4- Either update the database (same id) or insert a new record (new id).
     }
 
     private fun showEditDialog(track: TrackDisplayInfo) {
