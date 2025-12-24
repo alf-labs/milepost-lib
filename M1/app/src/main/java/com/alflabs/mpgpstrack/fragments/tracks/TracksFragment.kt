@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +20,8 @@ import com.alflabs.mpgpstrack.tracks.TrackDisplayInfo
 import com.alflabs.mpgpstrack.utils.ImporterExporter
 import com.alflabs.utils.ILogger
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -105,9 +108,38 @@ class TracksFragment : Fragment() {
         val entity = importerExporter.loadTrackEntityFromUri(requireContext(), uri)
         if (entity == null) {
             Toast.makeText(requireContext(), "Invalid JSON", Toast.LENGTH_LONG).show()
-        } else {
-            // 3- If the TrackEntity.id already exists in the database, ask the user if they want to override it or create a new record.
-            // 4- Either update the database (same id) or insert a new record (new id).
+            return
+        }
+
+        val uuid = entity.uuid
+        // 3- If the uuid already exists in the database, ask the user if they want to override it or create a new record.
+        lifecycleScope.launch {
+            val existingId = viewModel.getIdByUuid(uuid)
+            logger.d(TAG, "@@ ImportJSON 3 - Existing ID: $uuid --> $existingId")
+            if (existingId != null) {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Track Exists")
+                    .setMessage("A track with the same UUID already exists. What would you like to do?")
+                    .setPositiveButton("Override") { _, _ ->
+                        // 4a- Update (override) the existing track entity with the new.
+                        logger.d(TAG, "@@ ImportJSON 4a - Update existing ID: $existingId")
+                        viewModel.update(entity.copy(id = existingId))
+                        Toast.makeText(requireContext(), "Track updated", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Create New") { _, _ ->
+                        // 4b- Create a new track entity. It must have a new UUID to not conflict.
+                        val id = viewModel.insert(entity.copy(id = 0, uuid = UUID.randomUUID().toString()))
+                        logger.d(TAG, "@@ ImportJSON 4b - Create New ID: $id")
+                        Toast.makeText(requireContext(), "New track created", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNeutralButton("Cancel", null)
+                    .show()
+            } else {
+                // 4c- This UUID is unknown. Simply insert the new track entity, let the id be auto-generated.
+                val id = viewModel.insert(entity.copy(id = 0))
+                logger.d(TAG, "@@ ImportJSON 4c - Insert New ID: $id")
+                Toast.makeText(requireContext(), "Track imported", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

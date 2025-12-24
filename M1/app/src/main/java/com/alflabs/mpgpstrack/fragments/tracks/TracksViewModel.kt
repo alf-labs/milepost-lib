@@ -40,6 +40,28 @@ class TracksViewModel @Inject constructor(
         }
     }
 
+    suspend fun getIdByUuid(uuid: String): Long? {
+        return trackEntityDao.getIdByUuid(uuid)
+    }
+
+    suspend fun getByUuid(uuid: String): TrackEntity? {
+        return trackEntityDao.getByUuid(uuid)
+    }
+
+    /** Insert a TrackEntity. Set id to 0 to have it auto-generated. The new id is returned. */
+    fun insert(track: TrackEntity) {
+        viewModelScope.launch {
+            trackEntityDao.insert(track)
+        }
+    }
+
+    /** Update a TrackEntity with a matching id. */
+    fun update(track: TrackEntity) {
+        viewModelScope.launch {
+            trackEntityDao.update(track)
+        }
+    }
+
     fun delete(trackInfo: TrackDisplayInfo) {
         viewModelScope.launch {
             trackEntityDao.deleteById(trackInfo.id)
