@@ -20,14 +20,14 @@
 
     <fragment
             android:id="@+id/nav_about"
-            android:name="com.alflabs.mpgpstrack.fragments.AboutFragment"
+            android:name="com.alflabs.milepost.fragments.AboutFragment"
             android:label="About"
             tools:layout="@layout/about_fragment">
     </fragment>
 
     <fragment
             android:id="@+id/nav_tracks"
-            android:name="com.alflabs.mpgpstrack.fragments.tracks.TracksFragment"
+            android:name="com.alflabs.milepost.fragments.tracks.TracksFragment"
             android:label="Tracks"
             tools:layout="@layout/tracks_fragment">
         <action
@@ -41,7 +41,7 @@
 
     <fragment
             android:id="@+id/nav_review_track"
-            android:name="com.alflabs.mpgpstrack.fragments.review.ReviewFragment"
+            android:name="com.alflabs.milepost.fragments.review.ReviewFragment"
             android:label="Review Track"
             tools:layout="@layout/review_fragment">
         <argument
@@ -51,7 +51,7 @@
 
     <fragment
             android:id="@+id/nav_record_track"
-            android:name="com.alflabs.mpgpstrack.fragments.RecordFragment"
+            android:name="com.alflabs.milepost.fragments.RecordFragment"
             android:label="Record Track"
             tools:layout="@layout/sensors_fragment">
         <action
@@ -73,7 +73,7 @@
 
     <fragment
             android:id="@+id/nav_play_track"
-            android:name="com.alflabs.mpgpstrack.fragments.PlaybackFragment"
+            android:name="com.alflabs.milepost.fragments.PlaybackFragment"
             android:label="Playback Track"
             tools:layout="@layout/sensors_fragment">
         <action
@@ -88,7 +88,7 @@
 
     <fragment
             android:id="@+id/nav_sensors"
-            android:name="com.alflabs.mpgpstrack.fragments.SensorsFragment"
+            android:name="com.alflabs.milepost.fragments.SensorsFragment"
             android:label="Test Sensors"
             tools:layout="@layout/sensors_fragment">
         <action
@@ -103,7 +103,7 @@
 
     <fragment
             android:id="@+id/nav_permissions"
-            android:name="com.alflabs.mpgpstrack.fragments.PermissionsFragment"
+            android:name="com.alflabs.milepost.fragments.PermissionsFragment"
             android:label="Permissions"
             tools:layout="@layout/permissions_fragment">
         <argument
@@ -115,7 +115,7 @@
     <!-- Same as nav_permission but as a dialog -->
     <dialog
             android:id="@+id/nav_permissions_dlg"
-            android:name="com.alflabs.mpgpstrack.fragments.PermissionsFragment"
+            android:name="com.alflabs.milepost.fragments.PermissionsFragment"
             android:label="Permissions"
             tools:layout="@layout/permissions_fragment">
         <argument
@@ -126,7 +126,7 @@
 
     <fragment
             android:id="@+id/nav_settings"
-            android:name="com.alflabs.mpgpstrack.fragments.SettingsFragment"
+            android:name="com.alflabs.milepost.fragments.SettingsFragment"
             android:label="Settings"
             tools:layout="@layout/settings_fragment">
     </fragment>

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package com.alflabs.mpgpstrack.location;
+package com.alflabs.milepost.location;
 
 option java_multiple_files = true;
 

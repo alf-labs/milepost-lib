@@ -1,0 +1,46 @@
+package com.alflabs.milepost.main
+
+import com.alflabs.milepost.location.LocationData
+import com.alflabs.milepost.location.LocationDataList
+import com.alflabs.rx.IPublisher
+import com.alflabs.rx.IStream
+import com.alflabs.rx.Publishers
+import com.alflabs.rx.Streams
+import com.alflabs.utils.ILogger
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class GlobalState @Inject constructor(
+    val logger: ILogger
+) {
+    private val TAG = GlobalState::class.java.simpleName
+
+    val locationStream: IStream<LocationData?> = Streams.stream()
+    val statusStream: IStream<StatusData?> = Streams.stream()
+    val status: StatusData get() = _status ?: StatusData.STOPPED
+
+    var currentTrackId: Long? = null
+        private set
+    var currentLocationList: LocationDataList.Builder? = null
+        private set
+
+    private var _status: StatusData? = null
+    private val statusPublisher: IPublisher<StatusData?> = Publishers.latest()
+
+
+    fun updateStatus(
+        status: StatusData,
+        trackId: Long? = null,
+        locationDataListBuilder: LocationDataList.Builder? = null
+    ) {
+        if (_status == null) {
+            logger.d(TAG, "GlobalState initialized: $this")
+            statusStream.publishWith(statusPublisher)
+        }
+        _status = status
+        currentTrackId = trackId
+        currentLocationList = locationDataListBuilder
+        statusPublisher.publish(status)
+    }
+}
