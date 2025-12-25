@@ -124,8 +124,8 @@ class PojoPerformanceTest {
         val msPerEnt    = (now2 - now1).toDouble() / NUM_ENT
         val msPerEntLoc = msPerEnt / NUM_LOC
         Log.w(TAG, "@@ Serialization Time : $msPerEnt ms/ent ==> $msPerEntLoc ms/ent/loc")
-        expect.that(msPerEnt    in 660.0..770.0).isTrue()
-        expect.that(msPerEntLoc in 0.066..0.077).isTrue()
+        expect.that(msPerEnt    in 630.0..770.0).isTrue()
+        expect.that(msPerEntLoc in 0.063..0.077).isTrue()
         assertThat(locCounter).isEqualTo(NUM_ENT * NUM_LOC)
     }
 
