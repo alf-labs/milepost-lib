@@ -92,7 +92,11 @@ class ReviewFragment : Fragment() {
         viewModel.track.observe(viewLifecycleOwner) { track ->
             Log.d(TAG, "Review observe track: ${track?.id} ${track?.label}")
 
-            binding.label.text = track?.label ?: "No track found"
+            if (track == null) {
+                binding.label.text = "No track found"
+            } else {
+                binding.label.text = track.label?.ifBlank { "(Tap to Add Title)" }
+            }
             binding.summary.text = track?.summary.toText(useImperialUnits)
 
             trackEntity = track
@@ -174,7 +178,7 @@ class ReviewFragment : Fragment() {
             .setTitle("Review Options")
             .setView(dialogView)
             .setPositiveButton("Apply") { _, _ ->
-                val newLabel = labelEditText.text.toString()
+                val newLabel = labelEditText.text.toString().trim()
                 val newMpStart = mpStartValueEditText.text.toString().toFloatOrNull()
                 val newMpEnd = mpEndValueEditText.text.toString().toFloatOrNull()
 
@@ -186,7 +190,7 @@ class ReviewFragment : Fragment() {
                 var changed = false
                 var newTrackEntity: TrackEntity = track
 
-                if (newLabel.isNotEmpty() && newLabel != track.label) {
+                if (newLabel != track.label) {
                     changed = true
                     newTrackEntity = newTrackEntity.copy(label = newLabel)
                 }

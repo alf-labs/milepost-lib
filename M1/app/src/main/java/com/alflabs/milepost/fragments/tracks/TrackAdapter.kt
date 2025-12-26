@@ -62,7 +62,7 @@ class TrackAdapter(
 
         fun bind(track: TrackDisplayInfo) {
             currentTrack = track
-            binding.trackName.text = "[${track.id}] ${track.label}"
+            binding.trackName.text = "[${track.id}] ${track.label?.ifBlank { "(No Title)" }}"
             binding.trackDate.text = track.createdDateISO
             binding.trackSummary.text = track.summary?.toText(useImperialUnits)
         }
