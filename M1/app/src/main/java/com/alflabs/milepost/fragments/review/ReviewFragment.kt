@@ -6,6 +6,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.ImageButton
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -31,6 +34,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -113,6 +117,9 @@ class ReviewFragment : Fragment() {
                 importerExporter.shareFile(requireContext(), it)
             }
         }
+        binding.label.setOnClickListener {
+            showReviewOptionsDialog()
+        }
 
         binding.mapView?.onCreate(savedInstanceState)
         binding.mapView?.getMapAsync { map ->
@@ -128,6 +135,47 @@ class ReviewFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showReviewOptionsDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_review_options, null)
+        val labelEditText = dialogView.findViewById<TextInputEditText>(R.id.label_edittext)
+        val mpStartValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_start_value_edittext)
+        val mpEndValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_end_value_edittext)
+        val clearMpStartButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_start_button)
+        val clearMpEndButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_end_button)
+        val ignoreCheckbox = dialogView.findViewById<CheckBox>(R.id.ignore_checkbox)
+        val streamlineCheckbox = dialogView.findViewById<CheckBox>(R.id.streamline_checkbox)
+
+        labelEditText.setText(trackEntity?.label)
+
+        clearMpStartButton.setOnClickListener {
+            mpStartValueEditText.text?.clear()
+        }
+
+        clearMpEndButton.setOnClickListener {
+            mpEndValueEditText.text?.clear()
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Review Options")
+            .setView(dialogView)
+            .setPositiveButton("Apply") { _, _ ->
+                val label = labelEditText.text.toString()
+                val mpValue = mpStartValueEditText.text.toString().toFloatOrNull()
+                val mpEndValue = mpEndValueEditText.text.toString().toFloatOrNull()
+                val isIgnored = ignoreCheckbox.isChecked
+                val isStreamlined = streamlineCheckbox.isChecked
+
+                logger.d(TAG, "@@Apply button clicked:")
+                logger.d(TAG, "@@  Label: $label")
+                logger.d(TAG, "@@  MP Value: $mpValue")
+                logger.d(TAG, "@@  MP End Value: $mpEndValue")
+                logger.d(TAG, "@@  Ignore: $isIgnored")
+                logger.d(TAG, "@@  Streamline: $isStreamlined")
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun convert(locationDataList: LocationDataList?): List<ReviewLocationData> {
