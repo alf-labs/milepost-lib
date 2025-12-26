@@ -21,6 +21,7 @@ import com.alflabs.milepost.fragments.tracks.toText
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
+import com.alflabs.milepost.location.copy
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.milepost.tracks.TrackEntityDao
@@ -120,7 +121,7 @@ class ReviewFragment : Fragment() {
             }
         }
         binding.label.setOnClickListener {
-            showReviewTitleDialog()
+            showReviewTitleDialog(trackEntity)
         }
 
         binding.mapView?.onCreate(savedInstanceState)
@@ -139,7 +140,9 @@ class ReviewFragment : Fragment() {
         _binding = null
     }
 
-    private fun showReviewTitleDialog() {
+    private fun showReviewTitleDialog(track: TrackEntity?) {
+        if (track == null) return
+
         val dialogView = layoutInflater.inflate(R.layout.review_title_dialog, null)
         val labelEditText = dialogView.findViewById<TextInputEditText>(R.id.label_edittext)
         val mpStartValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_start_value_edittext)
@@ -147,12 +150,22 @@ class ReviewFragment : Fragment() {
         val clearMpStartButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_start_button)
         val clearMpEndButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_end_button)
 
-        labelEditText.setText(trackEntity?.label)
+        labelEditText.setText(track.label)
 
+        val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
+        val mpStart : Float? = if (locations.isNotEmpty()) locations.first().mp else null
+        val mpEnd : Float? = if (locations.size > 1) locations.last().mp else null
+
+        mpStart?.let { mpStartValueEditText.setText(it.toString()) }
+        mpEnd?.let { mpEndValueEditText.setText(it.toString()) }
+
+        mpStartValueEditText.isEnabled = locations.isNotEmpty()
+        clearMpStartButton.isEnabled = locations.isNotEmpty()
         clearMpStartButton.setOnClickListener {
             mpStartValueEditText.text?.clear()
         }
-
+        mpEndValueEditText.isEnabled = locations.size > 1
+        clearMpEndButton.isEnabled = locations.size > 1
         clearMpEndButton.setOnClickListener {
             mpEndValueEditText.text?.clear()
         }
@@ -161,14 +174,53 @@ class ReviewFragment : Fragment() {
             .setTitle("Review Options")
             .setView(dialogView)
             .setPositiveButton("Apply") { _, _ ->
-                val label = labelEditText.text.toString()
-                val mpValue = mpStartValueEditText.text.toString().toFloatOrNull()
-                val mpEndValue = mpEndValueEditText.text.toString().toFloatOrNull()
+                val newLabel = labelEditText.text.toString()
+                val newMpStart = mpStartValueEditText.text.toString().toFloatOrNull()
+                val newMpEnd = mpEndValueEditText.text.toString().toFloatOrNull()
 
                 logger.d(TAG, "@@Apply TITLE clicked:")
-                logger.d(TAG, "@@  Label: $label")
-                logger.d(TAG, "@@  MP Start Value: $mpValue")
-                logger.d(TAG, "@@  MP End Value: $mpEndValue")
+                logger.d(TAG, "@@  Label: $newLabel")
+                logger.d(TAG, "@@  MP Start Value: $newMpStart")
+                logger.d(TAG, "@@  MP End Value: $newMpEnd")
+
+                var changed = false
+                var newTrackEntity: TrackEntity = track
+
+                if (newLabel.isNotEmpty() && newLabel != track.label) {
+                    changed = true
+                    newTrackEntity = newTrackEntity.copy(label = newLabel)
+                }
+                if (track.locationList != null && (newMpStart != mpStart || newMpEnd != mpEnd)) {
+                    changed = true
+                    val builder = track.locationList.toBuilder()
+                    if (newMpStart != mpStart) {
+                        val loc = track.locationList.getLocations(0).copy {
+                            if (newMpStart != null) {
+                                mp = newMpStart
+                            } else {
+                                clearMp()
+                            }
+                        }
+                        builder.setLocations(0, loc)
+                    }
+                    if (newMpEnd != mpEnd) {
+                        val idx = track.locationList.locationsCount - 1
+                        val loc = track.locationList.getLocations(idx).copy {
+                            if (newMpEnd != null) {
+                                mp = newMpEnd
+                            } else {
+                                clearMp()
+                            }
+                        }
+                        builder.setLocations(idx, loc)
+                    }
+                    newTrackEntity = newTrackEntity.copy(locationList = builder.build())
+                }
+                if (changed) {
+                    lifecycleScope.launch {
+                        trackEntityDao.update(newTrackEntity)
+                    }
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()

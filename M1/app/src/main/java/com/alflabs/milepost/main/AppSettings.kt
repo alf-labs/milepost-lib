@@ -135,7 +135,6 @@ class AdapterPreferenceDataStore(
         key: Preferences.Key<T>,
         defValue: T
     ): T {
-        Log.d(AppSettings.TAG, "GET preference $key")
         val value = runBlocking {
             dataStore.data.map { it[key] ?: defValue }.first()
         }
