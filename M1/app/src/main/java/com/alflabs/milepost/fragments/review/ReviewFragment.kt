@@ -75,7 +75,9 @@ class ReviewFragment : Fragment() {
 
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
 
-        val adapter = ReviewLocationAdapter(useImperialUnits)
+        val adapter = ReviewLocationAdapter(useImperialUnits) {
+            showReviewMpDialog(it)
+        }
         val layoutManager = LinearLayoutManager(requireContext())
         binding.locationsList.adapter = adapter
         binding.locationsList.layoutManager = layoutManager
@@ -118,7 +120,7 @@ class ReviewFragment : Fragment() {
             }
         }
         binding.label.setOnClickListener {
-            showReviewOptionsDialog()
+            showReviewTitleDialog()
         }
 
         binding.mapView?.onCreate(savedInstanceState)
@@ -137,15 +139,13 @@ class ReviewFragment : Fragment() {
         _binding = null
     }
 
-    private fun showReviewOptionsDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_review_options, null)
+    private fun showReviewTitleDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.review_title_dialog, null)
         val labelEditText = dialogView.findViewById<TextInputEditText>(R.id.label_edittext)
         val mpStartValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_start_value_edittext)
         val mpEndValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_end_value_edittext)
         val clearMpStartButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_start_button)
         val clearMpEndButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_end_button)
-        val ignoreCheckbox = dialogView.findViewById<CheckBox>(R.id.ignore_checkbox)
-        val streamlineCheckbox = dialogView.findViewById<CheckBox>(R.id.streamline_checkbox)
 
         labelEditText.setText(trackEntity?.label)
 
@@ -164,13 +164,45 @@ class ReviewFragment : Fragment() {
                 val label = labelEditText.text.toString()
                 val mpValue = mpStartValueEditText.text.toString().toFloatOrNull()
                 val mpEndValue = mpEndValueEditText.text.toString().toFloatOrNull()
+
+                logger.d(TAG, "@@Apply TITLE clicked:")
+                logger.d(TAG, "@@  Label: $label")
+                logger.d(TAG, "@@  MP Start Value: $mpValue")
+                logger.d(TAG, "@@  MP End Value: $mpEndValue")
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showReviewMpDialog(item: ReviewLocationData) {
+        val dialogView = layoutInflater.inflate(R.layout.review_mp_dialog, null)
+        val mpValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_value_edittext)
+        val clearMpButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_button)
+        val ignoreCheckbox = dialogView.findViewById<CheckBox>(R.id.ignore_checkbox)
+        val streamlineCheckbox = dialogView.findViewById<CheckBox>(R.id.streamline_checkbox)
+
+        item.data?.let {
+            if (it.hasMp()) {
+                mpValueEditText.setText(it.mp.toString())
+            }
+        }
+
+        clearMpButton.setOnClickListener {
+            mpValueEditText.text?.clear()
+        }
+
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit Milepost")
+            .setView(dialogView)
+            .setPositiveButton("Apply") { _, _ ->
+                val mpValue = mpValueEditText.text.toString().toFloatOrNull()
                 val isIgnored = ignoreCheckbox.isChecked
                 val isStreamlined = streamlineCheckbox.isChecked
 
-                logger.d(TAG, "@@Apply button clicked:")
-                logger.d(TAG, "@@  Label: $label")
+                logger.d(TAG, "@@Apply MP clicked:")
+                logger.d(TAG, "@@  Item: ${item.data?.latLong?.timestampMillis}")
                 logger.d(TAG, "@@  MP Value: $mpValue")
-                logger.d(TAG, "@@  MP End Value: $mpEndValue")
                 logger.d(TAG, "@@  Ignore: $isIgnored")
                 logger.d(TAG, "@@  Streamline: $isStreamlined")
             }

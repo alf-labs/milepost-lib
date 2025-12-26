@@ -75,17 +75,4 @@
             app:tint="?android:attr/textColorSecondary" />
     </LinearLayout>
 
-    <CheckBox
-        android:id="@+id/ignore_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Ignore" />
-
-    <CheckBox
-        android:id="@+id/streamline_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Streamline" />
-
 </LinearLayout>
