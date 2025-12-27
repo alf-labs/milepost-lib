@@ -60,6 +60,7 @@ class ReviewFragment : Fragment() {
     private var trackEntity: TrackEntity? = null
     private var googleMap: GoogleMap? = null
     private var useImperialUnits = false
+    private var firstLoad = true
     private lateinit var reviewList: List<ReviewLocationData>
 
     override fun onCreateView(
@@ -106,6 +107,12 @@ class ReviewFragment : Fragment() {
             binding.exportJsonButton.isEnabled = trackEntity != null
             loadMapTrack()
             updateTrackSummary(track)
+            if (track != null && firstLoad) {
+                firstLoad = false
+                if (track.label.isNullOrEmpty()) {
+                    showReviewTitleDialog(track)
+                }
+            }
         }
 
         viewModel.loadTrack(fragmentArgs.trackId)
