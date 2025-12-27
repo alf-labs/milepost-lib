@@ -22,8 +22,10 @@ import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.LocationFlags
+import com.alflabs.milepost.location.changeFlag
 import com.alflabs.milepost.location.clearFlag
 import com.alflabs.milepost.location.copy
+import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.location.setFlag
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.tracks.TrackEntity
@@ -206,7 +208,7 @@ class ReviewFragment : Fragment() {
                 }
                 if (track.locationList != null && (newMpStart != mpStart || newMpEnd != mpEnd)) {
                     changed = true
-                    val builder = track.locationList.toBuilder()
+                    val listBuilder = track.locationList.toBuilder()
                     if (newMpStart != mpStart) {
                         val loc = track.locationList.getLocations(0).copy {
                             if (newMpStart != null) {
@@ -217,7 +219,7 @@ class ReviewFragment : Fragment() {
                                 flags = flags.clearFlag(LocationFlags.USER_MP)
                             }
                         }
-                        builder.setLocations(0, loc)
+                        listBuilder.setLocations(0, loc)
                     }
                     if (newMpEnd != mpEnd) {
                         val idx = track.locationList.locationsCount - 1
@@ -230,9 +232,9 @@ class ReviewFragment : Fragment() {
                                 flags = flags.clearFlag(LocationFlags.USER_MP)
                             }
                         }
-                        builder.setLocations(idx, loc)
+                        listBuilder.setLocations(idx, loc)
                     }
-                    newTrackEntity = newTrackEntity.copy(locationList = builder.build())
+                    newTrackEntity = newTrackEntity.copy(locationList = listBuilder.build())
                 }
                 if (changed) {
                     lifecycleScope.launch {
@@ -245,36 +247,69 @@ class ReviewFragment : Fragment() {
     }
 
     private fun showReviewMpDialog(item: ReviewLocationData) {
+        val index = item.index
+        val track = trackEntity
+        if (index < 0 || item.data == null || track == null) return
+        val ld: LocationData = item.data
+
+        val layoutInflater = LayoutInflater.from(requireContext())
         val dialogView = layoutInflater.inflate(R.layout.review_mp_dialog, null)
         val mpValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_value_edittext)
         val clearMpButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_button)
         val ignoreCheckbox = dialogView.findViewById<CheckBox>(R.id.ignore_checkbox)
         val streamlineCheckbox = dialogView.findViewById<CheckBox>(R.id.streamline_checkbox)
+        val mpStart : Float? = if (ld.hasMp()) ld.mp else null
+        val ignoreStart = ld.flags.hasFlag(LocationFlags.IGNORE)
+        val streamlineStart = ld.flags.hasFlag(LocationFlags.STREAMLINE)
 
-        item.data?.let {
-            if (it.hasMp()) {
-                mpValueEditText.setText(it.mp.toString())
-            }
+        mpStart?.let {
+            mpValueEditText.setText(it.toString())
         }
 
         clearMpButton.setOnClickListener {
             mpValueEditText.text?.clear()
         }
 
+        ignoreCheckbox.isChecked = ignoreStart
+        streamlineCheckbox.isChecked = streamlineStart
 
         AlertDialog.Builder(requireContext())
             .setTitle("Edit Milepost")
             .setView(dialogView)
             .setPositiveButton("Apply") { _, _ ->
-                val mpValue = mpValueEditText.text.toString().toFloatOrNull()
-                val isIgnored = ignoreCheckbox.isChecked
-                val isStreamlined = streamlineCheckbox.isChecked
+                val mpNew = mpValueEditText.text.toString().toFloatOrNull()
+                val ignoredNew = ignoreCheckbox.isChecked
+                val streamlinedNew = streamlineCheckbox.isChecked
 
                 logger.d(TAG, "@@Apply MP clicked:")
                 logger.d(TAG, "@@  Item: ${item.data?.latLong?.timestampMillis}")
-                logger.d(TAG, "@@  MP Value: $mpValue")
-                logger.d(TAG, "@@  Ignore: $isIgnored")
-                logger.d(TAG, "@@  Streamline: $isStreamlined")
+                logger.d(TAG, "@@  MP Value: $mpNew")
+                logger.d(TAG, "@@  Ignore: $ignoredNew")
+                logger.d(TAG, "@@  Streamline: $streamlinedNew")
+
+                if (track.locationList != null
+                    && (mpNew != mpStart
+                        || ignoredNew != ignoreStart
+                        || streamlinedNew != streamlineStart)
+                    && index < track.locationList.locationsCount) {
+                    val listBuilder = track.locationList.toBuilder()
+                    val loc = track.locationList.getLocations(index).copy {
+                        if (mpNew != null) {
+                            mp = mpNew
+                            flags = flags.setFlag(LocationFlags.USER_MP)
+                        } else {
+                            clearMp()
+                            flags = flags.clearFlag(LocationFlags.USER_MP)
+                        }
+                        flags = flags.changeFlag(LocationFlags.IGNORE, ignoredNew)
+                        flags = flags.changeFlag(LocationFlags.STREAMLINE, streamlinedNew)
+                    }
+                    listBuilder.setLocations(index, loc)
+                    val newTrackEntity = track.copy(locationList = listBuilder.build())
+                    lifecycleScope.launch {
+                        trackEntityDao.update(newTrackEntity)
+                    }
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -292,14 +327,15 @@ class ReviewFragment : Fragment() {
 
         // First row is a little dummy hack for headers
         result.add(ReviewLocationData(
-            data = null
+            index = -1,
+            data = null,
         ))
 
         val firstTS = locationsList[0].latLong.timestampMillis
         val distResults = FloatArray(1)
         var distanceMeters = 0f
         var lastLatLong: LatLongData? = null
-        for (location in locationsList) {
+        for ((index, location) in locationsList.withIndex()) {
             val newLatLong = location.latLong
             val deltaTS = newLatLong.timestampMillis - firstTS
 
@@ -312,6 +348,7 @@ class ReviewFragment : Fragment() {
             }
 
             result.add(ReviewLocationData(
+                index = index,
                 data = location,
                 deltaTS = deltaTS,
                 distanceMeters = distanceMeters

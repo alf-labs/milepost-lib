@@ -7,6 +7,7 @@ import com.alflabs.milepost.location.LocationData
     This add precomputed values wanted at display time.
 */
 data class ReviewLocationData(
+    val index: Int,
     val data: LocationData?,
     val deltaTS: Long = 0,
     val distanceMeters: Float = 0f,

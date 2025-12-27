@@ -1,11 +1,14 @@
 package com.alflabs.milepost.fragments.review
 
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.databinding.ReviewLocationItemBinding
+import com.alflabs.milepost.location.LocationFlags
+import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.utils.Units
 
 class ReviewLocationAdapter(
@@ -33,6 +36,8 @@ class ReviewLocationAdapter(
         private val onMpClicked: (ReviewLocationData) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
+        private val italic = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
+
         fun bind(item: ReviewLocationData) {
             val ld = item.data
             if (ld == null) {
@@ -51,9 +56,14 @@ class ReviewLocationAdapter(
                     Units.mpsToUnit(ld.speedBearing.speedMps, useImperialUnits),
                     Units.mpsUnitName(useImperialUnits)
                 )
-                binding.mp.text = String.format("%.1f mi", ld.mp)
                 binding.mp.setOnClickListener {
                     onMpClicked(item)
+                }
+                binding.mp.text = String.format("%.1f mi", ld.mp)
+                binding.mp.typeface = if (ld.flags.hasFlag(LocationFlags.USER_MP)) {
+                    Typeface.DEFAULT_BOLD
+                } else {
+                    italic
                 }
             }
         }

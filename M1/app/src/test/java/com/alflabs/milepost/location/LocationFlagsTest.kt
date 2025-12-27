@@ -15,8 +15,7 @@ class LocationFlagsTest {
 
     @Test
     fun testSetFlag() {
-        var flags = 0
-        flags = flags.setFlag(LocationFlags.USER_MP)
+        var flags = 0.setFlag(LocationFlags.USER_MP)
         assertThat(flags.hasFlag(LocationFlags.USER_MP)).isTrue()
         assertThat(flags.hasFlag(LocationFlags.IGNORE)).isFalse()
         assertThat(flags.hasFlag(LocationFlags.STREAMLINE)).isFalse()
@@ -35,6 +34,24 @@ class LocationFlagsTest {
 
         flags = flags.clearFlag(LocationFlags.USER_MP)
         assertThat(flags.hasFlag(LocationFlags.USER_MP)).isFalse()
+        assertThat(flags.hasFlag(LocationFlags.STREAMLINE)).isTrue()
+    }
+
+    @Test
+    fun testChangeFlag() {
+        var flags = 0.changeFlag(LocationFlags.USER_MP, true)
+        assertThat(flags.hasFlag(LocationFlags.USER_MP)).isTrue()
+        assertThat(flags.hasFlag(LocationFlags.IGNORE)).isFalse()
+        assertThat(flags.hasFlag(LocationFlags.STREAMLINE)).isFalse()
+
+        flags = flags.changeFlag(LocationFlags.STREAMLINE, true)
+        assertThat(flags.hasFlag(LocationFlags.USER_MP)).isTrue()
+        assertThat(flags.hasFlag(LocationFlags.IGNORE)).isFalse()
+        assertThat(flags.hasFlag(LocationFlags.STREAMLINE)).isTrue()
+
+        flags = flags.changeFlag(LocationFlags.USER_MP, false)
+        assertThat(flags.hasFlag(LocationFlags.USER_MP)).isFalse()
+        assertThat(flags.hasFlag(LocationFlags.IGNORE)).isFalse()
         assertThat(flags.hasFlag(LocationFlags.STREAMLINE)).isTrue()
     }
 }
