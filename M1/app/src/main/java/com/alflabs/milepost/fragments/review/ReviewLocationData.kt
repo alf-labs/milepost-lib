@@ -11,5 +11,6 @@ data class ReviewLocationData(
     val data: LocationData?,
     val deltaTS: Long = 0,
     val distanceMeters: Float = 0f,
+    val distanceMiles: Float = 0f,
 )
 

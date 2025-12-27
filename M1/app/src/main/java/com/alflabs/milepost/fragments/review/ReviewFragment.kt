@@ -34,6 +34,7 @@ import com.alflabs.milepost.tracks.TrackSummary
 import com.alflabs.milepost.tracks.trackSummary
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.milepost.utils.MapStyle
+import com.alflabs.milepost.utils.Units
 import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -107,6 +108,7 @@ class ReviewFragment : Fragment() {
 
             trackEntity = track
             reviewList = convert(track?.locationList)
+            updateInterpolatedMp(track, reviewList)
             adapter.submitList(reviewList)
             binding.exportCsvButton.isEnabled = trackEntity != null
             binding.exportJsonButton.isEnabled = trackEntity != null
@@ -351,7 +353,8 @@ class ReviewFragment : Fragment() {
                 index = index,
                 data = location,
                 deltaTS = deltaTS,
-                distanceMeters = distanceMeters
+                distanceMeters = distanceMeters,
+                distanceMiles = Units.m_to_miles(distanceMeters),
             ))
 
             lastLatLong = newLatLong
@@ -406,6 +409,7 @@ class ReviewFragment : Fragment() {
     }
 
     fun updateTrackSummary(track: TrackEntity?) {
+        logger.d(TAG, "@@ updateTrackSummary for $track")
         if (track == null) return
 
         val currentSummary = track.summary ?: TrackSummary.getDefaultInstance()
@@ -461,7 +465,7 @@ class ReviewFragment : Fragment() {
         // Write it back to the DAO if summary has changed
         if (newSummary != currentSummary) {
             lifecycleScope.launch {
-                logger.d(TAG, "@@ Update Summary from [${
+                logger.d(TAG, "@@ Summary Changed --> Update Summary from [${
                     currentSummary.toText(useImperialUnits)}] to [${
                     newSummary.toText(useImperialUnits)}]")
                 trackEntityDao.updateSummary(track.id, newSummary)
@@ -469,4 +473,99 @@ class ReviewFragment : Fragment() {
         }
     }
 
+    fun updateInterpolatedMp(track: TrackEntity?, locList: List<ReviewLocationData>) {
+        logger.d(TAG, "@@ updateInterpolatedMp for $track")
+        if (track == null || track.locationList == null) return
+
+        // Keep only the valid entries (not header, with actual data)
+        val mutLocList = locList.filter { it.index >= 0 && it.data != null }.toMutableList()
+
+        var changed = false
+        val count = mutLocList.size
+        if (count < 2) return
+
+        // First create a list of all the known user-mp entries.
+        val knownMpList = mutLocList.filter {
+            it.data != null && it.data.hasMp() && it.data.flags.hasFlag(LocationFlags.USER_MP)
+        }.toMutableList()
+
+        if (knownMpList.isEmpty()) {
+            // If there are no user-mp, simply fill with known distances.
+            val firstLoc = mutLocList.first()
+            val lastLoc = mutLocList.last()
+            knownMpList.add(setInterpolatedMp(0, mutLocList, firstLoc.distanceMiles))
+            knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastLoc.distanceMiles))
+            changed = true
+        } else {
+            // Recompute index 0 if missing
+            val firstUserMp = knownMpList.first()
+            if (firstUserMp.index != mutLocList.first().index) {
+                knownMpList.add(0, setInterpolatedMp(0, mutLocList, -firstUserMp.distanceMiles))
+                changed = true
+            }
+
+            // Compute last index if missing
+            val lastUserMp = knownMpList.last()
+            if (lastUserMp.index != mutLocList.last().index) {
+                val lastLoc = mutLocList.last()
+                val distance = lastLoc.distanceMiles - lastUserMp.distanceMiles
+                knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastUserMp.data!!.mp + distance))
+                changed = true
+            }
+        }
+
+        // Now fill in-place
+        var nextKnownIndex = 0
+        var nextKnownMp = knownMpList[0]
+        var prevKnownMp = nextKnownMp
+        var distance = 0.0f
+        for ((index, locData) in mutLocList.withIndex()) {
+            if (locData.index == nextKnownMp.index) {
+                prevKnownMp = nextKnownMp
+                nextKnownIndex++
+                if (nextKnownIndex < count) {
+                    nextKnownMp = knownMpList[nextKnownIndex]
+                }
+                distance = nextKnownMp.data!!.mp - prevKnownMp.data!!.mp
+            }
+
+            if (distance > 0) {
+                val mp = prevKnownMp.data!!.mp + (locData.data!!.mp - prevKnownMp.data.mp) / distance
+                if (locData.data.mp != mp) {
+                    setInterpolatedMp(index, mutLocList, mp)
+                    changed = true
+                }
+            }
+        }
+
+        if (changed) {
+            logger.d(TAG, "@@ Interpolated MP Changed")
+
+            val listBuilder = track.locationList.toBuilder()
+            for (locData in mutLocList) {
+                val index = locData.index
+                val loc = track.locationList.getLocations(index).copy {
+                    if (!flags.hasFlag(LocationFlags.USER_MP)) {
+                        mp = locData.data!!.mp
+                    }
+                }
+                listBuilder.setLocations(index, loc)
+            }
+
+            val newTrackEntity = track.copy(locationList = listBuilder.build())
+            lifecycleScope.launch {
+                trackEntityDao.update(newTrackEntity)
+            }
+        }
+    }
+
+    fun setInterpolatedMp(index: Int, list: MutableList<ReviewLocationData>, mp: Float): ReviewLocationData {
+        val data = list[index].data
+        if (data != null) {
+            list[index] = list[index].copy(data = data.copy {
+                this.mp = mp
+            })
+        }
+        return list[index]
+    }
 }
