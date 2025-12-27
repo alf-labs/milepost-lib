@@ -21,7 +21,10 @@ import com.alflabs.milepost.fragments.tracks.toText
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
+import com.alflabs.milepost.location.LocationFlags
+import com.alflabs.milepost.location.clearFlag
 import com.alflabs.milepost.location.copy
+import com.alflabs.milepost.location.setFlag
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.milepost.tracks.TrackEntityDao
@@ -208,8 +211,10 @@ class ReviewFragment : Fragment() {
                         val loc = track.locationList.getLocations(0).copy {
                             if (newMpStart != null) {
                                 mp = newMpStart
+                                flags = flags.setFlag(LocationFlags.USER_MP)
                             } else {
                                 clearMp()
+                                flags = flags.clearFlag(LocationFlags.USER_MP)
                             }
                         }
                         builder.setLocations(0, loc)
@@ -219,8 +224,10 @@ class ReviewFragment : Fragment() {
                         val loc = track.locationList.getLocations(idx).copy {
                             if (newMpEnd != null) {
                                 mp = newMpEnd
+                                flags = flags.setFlag(LocationFlags.USER_MP)
                             } else {
                                 clearMp()
+                                flags = flags.clearFlag(LocationFlags.USER_MP)
                             }
                         }
                         builder.setLocations(idx, loc)
