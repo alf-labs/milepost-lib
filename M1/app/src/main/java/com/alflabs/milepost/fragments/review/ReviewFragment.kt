@@ -97,7 +97,7 @@ class ReviewFragment : Fragment() {
         binding.locationsList.addItemDecoration(dividerItemDecoration)
 
         viewModel.track.observe(viewLifecycleOwner) { track ->
-            Log.d(TAG, "Review observe track: ${track?.id} ${track?.label}")
+            logger.d(TAG, "@@ Review observe track: ${track?.id} ${track?.label}")
 
             if (track == null) {
                 binding.label.text = "No track found"
@@ -114,6 +114,7 @@ class ReviewFragment : Fragment() {
             binding.exportJsonButton.isEnabled = trackEntity != null
             loadMapTrack()
             updateTrackSummary(track)
+            logger.d(TAG, "@@ is first load: $firstLoad")
             if (track != null && firstLoad) {
                 firstLoad = false
                 if (track.label.isNullOrEmpty()) {
@@ -317,52 +318,6 @@ class ReviewFragment : Fragment() {
             .show()
     }
 
-    private fun convert(locationDataList: LocationDataList?): List<ReviewLocationData> {
-        val result = mutableListOf<ReviewLocationData>()
-        if (locationDataList == null ) {
-            return result
-        }
-        val locationsList = locationDataList.locationsList
-        if (locationsList.isEmpty()) {
-            return result
-        }
-
-        // First row is a little dummy hack for headers
-        result.add(ReviewLocationData(
-            index = -1,
-            data = null,
-        ))
-
-        val firstTS = locationsList[0].latLong.timestampMillis
-        val distResults = FloatArray(1)
-        var distanceMeters = 0f
-        var lastLatLong: LatLongData? = null
-        for ((index, location) in locationsList.withIndex()) {
-            val newLatLong = location.latLong
-            val deltaTS = newLatLong.timestampMillis - firstTS
-
-            lastLatLong?.let {
-                Location.distanceBetween(
-                    it.latitude, it.longitude,
-                    newLatLong.latitude, newLatLong.longitude,
-                    distResults)
-                distanceMeters += distResults[0]
-            }
-
-            result.add(ReviewLocationData(
-                index = index,
-                data = location,
-                deltaTS = deltaTS,
-                distanceMeters = distanceMeters,
-                distanceMiles = Units.m_to_miles(distanceMeters),
-            ))
-
-            lastLatLong = newLatLong
-        }
-
-        return result
-    }
-
     fun loadMapTrack() {
         val map = googleMap ?: return
         val track = trackEntity ?: return
@@ -409,7 +364,7 @@ class ReviewFragment : Fragment() {
     }
 
     fun updateTrackSummary(track: TrackEntity?) {
-        logger.d(TAG, "@@ updateTrackSummary for $track")
+        logger.d(TAG, "@@ updateTrackSummary")
         if (track == null) return
 
         val currentSummary = track.summary ?: TrackSummary.getDefaultInstance()
@@ -422,45 +377,7 @@ class ReviewFragment : Fragment() {
             return
         }
 
-        var mpMin : Float? = if (currentSummary.hasMpMin()) currentSummary.mpMin else null
-        var mpMax : Float? = if (currentSummary.hasMpMax()) currentSummary.mpMax else null
-        var lengthM = 0f
-        var durationS = if (currentSummary.hasDurationS()) currentSummary.durationS else 0f
-
-        val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
-
-        if (locations.size > 1) {
-            val first = locations.first()
-            val last = locations.last()
-            durationS = (last.latLong.timestampMillis - first.latLong.timestampMillis)/1000f
-        }
-
-        var lastLatLong: LatLongData? = null
-        val distResults = FloatArray(1)
-        locations.forEach { data ->
-            if (data.hasMp()) {
-                val mp = data.mp
-                mpMin = mpMin?.coerceAtMost(mp) ?: mp
-                mpMax = mpMax?.coerceAtLeast(mp) ?: mp
-            }
-
-            val ll = data.latLong
-            lastLatLong?.let {
-                Location.distanceBetween(
-                    it.latitude, it.longitude,
-                    ll.latitude, ll.longitude,
-                    distResults)
-                lengthM += distResults[0]
-            }
-            lastLatLong = ll
-        }
-
-        val newSummary = trackSummary {
-            mpMin?.let { this.mpMin = it }
-            mpMax?.let { this.mpMax = it }
-            this.lengthM = lengthM
-            this.durationS = durationS
-        }
+        val newSummary = computeTrackSummary(currentSummary, track)
 
         // Write it back to the DAO if summary has changed
         if (newSummary != currentSummary) {
@@ -474,75 +391,16 @@ class ReviewFragment : Fragment() {
     }
 
     fun updateInterpolatedMp(track: TrackEntity?, locList: List<ReviewLocationData>) {
-        logger.d(TAG, "@@ updateInterpolatedMp for $track")
+        logger.d(TAG, "@@ updateInterpolatedMp")
         if (track == null || track.locationList == null) return
 
-        // Keep only the valid entries (not header, with actual data)
-        val mutLocList = locList.filter { it.index >= 0 && it.data != null }.toMutableList()
+        val newLocList = computeInterpolatedMp(locList)
 
-        var changed = false
-        val count = mutLocList.size
-        if (count < 2) return
-
-        // First create a list of all the known user-mp entries.
-        val knownMpList = mutLocList.filter {
-            it.data != null && it.data.hasMp() && it.data.flags.hasFlag(LocationFlags.USER_MP)
-        }.toMutableList()
-
-        if (knownMpList.isEmpty()) {
-            // If there are no user-mp, simply fill with known distances.
-            val firstLoc = mutLocList.first()
-            val lastLoc = mutLocList.last()
-            knownMpList.add(setInterpolatedMp(0, mutLocList, firstLoc.distanceMiles))
-            knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastLoc.distanceMiles))
-            changed = true
-        } else {
-            // Recompute index 0 if missing
-            val firstUserMp = knownMpList.first()
-            if (firstUserMp.index != mutLocList.first().index) {
-                knownMpList.add(0, setInterpolatedMp(0, mutLocList, -firstUserMp.distanceMiles))
-                changed = true
-            }
-
-            // Compute last index if missing
-            val lastUserMp = knownMpList.last()
-            if (lastUserMp.index != mutLocList.last().index) {
-                val lastLoc = mutLocList.last()
-                val distance = lastLoc.distanceMiles - lastUserMp.distanceMiles
-                knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastUserMp.data!!.mp + distance))
-                changed = true
-            }
-        }
-
-        // Now fill in-place
-        var nextKnownIndex = 0
-        var nextKnownMp = knownMpList[0]
-        var prevKnownMp = nextKnownMp
-        var distance = 0.0f
-        for ((index, locData) in mutLocList.withIndex()) {
-            if (locData.index == nextKnownMp.index) {
-                prevKnownMp = nextKnownMp
-                nextKnownIndex++
-                if (nextKnownIndex < count) {
-                    nextKnownMp = knownMpList[nextKnownIndex]
-                }
-                distance = nextKnownMp.data!!.mp - prevKnownMp.data!!.mp
-            }
-
-            if (distance > 0) {
-                val mp = prevKnownMp.data!!.mp + (locData.data!!.mp - prevKnownMp.data.mp) / distance
-                if (locData.data.mp != mp) {
-                    setInterpolatedMp(index, mutLocList, mp)
-                    changed = true
-                }
-            }
-        }
-
-        if (changed) {
+        if (newLocList != null) {
             logger.d(TAG, "@@ Interpolated MP Changed")
 
             val listBuilder = track.locationList.toBuilder()
-            for (locData in mutLocList) {
+            for (locData in newLocList) {
                 val index = locData.index
                 val loc = track.locationList.getLocations(index).copy {
                     if (!flags.hasFlag(LocationFlags.USER_MP)) {
@@ -558,14 +416,169 @@ class ReviewFragment : Fragment() {
             }
         }
     }
+}
 
-    fun setInterpolatedMp(index: Int, list: MutableList<ReviewLocationData>, mp: Float): ReviewLocationData {
-        val data = list[index].data
-        if (data != null) {
-            list[index] = list[index].copy(data = data.copy {
-                this.mp = mp
-            })
-        }
-        return list[index]
+internal fun computeTrackSummary(currentSummary: TrackSummary, track: TrackEntity): TrackSummary {
+    var mpMin: Float? = if (currentSummary.hasMpMin()) currentSummary.mpMin else null
+    var mpMax: Float? = if (currentSummary.hasMpMax()) currentSummary.mpMax else null
+    var lengthM = 0f
+    var durationS = if (currentSummary.hasDurationS()) currentSummary.durationS else 0f
+
+    val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
+
+    if (locations.size > 1) {
+        val first = locations.first()
+        val last = locations.last()
+        durationS = (last.latLong.timestampMillis - first.latLong.timestampMillis) / 1000f
     }
+
+    var lastLatLong: LatLongData? = null
+    val distResults = FloatArray(1)
+    locations.forEach { data ->
+        if (data.hasMp()) {
+            val mp = data.mp
+            mpMin = mpMin?.coerceAtMost(mp) ?: mp
+            mpMax = mpMax?.coerceAtLeast(mp) ?: mp
+        }
+
+        val ll = data.latLong
+        lastLatLong?.let {
+            Location.distanceBetween(
+                it.latitude, it.longitude,
+                ll.latitude, ll.longitude,
+                distResults
+            )
+            lengthM += distResults[0]
+        }
+        lastLatLong = ll
+    }
+
+    return trackSummary {
+        mpMin?.let { this.mpMin = it }
+        mpMax?.let { this.mpMax = it }
+        this.lengthM = lengthM
+        this.durationS = durationS
+    }
+}
+
+internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationData> {
+    val result = mutableListOf<ReviewLocationData>()
+
+    // First row is a little dummy hack for headers
+    result.add(ReviewLocationData(
+        index = -1,
+        data = null,
+    ))
+
+    if (locationDataList == null ) {
+        return result
+    }
+    val locationsList = locationDataList.locationsList
+    if (locationsList.isEmpty()) {
+        return result
+    }
+
+    val firstTS = locationsList[0].latLong.timestampMillis
+    val distResults = FloatArray(1)
+    var distanceMeters = 0f
+    var lastLatLong: LatLongData? = null
+    for ((index, location) in locationsList.withIndex()) {
+        val newLatLong = location.latLong
+        val deltaTS = newLatLong.timestampMillis - firstTS
+
+        lastLatLong?.let {
+            Location.distanceBetween(
+                it.latitude, it.longitude,
+                newLatLong.latitude, newLatLong.longitude,
+                distResults)
+            distanceMeters += distResults[0]
+        }
+
+        result.add(ReviewLocationData(
+            index = index,
+            data = location,
+            deltaTS = deltaTS,
+            distanceMeters = distanceMeters,
+            distanceMiles = Units.m_to_miles(distanceMeters),
+        ))
+
+        lastLatLong = newLatLong
+    }
+
+    return result
+}
+
+internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<ReviewLocationData>? {
+    // Keep only the valid entries (not header, with actual data)
+    val mutLocList = locList.filter { it.index >= 0 && it.data != null }.toMutableList()
+
+    var changed = false
+    val count = mutLocList.size
+    if (count < 2) return null
+
+    // First create a list of all the known user-mp entries.
+    val knownMpList = mutLocList.filter {
+        it.data != null && it.data.hasMp() && it.data.flags.hasFlag(LocationFlags.USER_MP)
+    }.toMutableList()
+
+    if (knownMpList.isEmpty()) {
+        // If there are no user-mp, simply fill with known distances.
+        val firstLoc = mutLocList.first()
+        val lastLoc = mutLocList.last()
+        knownMpList.add(setInterpolatedMp(0, mutLocList, firstLoc.distanceMiles))
+        knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastLoc.distanceMiles))
+        changed = true
+    } else {
+        // Recompute index 0 if missing
+        val firstUserMp = knownMpList.first()
+        if (firstUserMp.index != mutLocList.first().index) {
+            knownMpList.add(0, setInterpolatedMp(0, mutLocList, -firstUserMp.distanceMiles))
+            changed = true
+        }
+
+        // Compute last index if missing
+        val lastUserMp = knownMpList.last()
+        if (lastUserMp.index != mutLocList.last().index) {
+            val lastLoc = mutLocList.last()
+            val distance = lastLoc.distanceMiles - lastUserMp.distanceMiles
+            knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastUserMp.data!!.mp + distance))
+            changed = true
+        }
+    }
+
+    // Now fill in-place
+    var nextKnownIndex = 0
+    var nextKnownMp = knownMpList[0]
+    var prevKnownMp = nextKnownMp
+    var distance = 0.0f
+    for ((index, locData) in mutLocList.withIndex()) {
+        if (locData.index == nextKnownMp.index) {
+            prevKnownMp = nextKnownMp
+            nextKnownIndex++
+            if (nextKnownIndex < count) {
+                nextKnownMp = knownMpList[nextKnownIndex]
+            }
+            distance = nextKnownMp.data!!.mp - prevKnownMp.data!!.mp
+        }
+
+        if (distance > 0) {
+            val mp = prevKnownMp.data!!.mp + (locData.data!!.mp - prevKnownMp.data.mp) / distance
+            if (locData.data.mp != mp) {
+                setInterpolatedMp(index, mutLocList, mp)
+                changed = true
+            }
+        }
+    }
+
+    return if (changed) mutLocList else null
+}
+
+internal fun setInterpolatedMp(index: Int, list: MutableList<ReviewLocationData>, mp: Float): ReviewLocationData {
+    val data = list[index].data
+    if (data != null) {
+        list[index] = list[index].copy(data = data.copy {
+            this.mp = mp
+        })
+    }
+    return list[index]
 }
