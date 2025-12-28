@@ -80,16 +80,16 @@ class ReviewFragmentTest {
             },
             locationData {
                 latLong = latLongData {
-                    latitude = 1.0001
-                    longitude = 2.0001
+                    latitude = 1.01
+                    longitude = 2.01
                     timestampMillis = 2000
                 }
                 mp = 11f
             },
             locationData {
                 latLong = latLongData {
-                    latitude = 1.0002
-                    longitude = 2.0002
+                    latitude = 1.02
+                    longitude = 2.02
                     timestampMillis = 3000
                 }
                 mp = 12f
@@ -106,7 +106,7 @@ class ReviewFragmentTest {
         assertThat(summary.mpMin).isEqualTo(10f)
         assertThat(summary.mpMax).isEqualTo(12f)
         assertThat(summary.durationS).isEqualTo(2f)
-        assertThat(summary.lengthM).isGreaterThan(0f)
+        assertThat(summary.lengthM).isWithin(0.1f).of(3_137.8306f)
     }
 
      @Test
@@ -121,8 +121,8 @@ class ReviewFragmentTest {
             },
             locationData {
                 latLong = latLongData {
-                    latitude = 1.0001
-                    longitude = 2.0001
+                    latitude = 1.01
+                    longitude = 2.01
                     timestampMillis = 2000
                 }
             }
@@ -138,7 +138,7 @@ class ReviewFragmentTest {
         assertThat(summary.hasMpMin()).isFalse()
         assertThat(summary.hasMpMax()).isFalse()
         assertThat(summary.durationS).isEqualTo(1f)
-        assertThat(summary.lengthM).isGreaterThan(0f)
+        assertThat(summary.lengthM).isWithin(0.1f).of(1_568.9165f)
     }
 
     @Test
@@ -154,8 +154,8 @@ class ReviewFragmentTest {
             },
             locationData {
                 latLong = latLongData {
-                    latitude = 1.0001
-                    longitude = 2.0001
+                    latitude = 1.01
+                    longitude = 2.01
                     timestampMillis = 2000
                 }
                 mp = 100.1f
@@ -174,14 +174,14 @@ class ReviewFragmentTest {
         assertThat(summary.mpMin).isEqualTo(99f) // Keeps existing mpMin
         assertThat(summary.mpMax).isEqualTo(100.1f)
         assertThat(summary.durationS).isEqualTo(1f) // Re-calculates duration
-        assertThat(summary.lengthM).isGreaterThan(0f)
+        assertThat(summary.lengthM).isWithin(0.0001f).of(1_568.9165f)
     }
 
     @Test
     fun convert_withNullLocationDataList() {
         val result = convert(null)
         assertThat(result).hasSize(1) // Header only
-        assertThat(result[0].index).isEqualTo(-1)
+        assertThat(result[0].locIdx).isEqualTo(-1)
     }
 
     @Test
@@ -189,7 +189,7 @@ class ReviewFragmentTest {
         val locationList = LocationDataList.getDefaultInstance()
         val result = convert(locationList)
         assertThat(result).hasSize(1) // Header only
-        assertThat(result[0].index).isEqualTo(-1)
+        assertThat(result[0].locIdx).isEqualTo(-1)
     }
 
     @Test
@@ -205,11 +205,11 @@ class ReviewFragmentTest {
 
         val result = convert(locationList)
         assertThat(result).hasSize(2)
-        assertThat(result[0].index).isEqualTo(-1) // Header
-        assertThat(result[1].index).isEqualTo(0)
+        assertThat(result[0].locIdx).isEqualTo(-1) // Header
+        assertThat(result[1].locIdx).isEqualTo(0)
         assertThat(result[1].data).isEqualTo(location)
         assertThat(result[1].deltaTS).isEqualTo(0)
-        assertThat(result[1].distanceMeters).isEqualTo(0f)
+        assertThat(result[1].distanceMiles).isEqualTo(0f)
     }
 
     @Test
@@ -224,8 +224,8 @@ class ReviewFragmentTest {
             },
             locationData {
                 latLong = latLongData {
-                    latitude = 1.0001
-                    longitude = 2.0001
+                    latitude = 1.01
+                    longitude = 2.01
                     timestampMillis = 2000
                 }
             }
@@ -234,23 +234,22 @@ class ReviewFragmentTest {
 
         val result = convert(locationList)
         assertThat(result).hasSize(3)
-        assertThat(result[0].index).isEqualTo(-1) // Header
+        assertThat(result[0].locIdx).isEqualTo(-1) // Header
 
-        assertThat(result[1].index).isEqualTo(0)
+        assertThat(result[1].locIdx).isEqualTo(0)
         assertThat(result[1].data).isEqualTo(locations[0])
         assertThat(result[1].deltaTS).isEqualTo(0)
-        assertThat(result[1].distanceMeters).isEqualTo(0f)
+        assertThat(result[1].distanceMiles).isEqualTo(0f)
 
-        assertThat(result[2].index).isEqualTo(1)
+        assertThat(result[2].locIdx).isEqualTo(1)
         assertThat(result[2].data).isEqualTo(locations[1])
         assertThat(result[2].deltaTS).isEqualTo(1000)
-        assertThat(result[2].distanceMeters).isGreaterThan(0f)
-        assertThat(result[2].distanceMiles).isGreaterThan(0f)
+        assertThat(result[2].distanceMiles).isWithin(0.1f).of(0.9748795f)
     }
 
     @Test
     fun computeInterpolatedMp_withLessThan2Locations() {
-        val reviewList = listOf(ReviewLocationData(index = 0, data = locationData { }))
+        val reviewList = convert(LocationDataList.getDefaultInstance())
         val result = computeInterpolatedMp(reviewList)
         assertThat(result).isNull()
     }
@@ -263,42 +262,158 @@ class ReviewFragmentTest {
                     latLong = latLongData { latitude = 1.0; longitude = 2.0; timestampMillis = 1000 }
                 },
                 locationData {
-                    latLong = latLongData { latitude = 1.001; longitude = 2.001; timestampMillis = 2000 }
+                    latLong = latLongData { latitude = 1.01; longitude = 2.01; timestampMillis = 2000 }
                 }
             )
         ).build()
         val reviewList = convert(locationList)
+        assertThat(reviewList).hasSize(3)
+        assertThat(reviewList[0].locIdx).isEqualTo(-1) // Header
 
-        val result = computeInterpolatedMp(reviewList.filter{it.index >=0})
+        val result = computeInterpolatedMp(reviewList)
         assertThat(result).isNotNull()
-        assertThat(result).hasSize(2)
-        assertThat(result!![0].data!!.mp).isEqualTo(0f)
-        assertThat(result[1].data!!.mp).isGreaterThan(result[0].data!!.mp)
+        assertThat(result!!).hasSize(2)
+        assertThat(result[0].locIdx).isEqualTo(0) // Header has been removed
+        assertThat(result[0].data!!.mp).isEqualTo(0f)
+        assertThat(result[1].data!!.mp).isWithin(0.1f).of(0.9748795f)
     }
 
     @Test
     fun computeInterpolatedMp_withNoInterpolationNeeded() {
-        val locations = listOf(
-            ReviewLocationData(
-                index = 0,
-                data = locationData {
-                    latLong = latLongData { timestampMillis = 1000 }
-                    mp = 100f
+        val locationList = LocationDataList.newBuilder().addAllLocations(
+            listOf(
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.0
+                        longitude = 2.0
+                        timestampMillis = 1000
+                    }
+                    mp = 10f
                     flags = LocationFlags.USER_MP.value
                 },
-                distanceMiles = 0f
-            ),
-            ReviewLocationData(
-                index = 1,
-                data = locationData {
-                    latLong = latLongData { timestampMillis = 2000 }
-                    mp = 101f
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.01
+                        longitude = 2.01
+                        timestampMillis = 2000
+                    }
+                    mp = 11f
                     flags = LocationFlags.USER_MP.value
-                },
-                distanceMiles = 1f
+                }
             )
-        )
-        val result = computeInterpolatedMp(locations)
+        ).build()
+        val reviewList = convert(locationList)
+        assertThat(reviewList).hasSize(3)
+        assertThat(reviewList[0].locIdx).isEqualTo(-1) // Header
+
+        val result = computeInterpolatedMp(reviewList)
         assertThat(result).isNull()
+    }
+
+    @Test
+    fun computeInterpolatedMp_withInterpolation3() {
+
+        val locationList = LocationDataList.newBuilder().addAllLocations(
+            listOf(
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.0
+                        longitude = 2.0
+                        timestampMillis = 1000
+                    }
+                    mp = 10f
+                    flags = LocationFlags.USER_MP.value
+                },
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.02
+                        longitude = 2.0
+                        timestampMillis = 3000
+                    }
+                },
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.04
+                        longitude = 2.0
+                        timestampMillis = 5000
+                    }
+                    mp = 14f
+                    flags = LocationFlags.USER_MP.value
+                }
+            )
+        ).build()
+        val reviewList = convert(locationList)
+        assertThat(reviewList).hasSize(4)
+        assertThat(reviewList[0].locIdx).isEqualTo(-1) // Header
+
+        val result = computeInterpolatedMp(reviewList)
+        assertThat(result).isNotNull()
+        assertThat(result!!).hasSize(3)
+        assertThat(result[0].locIdx).isEqualTo(0) // Header has been removed
+        assertThat(result[0].data!!.mp).isEqualTo(10f)
+        assertThat(result[1].locIdx).isEqualTo(1)
+        assertThat(result[1].data!!.mp).isWithin(0.1f).of(12f)
+        assertThat(result[2].locIdx).isEqualTo(2)
+        assertThat(result[2].data!!.mp).isEqualTo(14f)
+    }
+
+    @Test
+    fun computeInterpolatedMp_withInterpolation5() {
+
+        val locationList = LocationDataList.newBuilder().addAllLocations(
+            listOf(
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.0
+                        longitude = 2.0
+                        timestampMillis = 1000
+                    }
+                    mp = 10f
+                    flags = LocationFlags.USER_MP.value
+                },
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.01
+                        longitude = 2.0
+                        timestampMillis = 2000
+                    }
+                },
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.02
+                        longitude = 2.0
+                        timestampMillis = 3000
+                    }
+                },
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.03
+                        longitude = 2.0
+                        timestampMillis = 4000
+                    }
+                },
+                locationData {
+                    latLong = latLongData {
+                        latitude = 1.04
+                        longitude = 2.0
+                        timestampMillis = 5000
+                    }
+                    mp = 14f
+                    flags = LocationFlags.USER_MP.value
+                }
+            )
+        ).build()
+        val reviewList = convert(locationList)
+        assertThat(reviewList).hasSize(3)
+        assertThat(reviewList[0].locIdx).isEqualTo(-1) // Header
+
+        val result = computeInterpolatedMp(reviewList)
+        assertThat(result).isNotNull()
+        assertThat(result!!).hasSize(4)
+        assertThat(result[0].locIdx).isEqualTo(0) // Header has been removed
+        assertThat(result[0].data!!.mp).isEqualTo(0f)
+        assertThat(result[1].data!!.mp).isWithin(0.1f).of(0.9748795f)
+        assertThat(result[2].data!!.mp).isWithin(0.1f).of(0.9748795f)
+        assertThat(result[3].data!!.mp).isWithin(0.1f).of(0.9748795f)
     }
 }

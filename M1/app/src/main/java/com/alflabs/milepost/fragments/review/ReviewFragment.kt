@@ -2,7 +2,6 @@ package com.alflabs.milepost.fragments.review
 
 import android.location.Location
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -250,7 +249,7 @@ class ReviewFragment : Fragment() {
     }
 
     private fun showReviewMpDialog(item: ReviewLocationData) {
-        val index = item.index
+        val index = item.locIdx
         val track = trackEntity
         if (index < 0 || item.data == null || track == null) return
         val ld: LocationData = item.data
@@ -401,7 +400,7 @@ class ReviewFragment : Fragment() {
 
             val listBuilder = track.locationList.toBuilder()
             for (locData in newLocList) {
-                val index = locData.index
+                val index = locData.locIdx
                 val loc = track.locationList.getLocations(index).copy {
                     if (!flags.hasFlag(LocationFlags.USER_MP)) {
                         mp = locData.data!!.mp
@@ -466,7 +465,7 @@ internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationDa
 
     // First row is a little dummy hack for headers
     result.add(ReviewLocationData(
-        index = -1,
+        locIdx = -1,
         data = null,
     ))
 
@@ -495,10 +494,9 @@ internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationDa
         }
 
         result.add(ReviewLocationData(
-            index = index,
+            locIdx = index,
             data = location,
             deltaTS = deltaTS,
-            distanceMeters = distanceMeters,
             distanceMiles = Units.m_to_miles(distanceMeters),
         ))
 
@@ -510,7 +508,7 @@ internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationDa
 
 internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<ReviewLocationData>? {
     // Keep only the valid entries (not header, with actual data)
-    val mutLocList = locList.filter { it.index >= 0 && it.data != null }.toMutableList()
+    val mutLocList = locList.filter { it.locIdx >= 0 && it.data != null }.toMutableList()
 
     var changed = false
     val count = mutLocList.size
@@ -531,14 +529,14 @@ internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<Rev
     } else {
         // Recompute index 0 if missing
         val firstUserMp = knownMpList.first()
-        if (firstUserMp.index != mutLocList.first().index) {
+        if (firstUserMp.locIdx != mutLocList.first().locIdx) {
             knownMpList.add(0, setInterpolatedMp(0, mutLocList, -firstUserMp.distanceMiles))
             changed = true
         }
 
         // Compute last index if missing
         val lastUserMp = knownMpList.last()
-        if (lastUserMp.index != mutLocList.last().index) {
+        if (lastUserMp.locIdx != mutLocList.last().locIdx) {
             val lastLoc = mutLocList.last()
             val distance = lastLoc.distanceMiles - lastUserMp.distanceMiles
             knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastUserMp.data!!.mp + distance))
@@ -550,20 +548,24 @@ internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<Rev
     var nextKnownIndex = 0
     var nextKnownMp = knownMpList[0]
     var prevKnownMp = nextKnownMp
-    var distance = 0.0f
+    var distanceMp = 0.0f
+    var distanceMile = 0.0f
     for ((index, locData) in mutLocList.withIndex()) {
-        if (locData.index == nextKnownMp.index) {
+        if (locData.locIdx == nextKnownMp.locIdx) {
             prevKnownMp = nextKnownMp
             nextKnownIndex++
-            if (nextKnownIndex < count) {
+            if (nextKnownIndex < knownMpList.size) {
                 nextKnownMp = knownMpList[nextKnownIndex]
             }
-            distance = nextKnownMp.data!!.mp - prevKnownMp.data!!.mp
+            distanceMp = nextKnownMp.data!!.mp - prevKnownMp.data!!.mp
+            distanceMile = nextKnownMp.distanceMiles - prevKnownMp.distanceMiles
+            continue
         }
 
-        if (distance > 0) {
-            val mp = prevKnownMp.data!!.mp + (locData.data!!.mp - prevKnownMp.data.mp) / distance
-            if (locData.data.mp != mp) {
+        if (distanceMp > 0) {
+            val ratio = (locData.distanceMiles - prevKnownMp.distanceMiles) / distanceMile
+            val mp = prevKnownMp.data!!.mp + ratio * distanceMp
+            if (locData.data!!.mp != mp) {
                 setInterpolatedMp(index, mutLocList, mp)
                 changed = true
             }
