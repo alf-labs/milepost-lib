@@ -178,8 +178,10 @@ class ReviewFragment : Fragment() {
         labelEditText.setText(track.label)
 
         val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
-        val mpStart : Float? = if (locations.isNotEmpty()) locations.first().mp else null
-        val mpEnd : Float? = if (locations.size > 1) locations.last().mp else null
+        val locFirst = locations.firstOrNull()
+        val locLast = locations.lastOrNull()
+        val mpStart : Float? = if (locFirst != null && locFirst.hasMp()) locFirst.mp else null
+        val mpEnd : Float? = if (locations.size > 1 && locLast != null && locLast.hasMp()) locations.last().mp else null
 
         mpStart?.let { mpStartValueEditText.setText(it.toString()) }
         mpEnd?.let { mpEndValueEditText.setText(it.toString()) }
