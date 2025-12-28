@@ -260,10 +260,8 @@ class ReviewFragment : Fragment() {
         val mpValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_value_edittext)
         val clearMpButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_button)
         val ignoreCheckbox = dialogView.findViewById<CheckBox>(R.id.ignore_checkbox)
-        val streamlineCheckbox = dialogView.findViewById<CheckBox>(R.id.streamline_checkbox)
         val mpStart : Float? = if (ld.hasMp()) ld.mp else null
         val ignoreStart = ld.flags.hasFlag(LocationFlags.IGNORE)
-        val streamlineStart = ld.flags.hasFlag(LocationFlags.STREAMLINE)
 
         mpStart?.let {
             mpValueEditText.setText(it.toString())
@@ -274,7 +272,6 @@ class ReviewFragment : Fragment() {
         }
 
         ignoreCheckbox.isChecked = ignoreStart
-        streamlineCheckbox.isChecked = streamlineStart
 
         AlertDialog.Builder(requireContext())
             .setTitle("Edit Milepost")
@@ -282,18 +279,15 @@ class ReviewFragment : Fragment() {
             .setPositiveButton("Apply") { _, _ ->
                 val mpNew = mpValueEditText.text.toString().toFloatOrNull()
                 val ignoredNew = ignoreCheckbox.isChecked
-                val streamlinedNew = streamlineCheckbox.isChecked
 
                 logger.d(TAG, "@@Apply MP clicked:")
                 logger.d(TAG, "@@  Item: ${item.data?.latLong?.timestampMillis}")
                 logger.d(TAG, "@@  MP Value: $mpNew")
                 logger.d(TAG, "@@  Ignore: $ignoredNew")
-                logger.d(TAG, "@@  Streamline: $streamlinedNew")
 
                 if (track.locationList != null
                     && (mpNew != mpStart
-                        || ignoredNew != ignoreStart
-                        || streamlinedNew != streamlineStart)
+                        || ignoredNew != ignoreStart)
                     && index < track.locationList.locationsCount) {
                     val listBuilder = track.locationList.toBuilder()
                     val loc = track.locationList.getLocations(index).copy {
@@ -305,7 +299,6 @@ class ReviewFragment : Fragment() {
                             flags = flags.clearFlag(LocationFlags.USER_MP)
                         }
                         flags = flags.changeFlag(LocationFlags.IGNORE, ignoredNew)
-                        flags = flags.changeFlag(LocationFlags.STREAMLINE, streamlinedNew)
                     }
                     listBuilder.setLocations(index, loc)
                     val newTrackEntity = track.copy(locationList = listBuilder.build())
@@ -535,9 +528,12 @@ internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<Rev
     val count = mutLocList.size
     if (count < 2) return null
 
-    // First create a list of all the known user-mp entries.
+    // First create a list of all the known user-mp entries, excluding ignored locations.
     val knownMpList = mutLocList.filter {
-        it.data != null && it.data.hasMp() && it.data.flags.hasFlag(LocationFlags.USER_MP)
+        it.data != null
+        && it.data.hasMp()
+        && it.data.flags.hasFlag(LocationFlags.USER_MP)
+        && !it.data.flags.hasFlag(LocationFlags.IGNORE)
     }.toMutableList()
 
     val firstLoc = mutLocList.first()

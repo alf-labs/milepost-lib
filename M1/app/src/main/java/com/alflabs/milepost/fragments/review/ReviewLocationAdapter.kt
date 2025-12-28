@@ -1,8 +1,10 @@
 package com.alflabs.milepost.fragments.review
 
+import android.graphics.Paint
 import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -47,7 +49,14 @@ class ReviewLocationAdapter(
                 binding.distAcc.text = "Acc."
                 binding.speed.text = "Speed"
                 binding.mp.text = "MP"
+
+                binding.timestamp.typeface = Typeface.DEFAULT_BOLD
+                binding.latLong.typeface = Typeface.DEFAULT_BOLD
+                binding.mp.typeface = Typeface.DEFAULT_BOLD
             } else {
+                val ignore = ld.flags.hasFlag(LocationFlags.IGNORE)
+                val userMp = ld.flags.hasFlag(LocationFlags.USER_MP)
+
                 binding.index.text = adapterPosition.toString()
                 binding.timestamp.text = String.format("%.1f s", item.deltaTS / 1000f)
                 binding.latLong.text = "${ld.latLong.latitude}, ${ld.latLong.longitude}"
@@ -59,16 +68,36 @@ class ReviewLocationAdapter(
                 binding.mp.setOnClickListener {
                     onMpClicked(item)
                 }
-                binding.mp.text = String.format("%.1f mi", ld.mp)
-                binding.mp.typeface = if (ld.flags.hasFlag(LocationFlags.USER_MP)) {
+                binding.mp.text = if (ignore) "Ignored" else String.format("%.1f mi", ld.mp)
+
+                binding.timestamp.typeface = Typeface.DEFAULT
+                binding.latLong.typeface = Typeface.DEFAULT
+
+                binding.mp.typeface = if (userMp) {
                     Typeface.DEFAULT_BOLD
                 } else {
                     italic
                 }
+
+                binding.index.strikeThrough(ignore)
+                binding.timestamp.strikeThrough(ignore)
+                binding.latLong.strikeThrough(ignore)
+                binding.distAcc.strikeThrough(ignore)
+                binding.speed.strikeThrough(ignore)
+                binding.mp.strikeThrough(ignore)
             }
         }
     }
 }
+
+private fun TextView.strikeThrough(strike: Boolean) {
+    if (strike) {
+        this.paintFlags = this.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+    } else {
+        this.paintFlags = this.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+    }
+}
+
 
 class LocationDiffCallback : DiffUtil.ItemCallback<ReviewLocationData>() {
     override fun areItemsTheSame(
