@@ -230,14 +230,13 @@ open class SensorsFragment: Fragment() {
             // Note that the last location recorded may not match the current LocationData.
             recordedLocationList?.let {
                 val locations = it.locationsList ?: emptyList()
-                val recentLocations = locations.takeLast(10)
-                if (recentLocations.size > 1) {
+                if (locations.size > 1) {
                     val lineColor = requireContext().getColor(R.color.colorPrimaryDark)
                     val polylineOptions = PolylineOptions()
                         .color(lineColor)
                         .width(10f)
 
-                    for (location in recentLocations) {
+                    for (location in locations) {
                         polylineOptions.add(
                             LatLng(location.latLong.latitude, location.latLong.longitude))
                     }
