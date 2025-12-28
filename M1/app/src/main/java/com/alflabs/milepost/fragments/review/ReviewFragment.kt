@@ -530,7 +530,9 @@ internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<Rev
         // Recompute index 0 if missing
         val firstUserMp = knownMpList.first()
         if (firstUserMp.locIdx != mutLocList.first().locIdx) {
-            knownMpList.add(0, setInterpolatedMp(0, mutLocList, -firstUserMp.distanceMiles))
+            knownMpList.add(0,
+                setInterpolatedMp(0, mutLocList,
+                    firstUserMp.data!!.mp - firstUserMp.distanceMiles))
             changed = true
         }
 
@@ -539,7 +541,9 @@ internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<Rev
         if (lastUserMp.locIdx != mutLocList.last().locIdx) {
             val lastLoc = mutLocList.last()
             val distance = lastLoc.distanceMiles - lastUserMp.distanceMiles
-            knownMpList.add(setInterpolatedMp(count - 1, mutLocList, lastUserMp.data!!.mp + distance))
+            knownMpList.add(
+                setInterpolatedMp(count - 1, mutLocList,
+                    lastUserMp.data!!.mp + distance))
             changed = true
         }
     }
