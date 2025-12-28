@@ -253,7 +253,7 @@ open class SensorsFragment: Fragment() {
             } else {
                 CameraUpdateFactory.newLatLng(position)
             }
-            map.moveCamera(update)
+            map.animateCamera(update)
         }
 
         val instant = Instant.ofEpochMilli(latLong.timestampMillis)
