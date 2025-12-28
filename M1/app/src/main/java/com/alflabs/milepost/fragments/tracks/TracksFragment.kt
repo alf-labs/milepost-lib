@@ -87,8 +87,9 @@ class TracksFragment : Fragment() {
         )
         binding.tracksList.addItemDecoration(dividerItemDecoration)
 
-        viewModel.tracks.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
+        viewModel.tracks.observe(viewLifecycleOwner) { list ->
+            binding.emptyMessage.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+            adapter.submitList(list)
         }
 
         binding.importButton.setOnClickListener {

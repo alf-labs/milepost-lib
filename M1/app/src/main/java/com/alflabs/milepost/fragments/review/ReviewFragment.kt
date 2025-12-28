@@ -90,7 +90,7 @@ class ReviewFragment : Fragment() {
         val adapter = ReviewLocationAdapter(
             useImperialUnits,
             onMpClicked = ::showReviewMpDialog,
-            onLocationClicked = ::onLocationClicked
+            onSelection = ::onLocationClicked
         )
         val layoutManager = LinearLayoutManager(requireContext())
         binding.locationsList.adapter = adapter

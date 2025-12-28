@@ -16,7 +16,7 @@ import com.alflabs.milepost.utils.Units
 class ReviewLocationAdapter(
     private val useImperialUnits: Boolean,
     private val onMpClicked: (ReviewLocationData) -> Unit,
-    private val onLocationClicked: (ReviewLocationData) -> Unit
+    private val onSelection: (ReviewLocationData) -> Unit
 ) : ListAdapter<ReviewLocationData, ReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -25,7 +25,7 @@ class ReviewLocationAdapter(
             parent,
             false
         )
-        return ReviewViewHolder(binding, useImperialUnits, onMpClicked, onLocationClicked)
+        return ReviewViewHolder(binding, useImperialUnits, onMpClicked, onSelection)
     }
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
@@ -37,7 +37,7 @@ class ReviewLocationAdapter(
         private val binding: ReviewLocationItemBinding,
         private val useImperialUnits: Boolean,
         private val onMpClicked: (ReviewLocationData) -> Unit,
-        private val onLocationClicked: (ReviewLocationData) -> Unit
+        private val onSelection: (ReviewLocationData) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val italic = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
@@ -73,7 +73,7 @@ class ReviewLocationAdapter(
                     onMpClicked(item)
                 }
                 binding.root.setOnClickListener {
-                    onLocationClicked(item)
+                    onSelection(item)
                 }
 
                 binding.timestamp.typeface = Typeface.DEFAULT
