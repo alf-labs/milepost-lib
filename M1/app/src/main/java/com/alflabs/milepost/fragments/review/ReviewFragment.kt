@@ -38,7 +38,9 @@ import com.alflabs.milepost.utils.Units
 import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.textfield.TextInputEditText
@@ -317,14 +319,16 @@ class ReviewFragment : Fragment() {
 
         map.clear()
 
-        var movePos: LatLng? = null
-        var startPos: LatLng? = null
-        var endPos: LatLng? = null
         val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
         if (locations.size == 1) {
             val location = locations[0]
-            movePos = LatLng(location.latLong.latitude, location.latLong.longitude)
-            startPos = movePos
+            val movePos = LatLng(location.latLong.latitude, location.latLong.longitude)
+
+            map.addMarker(MarkerOptions().position(movePos))
+            val update = CameraUpdateFactory.newLatLngZoom(movePos, MAPS_ZOOM_LEVEL)
+            logger.d(TAG, "@@ Camera move to: $movePos")
+            map.moveCamera(update)
+
         } else if (locations.size > 1) {
             val lineColor = requireContext().getColor(R.color.colorPrimaryDark)
             val polylineOptions = PolylineOptions()
@@ -338,20 +342,27 @@ class ReviewFragment : Fragment() {
             }
             map.addPolyline(polylineOptions)
 
-            val location0 = locations.first()
-            val location1 = locations[locations.size / 2]
-            val location2 = locations.last()
-            startPos = LatLng(location0.latLong.latitude, location0.latLong.longitude)
-            movePos = LatLng(location1.latLong.latitude, location1.latLong.longitude)
-            endPos = LatLng(location2.latLong.latitude, location2.latLong.longitude)
-        }
+            val boundsBuilder = LatLngBounds.Builder()
+            val markerStart = MarkerOptions()
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                .title("Start")
+            val markerEnd = MarkerOptions()
+                .title("End")
 
-        val markerOptions = MarkerOptions()
-        startPos?.let { map.addMarker(markerOptions.position(it)) }
-        endPos?.let { map.addMarker(markerOptions.position(it)) }
+            val locFirst = locations.first()
+            val locLast = locations.last()
+            val startPos = LatLng(locFirst.latLong.latitude, locFirst.latLong.longitude)
+            val endPos = LatLng(locLast.latLong.latitude, locLast.latLong.longitude)
+            map.addMarker(markerStart.position(startPos))
+            map.addMarker(markerEnd.position(endPos))
+            boundsBuilder.include(startPos)
+            boundsBuilder.include(endPos)
 
-        movePos?.let {
-            val update = CameraUpdateFactory.newLatLngZoom(it, MAPS_ZOOM_LEVEL)
+            // Zoom to the requested bounds with offset from edges of the map in pixels
+            val bounds = boundsBuilder.build()
+            val padding = resources.getDimensionPixelSize(R.dimen.map_padding)
+            val update = CameraUpdateFactory.newLatLngBounds(bounds, padding)
+            logger.d(TAG, "@@ Camera bounds: $bounds")
             map.moveCamera(update)
         }
     }
