@@ -15,7 +15,8 @@ import com.alflabs.milepost.utils.Units
 
 class ReviewLocationAdapter(
     private val useImperialUnits: Boolean,
-    private val onMpClicked: (ReviewLocationData) -> Unit
+    private val onMpClicked: (ReviewLocationData) -> Unit,
+    private val onLocationClicked: (ReviewLocationData) -> Unit
 ) : ListAdapter<ReviewLocationData, ReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
@@ -24,7 +25,7 @@ class ReviewLocationAdapter(
             parent,
             false
         )
-        return ReviewViewHolder(binding, useImperialUnits, onMpClicked)
+        return ReviewViewHolder(binding, useImperialUnits, onMpClicked, onLocationClicked)
     }
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
@@ -35,7 +36,8 @@ class ReviewLocationAdapter(
     class ReviewViewHolder(
         private val binding: ReviewLocationItemBinding,
         private val useImperialUnits: Boolean,
-        private val onMpClicked: (ReviewLocationData) -> Unit
+        private val onMpClicked: (ReviewLocationData) -> Unit,
+        private val onLocationClicked: (ReviewLocationData) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val italic = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
@@ -65,10 +67,14 @@ class ReviewLocationAdapter(
                     Units.mpsToUnit(ld.speedBearing.speedMps, useImperialUnits),
                     Units.mpsUnitName(useImperialUnits)
                 )
+                binding.mp.text = if (ignore) "Ignored" else String.format("%.1f mi", ld.mp)
+
                 binding.mp.setOnClickListener {
                     onMpClicked(item)
                 }
-                binding.mp.text = if (ignore) "Ignored" else String.format("%.1f mi", ld.mp)
+                binding.root.setOnClickListener {
+                    onLocationClicked(item)
+                }
 
                 binding.timestamp.typeface = Typeface.DEFAULT
                 binding.latLong.typeface = Typeface.DEFAULT

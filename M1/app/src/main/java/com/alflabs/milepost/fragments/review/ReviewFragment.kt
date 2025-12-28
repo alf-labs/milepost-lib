@@ -41,6 +41,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.textfield.TextInputEditText
@@ -67,6 +68,7 @@ class ReviewFragment : Fragment() {
     private val viewModel: ReviewViewModel by viewModels()
     private var trackEntity: TrackEntity? = null
     private var googleMap: GoogleMap? = null
+    private var selectedLocationMarker: Marker? = null
     private var useImperialUnits = false
     private var firstLoad = true
     private lateinit var reviewList: List<ReviewLocationData>
@@ -85,9 +87,11 @@ class ReviewFragment : Fragment() {
 
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
 
-        val adapter = ReviewLocationAdapter(useImperialUnits) {
-            showReviewMpDialog(it)
-        }
+        val adapter = ReviewLocationAdapter(
+            useImperialUnits,
+            onMpClicked = ::showReviewMpDialog,
+            onLocationClicked = ::onLocationClicked
+        )
         val layoutManager = LinearLayoutManager(requireContext())
         binding.locationsList.adapter = adapter
         binding.locationsList.layoutManager = layoutManager
@@ -313,6 +317,23 @@ class ReviewFragment : Fragment() {
             .show()
     }
 
+    private fun onLocationClicked(item: ReviewLocationData) {
+        val locationData = item.data ?: return
+        val map = googleMap ?: return
+
+        val position = LatLng(locationData.latLong.latitude, locationData.latLong.longitude)
+
+        selectedLocationMarker?.remove()
+        selectedLocationMarker = map.addMarker(
+            MarkerOptions()
+                .position(position)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+        )
+
+        val update = CameraUpdateFactory.newLatLng(position)
+        map.animateCamera(update)
+    }
+
     fun loadMapTrack() {
         val map = googleMap ?: return
         val track = trackEntity ?: return
@@ -342,21 +363,20 @@ class ReviewFragment : Fragment() {
             }
             map.addPolyline(polylineOptions)
 
-            val boundsBuilder = LatLngBounds.Builder()
-            val markerStart = MarkerOptions()
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                .title("Start")
-            val markerEnd = MarkerOptions()
-                .title("End")
-
             val locFirst = locations.first()
             val locLast = locations.last()
             val startPos = LatLng(locFirst.latLong.latitude, locFirst.latLong.longitude)
             val endPos = LatLng(locLast.latLong.latitude, locLast.latLong.longitude)
-            map.addMarker(markerStart.position(startPos))
-            map.addMarker(markerEnd.position(endPos))
+            val boundsBuilder = LatLngBounds.Builder()
             boundsBuilder.include(startPos)
             boundsBuilder.include(endPos)
+            map.addMarker(MarkerOptions()
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                .title("Start")
+                .position(startPos))
+            map.addMarker(MarkerOptions()
+                .title("End")
+                .position(endPos))
 
             // Zoom to the requested bounds with offset from edges of the map in pixels
             val bounds = boundsBuilder.build()
