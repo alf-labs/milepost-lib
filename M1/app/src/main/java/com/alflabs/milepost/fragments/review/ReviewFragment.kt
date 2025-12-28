@@ -552,8 +552,12 @@ internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationDa
 }
 
 internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<ReviewLocationData>? {
-    // Keep only the valid entries (not header, with actual data)
-    val mutLocList = locList.filter { it.locIdx >= 0 && it.data != null }.toMutableList()
+    // Keep only the valid entries (not header, with actual data, not ignore)
+    val mutLocList = locList.filter {
+        it.locIdx >= 0
+        && it.data != null
+        && !it.data.flags.hasFlag(LocationFlags.IGNORE)
+    }.toMutableList()
 
     var changed = false
     val count = mutLocList.size
@@ -564,7 +568,6 @@ internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<Rev
         it.data != null
         && it.data.hasMp()
         && it.data.flags.hasFlag(LocationFlags.USER_MP)
-        && !it.data.flags.hasFlag(LocationFlags.IGNORE)
     }.toMutableList()
 
     val firstLoc = mutLocList.first()
