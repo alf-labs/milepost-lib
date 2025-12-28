@@ -30,6 +30,7 @@ import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.milepost.tracks.TrackEntityDao
 import com.alflabs.milepost.tracks.TrackSummary
+import com.alflabs.milepost.tracks.copy
 import com.alflabs.milepost.tracks.trackSummary
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.milepost.utils.MapStyle
@@ -398,6 +399,7 @@ class ReviewFragment : Fragment() {
         if (newLocList != null) {
             logger.d(TAG, "@@ Interpolated MP Changed")
 
+            // Update all the interpolated MPs in the track entity
             val listBuilder = track.locationList.toBuilder()
             for (locData in newLocList) {
                 val index = locData.locIdx
@@ -408,8 +410,27 @@ class ReviewFragment : Fragment() {
                 }
                 listBuilder.setLocations(index, loc)
             }
+            val newLocList = listBuilder.build()
 
-            val newTrackEntity = track.copy(locationList = listBuilder.build())
+            // Update the track summary to use the min/max new MPs
+            val currentSummary = track.summary ?: TrackSummary.getDefaultInstance()
+            var mpMin: Float? = null
+            var mpMax: Float? = null
+            newLocList.locationsList.forEach { data ->
+                if (data.hasMp()) {
+                    val mp = data.mp
+                    mpMin = mpMin?.coerceAtMost(mp) ?: mp
+                    mpMax = mpMax?.coerceAtLeast(mp) ?: mp
+                }
+            }
+
+            val newTrackEntity = track.copy(
+                locationList = newLocList,
+                summary = currentSummary.copy {
+                    mpMin?.let { this.mpMin = it }
+                    mpMax?.let { this.mpMax = it }
+                }
+            )
             lifecycleScope.launch {
                 trackEntityDao.update(newTrackEntity)
             }
