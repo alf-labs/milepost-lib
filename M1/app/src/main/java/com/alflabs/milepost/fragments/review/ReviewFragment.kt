@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -178,13 +179,20 @@ class ReviewFragment : Fragment() {
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
                 logger.d(TAG, "@@ onPrepareMenu -- track entity enabled = ${trackEntity != null}")
+                menu.findItem(R.id.action_playback).isEnabled = (trackEntity != null)
                 menu.findItem(R.id.action_export_csv).isEnabled = (trackEntity != null)
                 menu.findItem(R.id.action_export_json).isEnabled = (trackEntity != null)
+                menu.findItem(R.id.action_delete).isEnabled = (trackEntity != null)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 logger.d(TAG, "@@ onMenuItemSelected: ${menuItem.itemId}")
                 return when (menuItem.itemId) {
+                    R.id.action_playback -> {
+                        // TBD
+                        true
+                    }
+
                     R.id.action_export_csv -> {
                         val exportFile =
                             importerExporter.createCsvExportFile(requireContext(), trackEntity)
@@ -203,15 +211,37 @@ class ReviewFragment : Fragment() {
                         true
                     }
 
+                    R.id.action_delete -> {
+                        askAndMaybeDeleteTrack(trackEntity)
+                        true
+                    }
+
                     else -> false
                 }
             }
+
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun askAndMaybeDeleteTrack(track: TrackEntity?) {
+        if (track == null) return
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Track")
+            .setMessage("Are you sure you want to delete this track? This action cannot be reversed.")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch {
+                    trackEntityDao.deleteById(track.id)
+                    findNavController().popBackStack()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showReviewTitleDialog(track: TrackEntity?) {
