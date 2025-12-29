@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.preference.PreferenceDataStore
 import com.alflabs.utils.ILogger
@@ -37,6 +38,7 @@ class AppSettings @Inject constructor(
         val USE_IMPERIAL_UNITS = booleanPreferencesKey("use_imperial_units")
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
+        val PLAYBACK_TRACK_ID = longPreferencesKey("playback_track_id")
 
         const val THRESHOLD_DISTANCE_METERS_DEFAULT = 100.0f
         const val THRESHOLD_SPEED_MPS_DEFAULT = 0.25f
@@ -61,6 +63,16 @@ class AppSettings @Inject constructor(
         val adapter = createAdapter(coroutineScope)
         return adapter.getString(THRESHOLD_SPEED_MPS.name, "").toFloatOrNull()
             ?: THRESHOLD_SPEED_MPS_DEFAULT
+    }
+
+    fun playbackTrackId(coroutineScope: CoroutineScope): Long {
+        val adapter = createAdapter(coroutineScope)
+        return adapter.getLong(PLAYBACK_TRACK_ID.name, -1)
+    }
+
+    fun setPlaybackTrackId(coroutineScope: CoroutineScope, trackId: Long) {
+        val adapter = createAdapter(coroutineScope)
+        adapter.putLong(PLAYBACK_TRACK_ID.name, trackId)
     }
 
     // ------
@@ -162,6 +174,13 @@ class AdapterPreferenceDataStore(
 
     override fun getInt(key: String, defValue: Int): Int =
         getBlocking(intPreferencesKey(key), defValue)
+
+    override fun putLong(key: String, value: Long) {
+        putPreference(longPreferencesKey(key), value)
+    }
+
+    override fun getLong(key: String, defValue: Long): Long =
+        getBlocking(longPreferencesKey(key), defValue)
 
     override fun putFloat(key: String, value: Float) {
         putPreference(floatPreferencesKey(key), value)

@@ -47,6 +47,10 @@
         <argument
                 android:name="trackId"
                 app:argType="long" />
+        <action
+                android:id="@+id/action_review_to_play"
+                app:destination="@id/nav_play_track">
+        </action>
     </fragment>
 
     <fragment

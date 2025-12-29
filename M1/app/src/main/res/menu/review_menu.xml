@@ -6,7 +6,7 @@
                 android:id="@+id/action_playback"
                 android:title="Playback Track"
                 android:icon="@drawable/ic_menu_play_24"
-                app:showAsAction="ifRoom" />
+                app:showAsAction="never" />
     </group>
     <group android:id="@+id/group_track_export">
         <item
