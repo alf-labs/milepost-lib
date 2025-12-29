@@ -492,4 +492,74 @@ class ReviewFragmentTest {
         expect.that(result[8].locIdx).isEqualTo(8)
         expect.that(result[8].data!!.mp).isWithin(0.1f).of(17.374159f)
     }
+
+    @Test
+    fun computeHintStartEndLabels_withExistingStartLabel() {
+        val (start, end) = computeHintStartEndLabels("start", null, null, null)
+        expect.that(start).isEqualTo("start")
+        expect.that(end).isEqualTo("")
+    }
+
+    @Test
+    fun computeHintStartEndLabels_withExistingEndLabel() {
+        val (start, end) = computeHintStartEndLabels(null, "end", null, null)
+        expect.that(start).isEqualTo("")
+        expect.that(end).isEqualTo("end")
+    }
+
+    @Test
+    fun computeHintStartEndLabels_withNullLocations() {
+        val (start, end) = computeHintStartEndLabels(null, null, null, null)
+        expect.that(start).isEqualTo("")
+        expect.that(end).isEqualTo("")
+    }
+
+    @Test
+    fun computeHintStartEndLabels_withSameLocations() {
+        val loc = locationData {
+            latLong = latLongData {
+                latitude = 1.0
+                longitude = 2.0
+            }
+        }
+        val (start, end) = computeHintStartEndLabels(null, null, loc, loc)
+        expect.that(start).isEqualTo("")
+        expect.that(end).isEqualTo("")
+    }
+
+    @Test
+    fun computeHintStartEndLabels_Northbound() {
+        val loc1 = locationData { latLong = latLongData { latitude = 1.0; longitude = 2.0 } }
+        val loc2 = locationData { latLong = latLongData { latitude = 1.1; longitude = 2.0 } }
+        val (start, end) = computeHintStartEndLabels(null, null, loc1, loc2)
+        expect.that(start).isEqualTo("Southbound")
+        expect.that(end).isEqualTo("Northbound")
+    }
+
+    @Test
+    fun computeHintStartEndLabels_Eastbound() {
+        val loc1 = locationData { latLong = latLongData { latitude = 1.0; longitude = 2.0 } }
+        val loc2 = locationData { latLong = latLongData { latitude = 1.0; longitude = 2.1 } }
+        val (start, end) = computeHintStartEndLabels(null, null, loc1, loc2)
+        expect.that(start).isEqualTo("Westbound")
+        expect.that(end).isEqualTo("Eastbound")
+    }
+
+    @Test
+    fun computeHintStartEndLabels_Southbound() {
+        val loc1 = locationData { latLong = latLongData { latitude = 1.1; longitude = 2.0 } }
+        val loc2 = locationData { latLong = latLongData { latitude = 1.0; longitude = 2.0 } }
+        val (start, end) = computeHintStartEndLabels(null, null, loc1, loc2)
+        expect.that(start).isEqualTo("Northbound")
+        expect.that(end).isEqualTo("Southbound")
+    }
+
+    @Test
+    fun computeHintStartEndLabels_Westbound() {
+        val loc1 = locationData { latLong = latLongData { latitude = 1.0; longitude = 2.1 } }
+        val loc2 = locationData { latLong = latLongData { latitude = 1.0; longitude = 2.0 } }
+        val (start, end) = computeHintStartEndLabels(null, null, loc1, loc2)
+        expect.that(start).isEqualTo("Eastbound")
+        expect.that(end).isEqualTo("Westbound")
+    }
 }

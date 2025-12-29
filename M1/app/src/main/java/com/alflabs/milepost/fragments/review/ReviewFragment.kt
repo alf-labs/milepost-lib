@@ -271,13 +271,21 @@ class ReviewFragment : Fragment() {
         val clearMpStartButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_start_button)
         val clearMpEndButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_end_button)
 
-        trackLabelEditText.setText(track.trackLabel)
-        startLabelEditText.setText(track.startLabel)
-        endLabelEditText.setText(track.endLabel)
-
         val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
         val locFirst = locations.firstOrNull()
         val locLast = locations.lastOrNull()
+
+        val (startHint, endHint) = computeHintStartEndLabels(
+            track.startLabel,
+            track.endLabel,
+            locFirst,
+            locLast
+        )
+
+        trackLabelEditText.setText(track.trackLabel)
+        startLabelEditText.setText(startHint)
+        endLabelEditText.setText(endHint)
+
         val mpStart : Float? = if (locFirst != null && locFirst.hasMp()) locFirst.mp else null
         val mpEnd : Float? = if (locations.size > 1 && locLast != null && locLast.hasMp()) locations.last().mp else null
 
@@ -486,12 +494,12 @@ class ReviewFragment : Fragment() {
                 map.addMarker(
                     MarkerOptions()
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        .title("Start")
+                        .title(if (track.startLabel.isNullOrEmpty()) "Start" else track.startLabel)
                         .position(startPos)
                 )
                 map.addMarker(
                     MarkerOptions()
-                        .title("End")
+                        .title(if (track.endLabel.isNullOrEmpty()) "End" else track.endLabel)
                         .position(endPos)
                 )
 
@@ -580,6 +588,46 @@ class ReviewFragment : Fragment() {
             }
         }
     }
+}
+
+internal fun computeHintStartEndLabels(
+    startLabel: String?,
+    endLabel: String?,
+    locFirst: LocationData?,
+    locLast: LocationData?
+) : Pair<String, String> {
+    val start = startLabel ?: ""
+    val end = endLabel ?: ""
+
+    // We will only guess a direction if:
+    // - there are no labels already.
+    // - there are at least 2 points and they are not the same
+    if (start.isNotEmpty()
+        || end.isNotEmpty()
+        || locFirst == null
+        || locLast == null
+        || locFirst == locLast
+    ) {
+        return Pair(start, end)
+    }
+
+    val startPos = toLocation(locFirst.latLong.latitude, locFirst.latLong.longitude)
+    val endPos = toLocation(locLast.latLong.latitude, locLast.latLong.longitude)
+    val bearing = startPos.bearingTo(endPos)
+
+    return when (bearing) {
+        in  45.0..<135.0 -> Pair("Westbound", "Eastbound")
+        in 135.0..<225.0 -> Pair("Northbound", "Southbound")
+        in 225.0..<315.0 -> Pair("Eastbound", "Westbound")
+        else -> Pair("Southbound", "Northbound")
+    }
+}
+
+private fun toLocation(latitude: Double, longitude: Double): Location {
+    val location = Location("internal")
+    location.latitude = latitude
+    location.longitude = longitude
+    return location
 }
 
 internal fun computeTrackSummary(currentSummary: TrackSummary, track: TrackEntity): TrackSummary {
