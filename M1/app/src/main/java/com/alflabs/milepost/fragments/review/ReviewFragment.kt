@@ -127,7 +127,6 @@ class ReviewFragment : Fragment() {
             reviewList = convert(track?.locationList)
             updateInterpolatedMp(track, reviewList)
             adapter.submitList(reviewList)
-            loadMapTrack()
             updateTrackSummary(track)
             logger.d(TAG, "@@ is first load: $firstLoad")
             if (track != null && firstLoad) {
@@ -135,6 +134,9 @@ class ReviewFragment : Fragment() {
                 if (track.label.isNullOrEmpty()) {
                     showReviewTitleDialog(track)
                 }
+            }
+            lifecycleScope.launch {
+                loadMapTrack()
             }
         }
 
@@ -155,7 +157,9 @@ class ReviewFragment : Fragment() {
                         logger
                     )
                 }
-                loadMapTrack()
+                lifecycleScope.launch {
+                    loadMapTrack()
+                }
             }
         } catch (e: Exception) {
             googleMap = null
