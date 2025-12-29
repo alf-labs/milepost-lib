@@ -92,6 +92,8 @@ class ReviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.label.text = "Loading track data, please wait"
+
         setupMenu()
 
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
@@ -142,14 +144,22 @@ class ReviewFragment : Fragment() {
             showReviewTitleDialog(trackEntity)
         }
 
-        binding.mapView?.onCreate(savedInstanceState)
-        binding.mapView?.getMapAsync { map ->
-            googleMap = map
-            googleMap?.let { MapStyle.applyMapStyle(
-                requireContext(),
-                it,
-                logger) }
-            loadMapTrack()
+        try {
+            binding.mapView?.onCreate(savedInstanceState)
+            binding.mapView?.getMapAsync { map ->
+                googleMap = map
+                googleMap?.let {
+                    MapStyle.applyMapStyle(
+                        requireContext(),
+                        it,
+                        logger
+                    )
+                }
+                loadMapTrack()
+            }
+        } catch (e: Exception) {
+            googleMap = null
+            logger.d(TAG, "@@ onCreate MapView failed", e)
         }
     }
 
@@ -375,52 +385,60 @@ class ReviewFragment : Fragment() {
         val map = googleMap ?: return
         val track = trackEntity ?: return
 
-        map.clear()
+        try {
+            map.clear()
 
-        val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
-        if (locations.size == 1) {
-            val location = locations[0]
-            val movePos = LatLng(location.latLong.latitude, location.latLong.longitude)
+            val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
+            if (locations.size == 1) {
+                val location = locations[0]
+                val movePos = LatLng(location.latLong.latitude, location.latLong.longitude)
 
-            map.addMarker(MarkerOptions().position(movePos))
-            val update = CameraUpdateFactory.newLatLngZoom(movePos, MAPS_ZOOM_LEVEL)
-            logger.d(TAG, "@@ Camera move to: $movePos")
-            map.moveCamera(update)
+                map.addMarker(MarkerOptions().position(movePos))
+                val update = CameraUpdateFactory.newLatLngZoom(movePos, MAPS_ZOOM_LEVEL)
+                logger.d(TAG, "@@ Camera move to: $movePos")
+                map.moveCamera(update)
 
-        } else if (locations.size > 1) {
-            val lineColor = requireContext().getColor(R.color.colorPrimaryDark)
-            val polylineOptions = PolylineOptions()
-                .color(lineColor)
-                .width(10f)
+            } else if (locations.size > 1) {
+                val lineColor = requireContext().getColor(R.color.colorPrimaryDark)
+                val polylineOptions = PolylineOptions()
+                    .color(lineColor)
+                    .width(10f)
 
-            for (location in locations) {
-                polylineOptions.add(
-                    LatLng(location.latLong.latitude, location.latLong.longitude)
+                for (location in locations) {
+                    polylineOptions.add(
+                        LatLng(location.latLong.latitude, location.latLong.longitude)
+                    )
+                }
+                map.addPolyline(polylineOptions)
+
+                val locFirst = locations.first()
+                val locLast = locations.last()
+                val startPos = LatLng(locFirst.latLong.latitude, locFirst.latLong.longitude)
+                val endPos = LatLng(locLast.latLong.latitude, locLast.latLong.longitude)
+                val boundsBuilder = LatLngBounds.Builder()
+                boundsBuilder.include(startPos)
+                boundsBuilder.include(endPos)
+                map.addMarker(
+                    MarkerOptions()
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                        .title("Start")
+                        .position(startPos)
                 )
+                map.addMarker(
+                    MarkerOptions()
+                        .title("End")
+                        .position(endPos)
+                )
+
+                // Zoom to the requested bounds with offset from edges of the map in pixels
+                val bounds = boundsBuilder.build()
+                val padding = resources.getDimensionPixelSize(R.dimen.map_padding)
+                val update = CameraUpdateFactory.newLatLngBounds(bounds, padding)
+                logger.d(TAG, "@@ Camera bounds: $bounds")
+                map.moveCamera(update)
             }
-            map.addPolyline(polylineOptions)
-
-            val locFirst = locations.first()
-            val locLast = locations.last()
-            val startPos = LatLng(locFirst.latLong.latitude, locFirst.latLong.longitude)
-            val endPos = LatLng(locLast.latLong.latitude, locLast.latLong.longitude)
-            val boundsBuilder = LatLngBounds.Builder()
-            boundsBuilder.include(startPos)
-            boundsBuilder.include(endPos)
-            map.addMarker(MarkerOptions()
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                .title("Start")
-                .position(startPos))
-            map.addMarker(MarkerOptions()
-                .title("End")
-                .position(endPos))
-
-            // Zoom to the requested bounds with offset from edges of the map in pixels
-            val bounds = boundsBuilder.build()
-            val padding = resources.getDimensionPixelSize(R.dimen.map_padding)
-            val update = CameraUpdateFactory.newLatLngBounds(bounds, padding)
-            logger.d(TAG, "@@ Camera bounds: $bounds")
-            map.moveCamera(update)
+        } catch (e: Exception) {
+            logger.d(TAG, "@@ loadMapTrack", e)
         }
     }
 
