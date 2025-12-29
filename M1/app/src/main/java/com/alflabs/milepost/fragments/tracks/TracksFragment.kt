@@ -3,22 +3,30 @@ package com.alflabs.milepost.fragments.tracks
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.TracksFragmentBinding
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.tracks.TrackDisplayInfo
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.utils.ILogger
+import com.alflabs.utils.MenuHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -56,6 +64,8 @@ class TracksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupMenu()
+
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
 
         val adapter = TrackAdapter(
@@ -87,14 +97,32 @@ class TracksFragment : Fragment() {
         )
         binding.tracksList.addItemDecoration(dividerItemDecoration)
 
-        viewModel.tracks.observe(viewLifecycleOwner) { list ->
-            binding.emptyMessage.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
-            adapter.submitList(list)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.tracks.observe(viewLifecycleOwner) { list ->
+                binding.emptyMessage.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+                adapter.submitList(list)
+            }
         }
+    }
 
-        binding.importButton.setOnClickListener {
-            importJsonSelectFile()
-        }
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.tracks_menu, menu)
+                MenuHelper.Menu_setOptionalIconsVisible(menu, true)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_import -> {
+                        importJsonSelectFile()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     private fun importJsonSelectFile() {
