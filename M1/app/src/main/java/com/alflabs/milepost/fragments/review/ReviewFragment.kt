@@ -115,12 +115,12 @@ class ReviewFragment : Fragment() {
         binding.locationsList.addItemDecoration(dividerItemDecoration)
 
         viewModel.track.observe(viewLifecycleOwner) { track ->
-            logger.d(TAG, "@@ Review observe track: ${track?.id} ${track?.label}")
+            logger.d(TAG, "@@ Review observe track: ${track?.id} ${track?.trackLabel}")
 
             if (track == null) {
                 binding.label.text = "No track found"
             } else {
-                binding.label.text = track.label?.ifBlank { "(Tap to Add Title)" }
+                binding.label.text = track.trackLabel?.ifBlank { "(Tap to Add Title)" }
             }
             binding.summary.text = track?.summary.toText(useImperialUnits)
 
@@ -132,7 +132,10 @@ class ReviewFragment : Fragment() {
             logger.d(TAG, "@@ is first load: $firstLoad")
             if (track != null && firstLoad) {
                 firstLoad = false
-                if (track.label.isNullOrEmpty()) {
+                if (track.trackLabel.isNullOrEmpty()
+                    && track.startLabel.isNullOrEmpty()
+                    && track.endLabel.isNullOrEmpty()
+                ) {
                     showReviewTitleDialog(track)
                 }
             }
@@ -260,13 +263,17 @@ class ReviewFragment : Fragment() {
         if (track == null) return
 
         val dialogView = layoutInflater.inflate(R.layout.review_title_dialog, null)
-        val labelEditText = dialogView.findViewById<TextInputEditText>(R.id.label_edittext)
+        val trackLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.track_label_edittext)
+        val startLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.start_label_edittext)
+        val endLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.end_label_edittext)
         val mpStartValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_start_value_edittext)
         val mpEndValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_end_value_edittext)
         val clearMpStartButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_start_button)
         val clearMpEndButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_end_button)
 
-        labelEditText.setText(track.label)
+        trackLabelEditText.setText(track.trackLabel)
+        startLabelEditText.setText(track.startLabel)
+        endLabelEditText.setText(track.endLabel)
 
         val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
         val locFirst = locations.firstOrNull()
@@ -274,8 +281,8 @@ class ReviewFragment : Fragment() {
         val mpStart : Float? = if (locFirst != null && locFirst.hasMp()) locFirst.mp else null
         val mpEnd : Float? = if (locations.size > 1 && locLast != null && locLast.hasMp()) locations.last().mp else null
 
-        mpStart?.let { mpStartValueEditText.setText(it.toString()) }
-        mpEnd?.let { mpEndValueEditText.setText(it.toString()) }
+        mpStartValueEditText.setText(mpStart?.toString())
+        mpEndValueEditText.setText(mpEnd?.toString())
 
         mpStartValueEditText.isEnabled = locations.isNotEmpty()
         clearMpStartButton.isEnabled = locations.isNotEmpty()
@@ -292,21 +299,33 @@ class ReviewFragment : Fragment() {
             .setTitle("Review Options")
             .setView(dialogView)
             .setPositiveButton("Apply") { _, _ ->
-                val newLabel = labelEditText.text.toString().trim()
+                val newLabel = trackLabelEditText.text.toString().trim()
+                val newStartLabel = startLabelEditText.text.toString().trim()
+                val newEndLabel = endLabelEditText.text.toString().trim()
                 val newMpStart = mpStartValueEditText.text.toString().toFloatOrNull()
                 val newMpEnd = mpEndValueEditText.text.toString().toFloatOrNull()
 
                 logger.d(TAG, "@@Apply TITLE clicked:")
                 logger.d(TAG, "@@  Label: $newLabel")
+                logger.d(TAG, "@@  Start Label: $newStartLabel")
+                logger.d(TAG, "@@  End Label: $newEndLabel")
                 logger.d(TAG, "@@  MP Start Value: $newMpStart")
                 logger.d(TAG, "@@  MP End Value: $newMpEnd")
 
                 var changed = false
                 var newTrackEntity: TrackEntity = track
 
-                if (newLabel != track.label) {
+                if (newLabel != track.trackLabel) {
                     changed = true
-                    newTrackEntity = newTrackEntity.copy(label = newLabel)
+                    newTrackEntity = newTrackEntity.copy(trackLabel = newLabel)
+                }
+                if (newStartLabel != track.startLabel) {
+                    changed = true
+                    newTrackEntity = newTrackEntity.copy(startLabel = newStartLabel)
+                }
+                if (newEndLabel != track.endLabel) {
+                    changed = true
+                    newTrackEntity = newTrackEntity.copy(endLabel = newEndLabel)
                 }
                 if (track.locationList != null && (newMpStart != mpStart || newMpEnd != mpEnd)) {
                     changed = true

@@ -72,7 +72,9 @@ class ImporterExporterTest {
 
         trackEntity = TrackEntity(
             uuid = "test-uuid-1234",
-            label = "Test Track",
+            trackLabel = "Test Track",
+            startLabel = "Start Here",
+            endLabel = "End There",
             locationList = locations,
             // This summary should not be exported
             summary = trackSummary {
@@ -122,7 +124,9 @@ class ImporterExporterTest {
               "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
               "updatedDateISO" : "2022-03-04T05:06:07Z",
-              "label" : "Test Track",
+              "trackLabel" : "Test Track",
+              "startLabel" : "Start Here",
+              "endLabel" : "End There",
               "locationList" : {
                 "locations" : [ {
                   "latLong" : {
@@ -169,7 +173,9 @@ class ImporterExporterTest {
               "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
               "updatedDateISO" : "2022-03-04T05:06:07Z",
-              "label" : "Test Track",
+              "trackLabel" : "Test Track",
+              "startLabel" : "Start Here",
+              "endLabel" : "End There",
               "locationList" : {
                 "locations" : [ {
                   "latLong" : {

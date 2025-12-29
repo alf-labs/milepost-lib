@@ -27,7 +27,7 @@ class TracksViewModel @Inject constructor(
         val b = Random.nextInt(50, 1000) / 10f
         viewModelScope.launch {
             var track = TrackEntity(
-                label = "Track ${Random.nextInt(1000)}",
+                trackLabel = "Track ${Random.nextInt(1000)}",
                 createdDateISO = Date().toString(),
                 summary = trackSummary {
                     mpMin = min(a, b)

@@ -71,13 +71,6 @@ class TracksFragment : Fragment() {
         val adapter = TrackAdapter(
             onClick = { track ->
                 showEditDialog(track)
-                /*
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Track Selected")
-                    .setMessage(track.label)
-                    .setPositiveButton("OK", null)
-                    .show()
-                 */
             },
             onEdit = { track ->
                 showEditDialog(track)
@@ -176,28 +169,6 @@ class TracksFragment : Fragment() {
         findNavController().navigate(
             TracksFragmentDirections.actionListToReview(track.id)
         )
-
-        // Quick kludge to show an inline edit dialog for one property
-        /*
-        val layout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            val nameInput = EditText(context).apply {
-                setText(track.label)
-                hint = "Label"
-            }
-            addView(nameInput)
-        }
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Edit Track")
-            .setView(layout)
-            .setPositiveButton("Save") { _, _ ->
-                val newlabel = (layout.getChildAt(0) as EditText).text.toString()
-                viewModel.updateTrack(track.copy(label = newlabel))
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-         */
     }
 
     override fun onDestroyView() {

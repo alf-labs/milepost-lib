@@ -41,7 +41,7 @@ class TrackEntityDaoTest {
             val track = TrackEntity(
                 id = 0, // auto-generates a new unique id.
                 uuid = "test-uuid-1",
-                label = "Test Track 1",
+                trackLabel = "Test Track 1",
                 locationList = locationDataList { },
                 createdDateISO = "2021-02-03T04:05:06Z",
                 updatedDateISO = "2022-03-04T05:06:07Z"
@@ -59,7 +59,7 @@ class TrackEntityDaoTest {
             val track0 = TrackEntity(
                 id = 0, // auto-generates a new unique id.
                 uuid = "test-uuid-1",
-                label = "Test Track 1",
+                trackLabel = "Test Track 1",
                 locationList = locationDataList { },
                 createdDateISO = "2021-02-03T04:05:06Z",
                 updatedDateISO = "2022-03-04T05:06:07Z"

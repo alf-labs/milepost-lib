@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.LocationDataListPojo
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -33,7 +34,13 @@ data class TrackEntity(
 
     // User label. Can be empty in which case we'll display "Track #id" as a label.
     @ColumnInfo
-    val label: String? = null,
+    val trackLabel: String? = null,
+
+    // Start and end labels.
+    @ColumnInfo(defaultValue = "null")
+    val startLabel: String? = null,
+    @ColumnInfo(defaultValue = "null")
+    val endLabel: String? = null,
 
     // Optional summary info for list tracks fragment.
     @ColumnInfo
@@ -47,7 +54,9 @@ data class TrackEntity(
         uuid = uuid,
         createdDateISO = createdDateISO,
         updatedDateISO = updatedDateISO,
-        label = label,
+        trackLabel = trackLabel,
+        startLabel = startLabel,
+        endLabel = endLabel,
         locationList = locationList?.let { LocationDataListPojo(it) },
     )
 }
@@ -58,7 +67,10 @@ data class TrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("uuid")             val uuid: String,
     @param:JsonProperty("createdDateISO")   val createdDateISO: String,
     @param:JsonProperty("updatedDateISO")   val updatedDateISO: String? = null,
-    @param:JsonProperty("label")            val label: String? = null,
+    @param:JsonAlias("label")
+    @param:JsonProperty("trackLabel")       val trackLabel: String? = null,
+    @param:JsonProperty("startLabel")       val startLabel: String? = null,
+    @param:JsonProperty("endLabel")         val endLabel: String? = null,
     @param:JsonProperty("locationList")     val locationList: LocationDataListPojo? = null,
 ) {
     fun toProto() = TrackEntity(
@@ -66,7 +78,9 @@ data class TrackEntityPojo @JsonCreator constructor(
         uuid = uuid,
         createdDateISO = createdDateISO,
         updatedDateISO = updatedDateISO,
-        label = label,
+        trackLabel = trackLabel,
+        startLabel = startLabel,
+        endLabel = endLabel,
         summary = null,
         locationList = locationList?.toProto(),
     )
@@ -76,6 +90,6 @@ data class TrackEntityPojo @JsonCreator constructor(
 data class TrackDisplayInfo(
     val id: Long = 0,
     val createdDateISO: String,
-    val label: String? = null,
+    val trackLabel: String? = null,
     val summary: TrackSummary? = null,
 )

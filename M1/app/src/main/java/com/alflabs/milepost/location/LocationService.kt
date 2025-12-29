@@ -112,7 +112,7 @@ class LocationService : Service() {
         scope.launch {
             val track: TrackEntity? = when(runningMode) {
                 StatusData.RECORD -> TrackEntity(
-                    label = "", // this triggers the title dialog in the review screen
+                    trackLabel = "", // this triggers the title dialog in the review screen
                     createdDateISO = Date().toString(),
                 )
                 else -> null
