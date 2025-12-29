@@ -3,13 +3,19 @@ package com.alflabs.milepost.fragments.review
 import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageButton
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -35,6 +41,7 @@ import com.alflabs.milepost.tracks.trackSummary
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
+import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -85,6 +92,8 @@ class ReviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupMenu()
+
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
 
         val adapter = ReviewLocationAdapter(
@@ -116,8 +125,6 @@ class ReviewFragment : Fragment() {
             reviewList = convert(track?.locationList)
             updateInterpolatedMp(track, reviewList)
             adapter.submitList(reviewList)
-            binding.exportCsvButton.isEnabled = trackEntity != null
-            binding.exportJsonButton.isEnabled = trackEntity != null
             loadMapTrack()
             updateTrackSummary(track)
             logger.d(TAG, "@@ is first load: $firstLoad")
@@ -131,20 +138,6 @@ class ReviewFragment : Fragment() {
 
         viewModel.loadTrack(fragmentArgs.trackId)
 
-        binding.exportCsvButton.isEnabled = trackEntity != null
-        binding.exportCsvButton.setOnClickListener {
-            val exportFile = importerExporter.createCsvExportFile(requireContext(), trackEntity)
-            exportFile?.let {
-                importerExporter.shareFile(requireContext(), it)
-            }
-        }
-        binding.exportJsonButton.isEnabled = trackEntity != null
-        binding.exportJsonButton.setOnClickListener {
-            val exportFile = importerExporter.createJsonExportFile(requireContext(), trackEntity)
-            exportFile?.let {
-                importerExporter.shareFile(requireContext(), it)
-            }
-        }
         binding.label.setOnClickListener {
             showReviewTitleDialog(trackEntity)
         }
@@ -158,6 +151,48 @@ class ReviewFragment : Fragment() {
                 logger) }
             loadMapTrack()
         }
+    }
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.review_menu, menu)
+                ApiHelper.Menu_setOptionalIconsVisible(menu, true)
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                super.onPrepareMenu(menu)
+                logger.d(TAG, "@@ onPrepareMenu -- track entity enabled = ${trackEntity != null}")
+                menu.findItem(R.id.action_export_csv).isEnabled = (trackEntity != null)
+                menu.findItem(R.id.action_export_json).isEnabled = (trackEntity != null)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                logger.d(TAG, "@@ onMenuItemSelected: ${menuItem.itemId}")
+                return when (menuItem.itemId) {
+                    R.id.action_export_csv -> {
+                        val exportFile =
+                            importerExporter.createCsvExportFile(requireContext(), trackEntity)
+                        exportFile?.let {
+                            importerExporter.shareFile(requireContext(), it)
+                        }
+                        true
+                    }
+
+                    R.id.action_export_json -> {
+                        val exportFile =
+                            importerExporter.createJsonExportFile(requireContext(), trackEntity)
+                        exportFile?.let {
+                            importerExporter.shareFile(requireContext(), it)
+                        }
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDestroyView() {
