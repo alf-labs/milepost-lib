@@ -16,7 +16,7 @@ import com.alflabs.milepost.fragments.PermissionsFragment
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
 import com.alflabs.milepost.main.MainActivity
-import com.alflabs.milepost.main.StatusData
+import com.alflabs.milepost.main.GlobalMode
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.milepost.tracks.TrackEntityDao
 import com.alflabs.rx.IPublisher
@@ -63,12 +63,12 @@ class LocationService : Service() {
         logger.d(TAG, "onStartCommand: $intent")
 
         val runningMode = intent
-            ?.getSerializableExtra(EXTRA_RUNNING_MODE, StatusData::class.java)
-            ?: StatusData.STOPPED
+            ?.getSerializableExtra(EXTRA_RUNNING_MODE, GlobalMode::class.java)
+            ?: GlobalMode.STOPPED
 
         // Sanity check on desired running mode and required permissions.
-        if (runningMode == StatusData.STOPPED) {
-            globalState.updateStatus(StatusData.STOPPED)
+        if (runningMode == GlobalMode.STOPPED) {
+            globalState.updateMode(GlobalMode.STOPPED)
             stopSelf()
             return START_NOT_STICKY
         }
@@ -110,14 +110,14 @@ class LocationService : Service() {
 
         scope.launch {
             val track: TrackEntity? = when(runningMode) {
-                StatusData.RECORD -> TrackEntity(
+                GlobalMode.RECORD -> TrackEntity(
                     trackLabel = "", // this triggers the title dialog in the review screen
                     createdDateISO = Date().toString(),
                 )
                 else -> null
             }
 
-            val recordTempData: RecordTempData? = if (runningMode == StatusData.RECORD) {
+            val recordTempData: RecordTempData? = if (runningMode == GlobalMode.RECORD) {
                 val recordId = trackEntityDao.insert(track!!)
                 RecordTempData(
                     recordId = recordId,
@@ -131,7 +131,7 @@ class LocationService : Service() {
             }
 
             globalState.locationStream.publishWith(locationPublisher)
-            globalState.updateStatus(
+            globalState.updateMode(
                 runningMode,
                 recordTempData?.recordId,
                 recordTempData?.locationDataListBuilder)
@@ -175,7 +175,7 @@ class LocationService : Service() {
         super.onDestroy()
         logger.d(TAG, "onDestroy")
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        globalState.updateStatus(StatusData.STOPPED)
+        globalState.updateMode(GlobalMode.STOPPED)
         globalState.locationStream.remove(locationPublisher)
     }
 

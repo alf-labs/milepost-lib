@@ -16,7 +16,7 @@ import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationService
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
-import com.alflabs.milepost.main.StatusData
+import com.alflabs.milepost.main.GlobalMode
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
 import com.alflabs.rx.AndroidSchedulers
@@ -43,7 +43,7 @@ open class SensorsFragment: Fragment() {
         private const val MAPS_ZOOM_LEVEL = 15f
     }
 
-    internal open val runningMode = StatusData.SENSOR
+    internal open val runningMode = GlobalMode.SENSOR
     internal open fun actionToPermissionsDlg(): NavDirections =
         SensorsFragmentDirections.actionSensorsToPermissionsDlg()
     internal open fun onStopButton(trackId: Long?) {}
@@ -53,8 +53,8 @@ open class SensorsFragment: Fragment() {
 
     private val locationSubscriber: ISubscriber<in LocationData?> =
         ISubscriber<LocationData?> { _, event -> onLocationChanged(event) }
-    private val statusSubscriber: ISubscriber<in StatusData?> =
-        ISubscriber<StatusData?> { _, event -> onStatusChanged(event) }
+    private val modeSubscriber: ISubscriber<in GlobalMode?> =
+        ISubscriber<GlobalMode?> { _, event -> onGlobalModeChanged(event) }
 
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
@@ -89,9 +89,9 @@ open class SensorsFragment: Fragment() {
         accuracyColorPresent = requireContext().getColor(R.color.accPresent)
 
         binding.startButton.text = when (runningMode) {
-            StatusData.SENSOR -> "Test"
-            StatusData.RECORD -> "Record"
-            StatusData.PLAYBACK -> "Playback"
+            GlobalMode.SENSOR -> "Test"
+            GlobalMode.RECORD -> "Record"
+            GlobalMode.PLAYBACK -> "Playback"
             else -> "Error"
         }
 
@@ -101,7 +101,7 @@ open class SensorsFragment: Fragment() {
             // Sanity check:
             // - If the global state is already started, we should not be here.
             // - If mode cannot start, we should not be here.
-            if (globalState.status.start || !runningMode.start) {
+            if (globalState.mode.start || !runningMode.start) {
                 logger.d(TAG, "START --> already started / cannot start")
                 return@setOnClickListener
             }
@@ -124,7 +124,7 @@ open class SensorsFragment: Fragment() {
             onStopButton(trackId)
         }
 
-        updateButtons(globalState.status)
+        updateButtons(globalState.mode)
 
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync { map ->
@@ -140,9 +140,9 @@ open class SensorsFragment: Fragment() {
         super.onResume()
         logger.d(TAG, "onResume")
         binding.mapView.onResume()
-        globalState.statusStream.subscribe(AndroidSchedulers.mainThread(), statusSubscriber)
+        globalState.modeStream.subscribe(AndroidSchedulers.mainThread(), modeSubscriber)
         globalState.locationStream.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
-        updateButtons(globalState.status)
+        updateButtons(globalState.mode)
     }
 
     override fun onPause() {
@@ -150,7 +150,7 @@ open class SensorsFragment: Fragment() {
         logger.d(TAG, "onPause")
         binding.mapView.onPause()
         globalState.locationStream.remove(locationSubscriber)
-        globalState.statusStream.remove(statusSubscriber)
+        globalState.modeStream.remove(modeSubscriber)
     }
 
     override fun onLowMemory() {
@@ -182,7 +182,7 @@ open class SensorsFragment: Fragment() {
         }
     }
 
-    private fun updateButtons(runningState: StatusData) {
+    private fun updateButtons(runningState: GlobalMode) {
         // Start button is enabled if running state is not already started
         binding.startButton.isEnabled = !runningState.start
         // Stop button is enabled if running state is not already stopped
@@ -192,16 +192,16 @@ open class SensorsFragment: Fragment() {
     fun accuracyColor(value: Float?) : Int =
         if (value == null) accuracyColorMissing else accuracyColorPresent
 
-    private fun onStatusChanged(state: StatusData?) {
-        logger.d(TAG, "onStatusChanged: $state")
-        if (state == null) return
-        binding.statusText.text = state.label
-        updateButtons(state)
+    private fun onGlobalModeChanged(mode: GlobalMode?) {
+        logger.d(TAG, "onGlobalModeChanged: $mode")
+        if (mode == null) return
+        binding.statusText.text = mode.label
+        updateButtons(mode)
     }
 
     fun onLocationChanged(value: LocationData?) {
         logger.d(TAG, "onLocationChanged: $value")
-        updateButtons(globalState.status) // TBD FIXME why is first status never received?
+        updateButtons(globalState.mode) // TBD FIXME why is first mode change never received?
         if (value == null) return
 
         val recordedLocationList = globalState.currentLocationList

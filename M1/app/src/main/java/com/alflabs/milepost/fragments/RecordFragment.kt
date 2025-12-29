@@ -2,13 +2,13 @@ package com.alflabs.milepost.fragments
 
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
-import com.alflabs.milepost.main.StatusData
+import com.alflabs.milepost.main.GlobalMode
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
 class RecordFragment : SensorsFragment() {
-    override val runningMode = StatusData.RECORD
+    override val runningMode = GlobalMode.RECORD
 
     override fun actionToPermissionsDlg(): NavDirections =
         RecordFragmentDirections.actionRecordToPermissionsDlg()

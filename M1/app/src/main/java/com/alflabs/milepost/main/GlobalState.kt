@@ -14,33 +14,35 @@ import javax.inject.Singleton
 class GlobalState @Inject constructor(
     val logger: ILogger
 ) {
-    private val TAG = GlobalState::class.java.simpleName
+    companion object {
+        private val TAG = GlobalState::class.java.simpleName
+    }
 
     val locationStream: IStream<LocationData?> = Streams.stream()
-    val statusStream: IStream<StatusData?> = Streams.stream()
-    val status: StatusData get() = _status ?: StatusData.STOPPED
+    val modeStream: IStream<GlobalMode?> = Streams.stream()
+    val mode: GlobalMode get() = _mode ?: GlobalMode.STOPPED
 
     var currentTrackId: Long? = null
         private set
     var currentLocationList: LocationDataList.Builder? = null
         private set
 
-    private var _status: StatusData? = null
-    private val statusPublisher: IPublisher<StatusData?> = Publishers.latest()
+    private var _mode: GlobalMode? = null
+    private val modePublisher: IPublisher<GlobalMode?> = Publishers.latest()
 
 
-    fun updateStatus(
-        status: StatusData,
+    fun updateMode(
+        newMode: GlobalMode,
         trackId: Long? = null,
         locationDataListBuilder: LocationDataList.Builder? = null
     ) {
-        if (_status == null) {
+        if (_mode == null) {
             logger.d(TAG, "GlobalState initialized: $this")
-            statusStream.publishWith(statusPublisher)
+            modeStream.publishWith(modePublisher)
         }
-        _status = status
+        _mode = newMode
         currentTrackId = trackId
         currentLocationList = locationDataListBuilder
-        statusPublisher.publish(status)
+        modePublisher.publish(newMode)
     }
 }
