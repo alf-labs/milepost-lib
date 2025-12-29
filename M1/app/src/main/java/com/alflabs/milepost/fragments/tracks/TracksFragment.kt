@@ -25,8 +25,8 @@ import com.alflabs.milepost.databinding.TracksFragmentBinding
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.tracks.TrackDisplayInfo
 import com.alflabs.milepost.utils.ImporterExporter
+import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
-import com.alflabs.utils.MenuHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -110,7 +110,7 @@ class TracksFragment : Fragment() {
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                 menuInflater.inflate(R.menu.tracks_menu, menu)
-                MenuHelper.Menu_setOptionalIconsVisible(menu, true)
+                ApiHelper.Menu_setOptionalIconsVisible(menu, true)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
