@@ -30,16 +30,16 @@ class GlobalState @Inject constructor(
     private var _mode: GlobalMode? = null
     private val modePublisher: IPublisher<GlobalMode?> = Publishers.latest()
 
+    init {
+        logger.d(TAG, "GlobalState initialized: $this")
+        modeStream.publishWith(modePublisher)
+    }
 
     fun updateMode(
         newMode: GlobalMode,
         trackId: Long? = null,
         locationDataListBuilder: LocationDataList.Builder? = null
     ) {
-        if (_mode == null) {
-            logger.d(TAG, "GlobalState initialized: $this")
-            modeStream.publishWith(modePublisher)
-        }
         _mode = newMode
         currentTrackId = trackId
         currentLocationList = locationDataListBuilder

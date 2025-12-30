@@ -77,7 +77,6 @@ open class SensorsFragment: Fragment() {
         logger.d(TAG, "onCreateView")
         _binding = SensorsFragmentBinding.inflate(inflater, container, false)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -200,8 +199,7 @@ open class SensorsFragment: Fragment() {
     }
 
     fun onLocationChanged(value: LocationData?) {
-        logger.d(TAG, "onLocationChanged: $value")
-        updateButtons(globalState.mode) // TBD FIXME why is first mode change never received?
+        logger.d(TAG, "onLocationChanged: ${value?.latLong?.timestampMillis}")
         if (value == null) return
 
         val recordedLocationList = globalState.currentLocationList
