@@ -3,9 +3,7 @@ package com.alflabs.milepost.main
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.LocationService
-import com.alflabs.rx.IPublisher
 import com.alflabs.rx.IStream
-import com.alflabs.rx.Publishers
 import com.alflabs.rx.Schedulers
 import com.alflabs.rx.Streams
 import com.alflabs.utils.ILogger
@@ -20,13 +18,12 @@ class GlobalState @Inject constructor(
         private val TAG = GlobalState::class.java.simpleName
     }
 
-    val locationStream: IStream<LocationData?> = Streams.stream()
+    val locationStream: IStream<LocationData?> = Streams.stream<LocationData?>().on(Schedulers.sync())
+    val serviceModeStream: IStream<ServiceMode?> = Streams.stream<ServiceMode?>().on(Schedulers.sync())
+    val operatorModeStream: IStream<OperatorMode?> = Streams.stream<OperatorMode?>().on(Schedulers.sync())
 
     val serviceMode: ServiceMode get() = LocationService.serviceMode
     val operatorMode: OperatorMode get() = Operator.operatorMode
-
-    val serviceModeStream: IStream<ServiceMode?> = Streams.stream<ServiceMode?>().on(Schedulers.sync())
-    val operatorModeStream: IStream<OperatorMode?> = Streams.stream<OperatorMode?>().on(Schedulers.sync())
 
     var currentTrackId: Long? = null
         private set

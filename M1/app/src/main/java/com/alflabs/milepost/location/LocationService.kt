@@ -7,7 +7,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.location.Location
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
@@ -22,10 +24,10 @@ import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 
 
@@ -61,10 +63,9 @@ class LocationService : Service() {
     @Inject lateinit var trackEntityDao: TrackEntityDao
     @Inject lateinit var appSettings: AppSettings
 
+    private lateinit var locationCallback: LocationCallback
     private val serviceModePublisher: IPublisher<ServiceMode?> = Publishers.latest()
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
-
-    private val scope = CoroutineScope(Dispatchers.IO)
 
     @RequiresPermission(
         allOf = [
@@ -112,6 +113,20 @@ class LocationService : Service() {
 
         setNotification(notification, notificationManager)
 
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location in locationResult.locations) {
+                    val ld = toLocationData(location)
+                    locationPublisher.publish(ld)
+                }
+            }
+        }
+
+        fusedLocationProviderClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            Looper.getMainLooper()
+        )
 
         logger.d(TAG, "Started")
         return START_NOT_STICKY
@@ -125,6 +140,7 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         logger.d(TAG, "onDestroy")
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         serviceMode = ServiceMode.STOPPED
         serviceModePublisher.publish(serviceMode)
         globalState.locationStream.remove(locationPublisher)
@@ -138,5 +154,29 @@ class LocationService : Service() {
         val statusText = "Location Service: Getting first fix"
         val updatedNotification = notification.setContentText(statusText)
         notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
+    }
+}
+
+private fun toLocationData(location: Location): LocationData = locationData {
+    latLong = latLongData {
+        timestampMillis = location.time
+        latitude = location.latitude
+        longitude = location.longitude
+        if (location.hasAccuracy()) {
+            accuracy = location.accuracy
+        }
+    }
+
+    if (location.hasSpeed() && location.hasBearing()) {
+        speedBearing = speedBearingData {
+            speedMps = location.speed
+            bearingAcc = location.bearing
+            if (location.hasSpeedAccuracy()) {
+                speedAcc = location.speedAccuracyMetersPerSecond
+            }
+            if (location.hasBearingAccuracy()) {
+                bearingAcc = location.bearingAccuracyDegrees
+            }
+        }
     }
 }
