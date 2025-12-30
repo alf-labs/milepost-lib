@@ -1,4 +1,4 @@
-package com.alflabs.milepost.main
+package com.alflabs.milepost.service
 
 enum class ServiceMode {
     STOPPED,

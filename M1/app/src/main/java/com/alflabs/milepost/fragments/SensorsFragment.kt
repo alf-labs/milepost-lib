@@ -11,11 +11,11 @@ import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.SensorsFragmentBinding
 import com.alflabs.milepost.location.LocationData
-import com.alflabs.milepost.location.LocationService
+import com.alflabs.milepost.service.LocationService
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
-import com.alflabs.milepost.main.OperatorMode
-import com.alflabs.milepost.main.ServiceMode
+import com.alflabs.milepost.op.OperatorMode
+import com.alflabs.milepost.service.ServiceMode
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
 import com.alflabs.rx.AndroidSchedulers

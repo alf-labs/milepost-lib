@@ -1,4 +1,4 @@
-package com.alflabs.milepost.location
+package com.alflabs.milepost.service
 
 import android.Manifest
 import android.app.Activity
@@ -15,10 +15,14 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import com.alflabs.milepost.R
 import com.alflabs.milepost.fragments.PermissionsFragment
+import com.alflabs.milepost.location.LocationData
+import com.alflabs.milepost.location.latLongData
+import com.alflabs.milepost.location.locationData
+import com.alflabs.milepost.location.speedBearingData
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
 import com.alflabs.milepost.main.MainActivity
-import com.alflabs.milepost.main.ServiceMode
+import com.alflabs.milepost.service.ServiceMode
 import com.alflabs.milepost.tracks.TrackEntityDao
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers

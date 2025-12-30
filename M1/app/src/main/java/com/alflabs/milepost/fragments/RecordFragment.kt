@@ -2,7 +2,7 @@ package com.alflabs.milepost.fragments
 
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
-import com.alflabs.milepost.main.OperatorMode
+import com.alflabs.milepost.op.OperatorMode
 import dagger.hilt.android.AndroidEntryPoint
 
 

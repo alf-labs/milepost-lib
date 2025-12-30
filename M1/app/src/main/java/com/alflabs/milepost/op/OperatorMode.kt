@@ -1,4 +1,4 @@
-package com.alflabs.milepost.main
+package com.alflabs.milepost.op
 
 enum class OperatorMode {
     IDLE,

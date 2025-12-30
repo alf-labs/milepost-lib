@@ -1,5 +1,6 @@
-package com.alflabs.milepost.main
+package com.alflabs.milepost.op
 
+import com.alflabs.milepost.main.GlobalState
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger

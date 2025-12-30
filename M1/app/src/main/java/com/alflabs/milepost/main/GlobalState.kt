@@ -2,7 +2,10 @@ package com.alflabs.milepost.main
 
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
-import com.alflabs.milepost.location.LocationService
+import com.alflabs.milepost.service.LocationService
+import com.alflabs.milepost.op.Operator
+import com.alflabs.milepost.op.OperatorMode
+import com.alflabs.milepost.service.ServiceMode
 import com.alflabs.rx.IStream
 import com.alflabs.rx.Schedulers
 import com.alflabs.rx.Streams
