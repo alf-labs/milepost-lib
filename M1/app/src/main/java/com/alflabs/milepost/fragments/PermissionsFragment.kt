@@ -169,7 +169,7 @@ class PermissionsFragment : DialogFragment() {
         }
     }
 
-    @Deprecated("Deprecated in Java")
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onRequestPermissionsResult(requestCode: Int,
                                             permissions: Array<out String>,
                                             grantResults: IntArray) {

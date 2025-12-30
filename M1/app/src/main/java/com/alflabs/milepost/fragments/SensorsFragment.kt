@@ -1,7 +1,5 @@
 package com.alflabs.milepost.fragments
 
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -16,7 +14,8 @@ import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationService
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
-import com.alflabs.milepost.main.GlobalMode
+import com.alflabs.milepost.main.OperatorMode
+import com.alflabs.milepost.main.ServiceMode
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
 import com.alflabs.rx.AndroidSchedulers
@@ -39,11 +38,10 @@ open class SensorsFragment: Fragment() {
 
     companion object {
         private val TAG = SensorsFragment::class.java.simpleName
-        private const val PERM_REQUEST_CODE = 1
         private const val MAPS_ZOOM_LEVEL = 15f
     }
 
-    internal open val runningMode = GlobalMode.SENSOR
+    internal open val operatorMode = OperatorMode.IDLE
     internal open fun actionToPermissionsDlg(): NavDirections =
         SensorsFragmentDirections.actionSensorsToPermissionsDlg()
     internal open fun onStopButton(trackId: Long?) {}
@@ -53,8 +51,10 @@ open class SensorsFragment: Fragment() {
 
     private val locationSubscriber: ISubscriber<in LocationData?> =
         ISubscriber<LocationData?> { _, event -> onLocationChanged(event) }
-    private val modeSubscriber: ISubscriber<in GlobalMode?> =
-        ISubscriber<GlobalMode?> { _, event -> onGlobalModeChanged(event) }
+    private val serviceModeSubscriber: ISubscriber<in ServiceMode?> =
+        ISubscriber<ServiceMode?> { _, event -> onGlobalModeChanged(event) }
+    private val operatorModeSubscriber: ISubscriber<in OperatorMode?> =
+        ISubscriber<OperatorMode?> { _, event -> onGlobalModeChanged(event) }
 
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
@@ -87,43 +87,31 @@ open class SensorsFragment: Fragment() {
         accuracyColorMissing = requireContext().getColor(R.color.accMissing)
         accuracyColorPresent = requireContext().getColor(R.color.accPresent)
 
-        binding.startButton.text = when (runningMode) {
-            GlobalMode.SENSOR -> "Test"
-            GlobalMode.RECORD -> "Record"
-            GlobalMode.PLAYBACK -> "Playback"
-            else -> "Error"
+        binding.startButton.text = when (operatorMode) {
+            OperatorMode.IDLE -> "Test"
+            OperatorMode.RECORD -> "Record"
+            OperatorMode.PLAYBACK -> "Playback"
         }
 
         binding.startButton.setOnClickListener {
             logger.d(TAG, "On click START button")
-
-            // Sanity check:
-            // - If the global state is already started, we should not be here.
-            // - If mode cannot start, we should not be here.
-            if (globalState.mode.start || !runningMode.start) {
-                logger.d(TAG, "START --> already started / cannot start")
-                return@setOnClickListener
-            }
-
             if (!PermissionsFragment.allPermissionsGranted(requireContext())) {
                 logger.d(TAG, "START --> request permissions")
                 findNavController().navigate(actionToPermissionsDlg())
             } else {
                 setInitialMapZoom = true
-                val intent = Intent(requireContext(), LocationService::class.java)
-                intent.putExtra(LocationService.EXTRA_RUNNING_MODE, runningMode)
-                requireActivity().startForegroundService(intent)
+                LocationService.startService(requireActivity())
             }
         }
 
         binding.stopButton.setOnClickListener {
             logger.d(TAG, "On click STOP button")
             val trackId = globalState.currentTrackId
-            requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
+            LocationService.stopService(requireActivity())
             onStopButton(trackId)
         }
 
-        updateButtons(globalState.mode)
+        updateButtons()
 
         binding.mapView.onCreate(savedInstanceState)
         binding.mapView.getMapAsync { map ->
@@ -139,9 +127,10 @@ open class SensorsFragment: Fragment() {
         super.onResume()
         logger.d(TAG, "onResume")
         binding.mapView.onResume()
-        globalState.modeStream.subscribe(AndroidSchedulers.mainThread(), modeSubscriber)
         globalState.locationStream.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
-        updateButtons(globalState.mode)
+        globalState.serviceModeStream.subscribe(AndroidSchedulers.mainThread(), serviceModeSubscriber)
+        globalState.operatorModeStream.subscribe(AndroidSchedulers.mainThread(), operatorModeSubscriber)
+        updateButtons()
     }
 
     override fun onPause() {
@@ -149,7 +138,8 @@ open class SensorsFragment: Fragment() {
         logger.d(TAG, "onPause")
         binding.mapView.onPause()
         globalState.locationStream.remove(locationSubscriber)
-        globalState.modeStream.remove(modeSubscriber)
+        globalState.serviceModeStream.remove(serviceModeSubscriber)
+        globalState.operatorModeStream.remove(operatorModeSubscriber)
     }
 
     override fun onLowMemory() {
@@ -164,38 +154,23 @@ open class SensorsFragment: Fragment() {
         _binding = null
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onRequestPermissionsResult(requestCode: Int,
-                                            permissions: Array<out String>,
-                                            grantResults: IntArray) {
-        logger.d(TAG, "onRequestPermissionsResult: $requestCode, $permissions, $grantResults")
-        if (requestCode == PERM_REQUEST_CODE
-            && grantResults.isNotEmpty()
-            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            logger.d(TAG, "onRequestPermissionsResult --> GRANTED")
+    private fun updateButtons() {
+        val isRunning = globalState.serviceMode == ServiceMode.RUNNING
+        val isOperatorMode = globalState.operatorMode == operatorMode
 
-            requireActivity()
-                .startForegroundService(Intent(requireContext(), LocationService::class.java))
-        } else {
-            logger.d(TAG, "onRequestPermissionsResult --> NOT granted")
-        }
-    }
-
-    private fun updateButtons(runningState: GlobalMode) {
-        // Start button is enabled if running state is not already started
-        binding.startButton.isEnabled = !runningState.start
-        // Stop button is enabled if running state is not already stopped
-        binding.stopButton.isEnabled = !runningState.stop
+        // Start button is enabled if running state is not already started or not desired mode
+        binding.startButton.isEnabled = !isRunning || !isOperatorMode
+        binding.stopButton.isEnabled = !binding.startButton.isEnabled
     }
 
     fun accuracyColor(value: Float?) : Int =
         if (value == null) accuracyColorMissing else accuracyColorPresent
 
-    private fun onGlobalModeChanged(mode: GlobalMode?) {
-        logger.d(TAG, "onGlobalModeChanged: $mode")
-        if (mode == null) return
-        binding.statusText.text = mode.label
-        updateButtons(mode)
+    private fun onGlobalModeChanged(event: Any?) {
+        logger.d(TAG, "onGlobalModeChanged: $event")
+        // TBD this is temporary, change to a better display
+        binding.statusText.text = "${globalState.operatorMode} ${globalState.serviceMode}"
+        updateButtons()
     }
 
     fun onLocationChanged(value: LocationData?) {

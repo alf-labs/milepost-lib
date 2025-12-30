@@ -2,9 +2,11 @@ package com.alflabs.milepost.main
 
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
+import com.alflabs.milepost.location.LocationService
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.IStream
 import com.alflabs.rx.Publishers
+import com.alflabs.rx.Schedulers
 import com.alflabs.rx.Streams
 import com.alflabs.utils.ILogger
 import javax.inject.Inject
@@ -20,25 +22,20 @@ class GlobalState @Inject constructor(
 
     val locationStream: IStream<LocationData?> = Streams.stream()
 
-    var serviceMode: ServiceMode = ServiceMode.STOPPED
+    val serviceMode: ServiceMode get() = LocationService.serviceMode
+    val operatorMode: OperatorMode get() = Operator.operatorMode
 
-    // --- TBD deprecate --
-    val modeStream: IStream<GlobalMode?> = Streams.stream()
-    val mode: GlobalMode get() = _mode ?: GlobalMode.STOPPED
+    val serviceModeStream: IStream<ServiceMode?> = Streams.stream<ServiceMode?>().on(Schedulers.sync())
+    val operatorModeStream: IStream<OperatorMode?> = Streams.stream<OperatorMode?>().on(Schedulers.sync())
 
     var currentTrackId: Long? = null
         private set
     var currentLocationList: LocationDataList.Builder? = null
         private set
 
-    private var _mode: GlobalMode? = null
-    private val modePublisher: IPublisher<GlobalMode?> = Publishers.latest()
-    // --- TBD deprecate --
-
 
     init {
         logger.d(TAG, "GlobalState initialized: $this")
-        modeStream.publishWith(modePublisher)
     }
 
     @Deprecated("TBD")
@@ -47,9 +44,9 @@ class GlobalState @Inject constructor(
         trackId: Long? = null,
         locationDataListBuilder: LocationDataList.Builder? = null
     ) {
-        _mode = newMode
+//        _mode = newMode
         currentTrackId = trackId
         currentLocationList = locationDataListBuilder
-        modePublisher.publish(newMode)
+//        modePublisher.publish(newMode)
     }
 }
