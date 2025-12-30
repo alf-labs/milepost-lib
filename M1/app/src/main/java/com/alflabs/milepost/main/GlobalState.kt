@@ -19,6 +19,10 @@ class GlobalState @Inject constructor(
     }
 
     val locationStream: IStream<LocationData?> = Streams.stream()
+
+    var serviceMode: ServiceMode = ServiceMode.STOPPED
+
+    // --- TBD deprecate --
     val modeStream: IStream<GlobalMode?> = Streams.stream()
     val mode: GlobalMode get() = _mode ?: GlobalMode.STOPPED
 
@@ -29,12 +33,15 @@ class GlobalState @Inject constructor(
 
     private var _mode: GlobalMode? = null
     private val modePublisher: IPublisher<GlobalMode?> = Publishers.latest()
+    // --- TBD deprecate --
+
 
     init {
         logger.d(TAG, "GlobalState initialized: $this")
         modeStream.publishWith(modePublisher)
     }
 
+    @Deprecated("TBD")
     fun updateMode(
         newMode: GlobalMode,
         trackId: Long? = null,
