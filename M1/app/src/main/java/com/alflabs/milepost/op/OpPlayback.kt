@@ -3,7 +3,9 @@ package com.alflabs.milepost.op
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.main.GlobalState
 import com.alflabs.milepost.tracks.TrackEntity
+import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
+import com.alflabs.rx.Publishers
 import com.alflabs.rx.Schedulers
 import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
@@ -36,6 +38,7 @@ class OpPlayback @AssistedInject constructor(
 
     private val locationSubscriber: ISubscriber<in LocationData?> =
         ISubscriber<LocationData?> { _, event -> onLocationUpdate(event) }
+    private val mpEstimatePublisher: IPublisher<MpEstimate?> = Publishers.latest()
     private val mpEstimator = MpEstimator()
     private var lastIndex = -1
     private var lastDirection = 0
@@ -43,10 +46,12 @@ class OpPlayback @AssistedInject constructor(
     init {
         logger.d(TAG, "init: ${track.id}")
         globalState.locationStream.subscribe(Schedulers.sync(), locationSubscriber)
+        globalState.mpEstimateStream.publishWith(mpEstimatePublisher)
     }
 
     override fun stop() {
         logger.d(TAG, "stop")
+        globalState.mpEstimateStream.remove(mpEstimatePublisher)
         globalState.locationStream.remove(locationSubscriber)
     }
 
@@ -76,7 +81,10 @@ class OpPlayback @AssistedInject constructor(
         lastIndex = newIndex
         if (direction != 0) lastDirection = direction
 
-        // TBD publish (mp, direction).
+        mpEstimatePublisher.publish(MpEstimate(
+            mp = mp,
+            direction = MpDirection.fromInt(lastDirection)
+        ))
     }
 }
 

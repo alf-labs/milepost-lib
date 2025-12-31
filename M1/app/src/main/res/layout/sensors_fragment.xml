@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         android:padding="16dp"
         tools:context=".fragments.SensorsFragment"
         >
 
+
     <!-- TOP -->
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
 
     <Button
             android:id="@+id/start_button"
@@ -62,7 +69,42 @@
             android:layout_centerHorizontal="true"
             />
 
+    </RelativeLayout>
+
+    <!-- CENTER -->
+
+    <com.google.android.gms.maps.MapView
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_centerHorizontal="true"
+            />
+
     <!-- BOTTOM -->
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+    <TextView
+            android:id="@+id/mp_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="MP Value"
+            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:gravity="center_horizontal"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            />
 
     <TextView
             android:id="@+id/center_divider"
@@ -76,7 +118,8 @@
             android:lines="2"
             android:background="@color/colorAccent"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:layout_alignParentBottom="true"
+            android:layout_below="@id/mp_text"
+            android:layout_alignWithParentIfMissing="true"
             android:layout_centerHorizontal="true"
             />
 
@@ -125,17 +168,6 @@
             android:layout_alignBottom="@id/center_divider"
             />
 
-    <!-- CENTER -->
+    </RelativeLayout>
 
-    <com.google.android.gms.maps.MapView
-            android:id="@+id/map_view"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_below="@+id/location_acc_text"
-            android:layout_above="@+id/speed_text"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:layout_centerHorizontal="true"
-            />
-
-</RelativeLayout>
+</LinearLayout>

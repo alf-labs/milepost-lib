@@ -6,9 +6,13 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
 import com.alflabs.milepost.location.LocationData
+import com.alflabs.milepost.op.MpDirection
+import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.milepost.tracks.TrackEntityDao
+import com.alflabs.rx.AndroidSchedulers
+import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -34,6 +38,10 @@ class PlaybackFragment : SensorsFragment() {
     @Inject lateinit var trackEntityDao: TrackEntityDao
 
     private var playbackTrack: TrackEntity? = null
+    private var startLabel = "Startbound"
+    private var endLabel = "Endbound"
+    private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
+        ISubscriber<MpEstimate?> { _, event -> onMpEstimate(event) }
 
     override fun actionToPermissionsDlg(): NavDirections =
         PlaybackFragmentDirections.actionPlayToPermissionsDlg()
@@ -44,6 +52,8 @@ class PlaybackFragment : SensorsFragment() {
 
     override fun onResume() {
         super.onResume()
+
+        globalState.mpEstimateStream.subscribe(AndroidSchedulers.mainThread(), mpEstimateSubscriber)
 
         lifecycleScope.launch {
             if (playbackTrack == null) {
@@ -66,13 +76,25 @@ class PlaybackFragment : SensorsFragment() {
                 Toast.makeText(requireContext(), "Please select an existing track first.", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }
-        }
 
+            playbackTrack?.let { track ->
+                if (!track.startLabel.isNullOrEmpty()) {
+                    startLabel = track.startLabel
+                }
+                if (!track.endLabel.isNullOrEmpty()) {
+                    endLabel = track.endLabel
+                }
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        globalState.mpEstimateStream.remove(mpEstimateSubscriber)
     }
 
     override fun onStartButton() {
         if (globalState.operatorMode == operatorMode) return
-
 
         lifecycleScope.launch {
             playbackTrack?.let {
@@ -120,5 +142,17 @@ class PlaybackFragment : SensorsFragment() {
         }
 
         return super.setupInitialMapZoom(map, position, zoomLevel)
+    }
+
+    private fun onMpEstimate(event: MpEstimate) {
+        val label = when(event.direction) {
+            MpDirection.TO_START -> startLabel
+            MpDirection.TO_END -> endLabel
+            else -> "--"
+        }
+
+        _binding?.let {
+            it.mpText.text = String.format("MP %.1f\n%s", event.mp, label)
+        }
     }
 }

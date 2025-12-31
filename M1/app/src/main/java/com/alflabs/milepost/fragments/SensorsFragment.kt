@@ -67,8 +67,8 @@ open class SensorsFragment: Fragment() {
     private var serviceStartedAutomatically = false
 
     // This property is only valid between onCreateView and onDestroyView.
-    private var _binding: SensorsFragmentBinding? = null
-    private val binding get() = _binding!!
+    protected var _binding: SensorsFragmentBinding? = null
+    protected val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -281,18 +281,18 @@ open class SensorsFragment: Fragment() {
 
     // Interface customized by derived classes
 
-    internal open val operatorMode = OperatorMode.IDLE
+    protected open val operatorMode = OperatorMode.IDLE
 
-    internal open fun actionToPermissionsDlg(): NavDirections =
+    protected open fun actionToPermissionsDlg(): NavDirections =
         SensorsFragmentDirections.actionSensorsToPermissionsDlg()
 
-    internal open fun onStartButton() {}
+    protected open fun onStartButton() {}
 
-    internal open fun onStopButton() {}
+    protected open fun onStopButton() {}
 
-    internal open fun getLocationsList(): List<LocationData>? = operator.currentLocationsList
+    protected open fun getLocationsList(): List<LocationData>? = operator.currentLocationsList
 
-    internal open fun setupInitialMapZoom(map: GoogleMap,
+    protected open fun setupInitialMapZoom(map: GoogleMap,
                                           position: LatLng,
                                           zoomLevel: Float): CameraUpdate {
         return CameraUpdateFactory.newLatLngZoom(position, zoomLevel)
