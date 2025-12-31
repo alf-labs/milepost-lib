@@ -1,9 +1,8 @@
 package com.alflabs.milepost.op
 
-import android.location.Location
-import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
+import com.alflabs.milepost.location.LocationDistance
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
 import com.alflabs.milepost.tracks.TrackEntity
@@ -50,7 +49,7 @@ class OpRecord @AssistedInject constructor(
     private var lastLocation: LocationData? = null
     private val scope = CoroutineScope(Dispatchers.IO)
     private val locationDataListBuilder = LocationDataList.newBuilder()
-    private val distResults = FloatArray(1)
+    private val locationDistance = LocationDistance()
     private var thresholdDistanceMeters = AppSettings.THRESHOLD_DISTANCE_METERS_DEFAULT
     private var thresholdSpeedMps = AppSettings.THRESHOLD_SPEED_MPS_DEFAULT
     private var nextWriteTS = -1L
@@ -83,7 +82,7 @@ class OpRecord @AssistedInject constructor(
 
         if (!shouldAdd && lastLocation != null) {
             val lastLatLong = lastLocation!!.latLong
-            val distance = distanceBetween(lastLatLong, newLatLong)
+            val distance = locationDistance.between(lastLatLong, newLatLong)
             // New point added if we're above the distance threshold
             shouldAdd = (distance > thresholdDistanceMeters)
 
@@ -148,15 +147,6 @@ class OpRecord @AssistedInject constructor(
             trackEntityDao.updateLocationList(recordId, locationDataListBuilder.build())
             nextWriteTS = clock.elapsedRealtime() + WRITE_INTERVAL_MS
         }
-    }
-
-    private fun distanceBetween(loc1: LatLongData, loc2: LatLongData): Float {
-        Location.distanceBetween(
-            loc1.latitude, loc1.longitude,
-            loc2.latitude, loc2.longitude,
-            distResults
-        )
-        return distResults[0]
     }
 
 }
