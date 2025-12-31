@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -68,6 +69,7 @@ open class SensorsFragment: Fragment() {
     private var accuracyColorMissing: Int = 0
     private var accuracyColorPresent: Int = 0
     private var useImperialUnits = false
+    private var serviceStartedAutomatically = false
 
     // This property is only valid between onCreateView and onDestroyView.
     private var _binding: SensorsFragmentBinding? = null
@@ -133,12 +135,26 @@ open class SensorsFragment: Fragment() {
         globalState.locationStream.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
         globalState.serviceModeStream.subscribe(AndroidSchedulers.mainThread(), serviceModeSubscriber)
         globalState.operatorModeStream.subscribe(AndroidSchedulers.mainThread(), operatorModeSubscriber)
-        updateButtons()
+
+        lifecycleScope.launch {
+            if (PermissionsFragment.allPermissionsGranted(requireContext())
+                && globalState.serviceMode != ServiceMode.RUNNING) {
+                serviceStartedAutomatically = true
+                LocationService.startService(requireActivity())
+            }
+            updateButtons()
+        }
     }
 
     override fun onPause() {
         super.onPause()
         logger.d(TAG, "onPause")
+
+        if (serviceStartedAutomatically && globalState.operatorMode == OperatorMode.IDLE) {
+            serviceStartedAutomatically = false
+            LocationService.stopService(requireActivity())
+        }
+
         binding.mapView.onPause()
         globalState.locationStream.remove(locationSubscriber)
         globalState.serviceModeStream.remove(serviceModeSubscriber)
