@@ -66,6 +66,9 @@ class OpPlayback @AssistedInject constructor(
             mpEstimator.examineNearby(locations, newLatLong, lastIndex)
         }
 
+        // Reject an invalid index
+        if (newIndex < 0 || newIndex >= locations.size) return
+
         val direction = if (lastIndex < newIndex) -1 else if (lastIndex > newIndex) 1 else 0
 
         val mp = mpEstimator.interpolateMp(locations, newIndex, newLatLong)

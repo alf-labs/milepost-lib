@@ -14,23 +14,34 @@ class MpEstimator {
     ): Int {
         val sz = locations.size
 
+        if (sz < 1) {
+            return -1
+        }
         if (sz == 1) {
             return 0
         }
 
-        var minDist = Float.MAX_VALUE
-        var minIndex = Int.MAX_VALUE
+        // A binary (dichotomic) search of the distance minima.
+        // This only works properly if the points are uniform by distance,
+        // otherwise it will focus on some local minima.
+        // This works for 2 or more points (for 2 points, `mid` will round up to 0 and `mid+1`
+        // will be sz-1, and the search will end up immediately).
+        var low = 0
+        var high = sz - 1
 
-        // TBD optimize with a binary search of a minima. This is a good simple start.
-        for ((index, loc) in locations.withIndex()) {
-            val dist = locationDistance.between(newLatLong, loc.latLong)
-            if (dist < minDist) {
-                minDist = dist
-                minIndex = index
+        while (low < high) {
+            val mid = low + (high - low) / 2
+            val dist1 = locationDistance.between(newLatLong, locations[mid].latLong)
+            val dist2 = locationDistance.between(newLatLong, locations[mid + 1].latLong)
+
+            if (dist1 < dist2) {
+                high = mid
+            } else {
+                low = mid + 1
             }
         }
 
-        return minIndex
+        return low
     }
 
     internal fun examineNearby(
@@ -79,7 +90,7 @@ class MpEstimator {
             if (dist < minDist) {
                 minDist = dist
                 dwIndex = index
-                index++
+                index--
             } else {
                 break
             }
