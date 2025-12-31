@@ -44,7 +44,8 @@ open class SensorsFragment: Fragment() {
     internal open val operatorMode = OperatorMode.IDLE
     internal open fun actionToPermissionsDlg(): NavDirections =
         SensorsFragmentDirections.actionSensorsToPermissionsDlg()
-    internal open fun onStopButton(trackId: Long?) {}
+    internal open fun onStartButton() {}
+    internal open fun onStopButton() {}
 
     private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
     // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
@@ -101,14 +102,14 @@ open class SensorsFragment: Fragment() {
             } else {
                 setInitialMapZoom = true
                 LocationService.startService(requireActivity())
+                onStartButton()
             }
         }
 
         binding.stopButton.setOnClickListener {
             logger.d(TAG, "On click STOP button")
-            val trackId = globalState.currentTrackId
             LocationService.stopService(requireActivity())
-            onStopButton(trackId)
+            onStopButton()
         }
 
         updateButtons()
@@ -169,13 +170,17 @@ open class SensorsFragment: Fragment() {
     private fun onGlobalModeChanged(event: Any?) {
         logger.d(TAG, "onGlobalModeChanged: $event")
         // TBD this is temporary, change to a better display
-        binding.statusText.text = "${globalState.operatorMode} ${globalState.serviceMode}"
-        updateButtons()
+        // This may potentially be called outside of the proper binding lifecycle.
+        _binding?.let {
+            it.statusText.text = "${globalState.operatorMode} ${globalState.serviceMode}"
+            updateButtons()
+        }
     }
 
     fun onLocationChanged(value: LocationData?) {
         logger.d(TAG, "onLocationChanged: ${value?.latLong?.timestampMillis}")
-        if (value == null) return
+        // This may potentially be called outside of the proper binding lifecycle.
+        if (value == null || _binding == null) return
 
         val recordedLocationList = globalState.currentLocationList
         val numPoints = recordedLocationList?.locationsCount ?: 0

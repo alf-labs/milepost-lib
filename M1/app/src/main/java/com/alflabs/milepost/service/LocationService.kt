@@ -120,8 +120,14 @@ class LocationService : Service() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
+                    // Publish (synchronous)
                     val ld = toLocationData(location)
                     locationPublisher.publish(ld)
+
+                    // Update notification text
+                    val msg = "Location: ${location.latitude}, ${location.longitude}"
+                    val updatedNotification = notification.setContentText(msg)
+                    notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
                 }
             }
         }

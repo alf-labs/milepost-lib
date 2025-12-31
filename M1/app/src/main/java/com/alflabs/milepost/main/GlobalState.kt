@@ -28,8 +28,10 @@ class GlobalState @Inject constructor(
     val serviceMode: ServiceMode get() = LocationService.serviceMode
     val operatorMode: OperatorMode get() = Operator.operatorMode
 
+    @Deprecated("Use Operator")
     var currentTrackId: Long? = null
         private set
+    @Deprecated("Use Operator")
     var currentLocationList: LocationDataList.Builder? = null
         private set
 
