@@ -472,10 +472,11 @@ class ReviewFragment : Fragment() {
                 map.moveCamera(update)
 
             } else if (locations.size > 1) {
-                val lineColor = requireContext().getColor(R.color.trackPolyline)
+                val width = resources.getDimensionPixelSize(R.dimen.map_track)
+                val lineColor = requireContext().getColor(R.color.map_track)
                 val polylineOptions = PolylineOptions()
                     .color(lineColor)
-                    .width(10f)
+                    .width(width.toFloat())
 
                 for (location in locations) {
                     polylineOptions.add(

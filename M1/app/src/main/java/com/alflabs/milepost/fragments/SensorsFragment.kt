@@ -84,8 +84,8 @@ open class SensorsFragment: Fragment() {
         logger.d(TAG, "onViewCreated")
 
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
-        accuracyColorMissing = requireContext().getColor(R.color.accMissing)
-        accuracyColorPresent = requireContext().getColor(R.color.accPresent)
+        accuracyColorMissing = requireContext().getColor(R.color.acc_missing)
+        accuracyColorPresent = requireContext().getColor(R.color.acc_present)
 
         binding.startButton.text = when (operatorMode) {
             OperatorMode.IDLE -> "Test"
@@ -220,10 +220,11 @@ open class SensorsFragment: Fragment() {
             // Create a polyline path for the recorded locations
             recordedLocationsList?.let { locations ->
                 if (locations.size > 1) {
-                    val lineColor = requireContext().getColor(R.color.trackPolyline)
+                    val width = resources.getDimensionPixelSize(R.dimen.map_track)
+                    val lineColor = requireContext().getColor(R.color.map_track)
                     val polylineOptions = PolylineOptions()
                         .color(lineColor)
-                        .width(10f)
+                        .width(width.toFloat())
 
                     for (location in locations) {
                         polylineOptions.add(

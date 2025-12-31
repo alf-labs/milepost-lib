@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="gpsValue">#FF0</color>
-    <color name="accMissing">#F00</color>
-    <color name="accPresent">#CCC</color>
+    <color name="map_track">#44AAFF</color>
+    <color name="gps_value">#FF0</color>
+    <color name="acc_missing">#F00</color>
+    <color name="acc_present">#CCC</color>
 </resources>

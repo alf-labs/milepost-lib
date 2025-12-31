@@ -10,9 +10,9 @@
     <color name="colorPrimaryDark">#00227b</color>
     <color name="colorAccent">#6f74dd</color>
 
-    <color name="trackPolyline">#0FF</color>
-    <color name="gpsValue">#000</color>
-    <color name="accMissing">#F00</color>
-    <color name="accPresent">#444</color>
+    <color name="map_track">#4010E0</color>
+    <color name="gps_value">#000</color>
+    <color name="acc_missing">#F00</color>
+    <color name="acc_present">#444</color>
 
 </resources>
