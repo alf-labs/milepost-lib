@@ -1,10 +1,9 @@
 package com.alflabs.milepost.main
 
 import com.alflabs.milepost.location.LocationData
-import com.alflabs.milepost.location.LocationDataList
-import com.alflabs.milepost.service.LocationService
 import com.alflabs.milepost.op.Operator
 import com.alflabs.milepost.op.OperatorMode
+import com.alflabs.milepost.service.LocationService
 import com.alflabs.milepost.service.ServiceMode
 import com.alflabs.rx.IStream
 import com.alflabs.rx.Schedulers
@@ -28,27 +27,7 @@ class GlobalState @Inject constructor(
     val serviceMode: ServiceMode get() = LocationService.serviceMode
     val operatorMode: OperatorMode get() = Operator.operatorMode
 
-    @Deprecated("Use Operator")
-    var currentTrackId: Long? = null
-        private set
-    @Deprecated("Use Operator")
-    var currentLocationList: LocationDataList.Builder? = null
-        private set
-
-
     init {
         logger.d(TAG, "GlobalState initialized: $this")
-    }
-
-    @Deprecated("TBD")
-    fun updateMode(
-        newMode: GlobalMode,
-        trackId: Long? = null,
-        locationDataListBuilder: LocationDataList.Builder? = null
-    ) {
-//        _mode = newMode
-        currentTrackId = trackId
-        currentLocationList = locationDataListBuilder
-//        modePublisher.publish(newMode)
     }
 }

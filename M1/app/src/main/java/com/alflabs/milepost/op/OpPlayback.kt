@@ -27,6 +27,10 @@ class OpPlayback @AssistedInject constructor(
     override val currentTrackId: Long
         get() = track.id
 
+    override val currentLocationsList: List<LocationData>?
+        get() = track.locationList?.locationsList
+
+
     private val locationSubscriber: ISubscriber<in LocationData?> =
         ISubscriber<LocationData?> { _, event -> onLocationUpdate(event) }
 

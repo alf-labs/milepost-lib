@@ -41,6 +41,9 @@ class OpRecord @AssistedInject constructor(
     override val currentTrackId: Long
         get() = track.id
 
+    override val currentLocationsList: List<LocationData>?
+        get() = locationDataListBuilder.locationsList
+
     private val locationSubscriber: ISubscriber<in LocationData?> =
         ISubscriber<LocationData?> { _, event -> onLocationUpdate(event) }
     private val recordId: Long = track.id

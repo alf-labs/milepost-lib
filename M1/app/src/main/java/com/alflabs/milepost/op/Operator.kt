@@ -1,5 +1,6 @@
 package com.alflabs.milepost.op
 
+import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.main.GlobalState
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.rx.IPublisher
@@ -28,6 +29,9 @@ class Operator @Inject constructor(
 
     val currentTrackId: Long?
         get() = currentOp.currentTrackId
+
+    val currentLocationsList: List<LocationData>?
+        get() = currentOp.currentLocationsList
 
 
     init {

@@ -11,10 +11,11 @@ import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.SensorsFragmentBinding
 import com.alflabs.milepost.location.LocationData
-import com.alflabs.milepost.service.LocationService
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
+import com.alflabs.milepost.op.Operator
 import com.alflabs.milepost.op.OperatorMode
+import com.alflabs.milepost.service.LocationService
 import com.alflabs.milepost.service.ServiceMode
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
@@ -60,6 +61,7 @@ open class SensorsFragment: Fragment() {
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
     @Inject lateinit var appSettings: AppSettings
+    @Inject lateinit var operator: Operator
 
     private var setInitialMapZoom = true
     private var googleMap: GoogleMap? = null
@@ -182,8 +184,8 @@ open class SensorsFragment: Fragment() {
         // This may potentially be called outside of the proper binding lifecycle.
         if (value == null || _binding == null) return
 
-        val recordedLocationList = globalState.currentLocationList
-        val numPoints = recordedLocationList?.locationsCount ?: 0
+        val recordedLocationsList = operator.currentLocationsList
+        val numPoints = recordedLocationsList?.size ?: 0
 
         val latLong = value.latLong
         binding.locationText.text = String.format(
@@ -192,7 +194,7 @@ open class SensorsFragment: Fragment() {
             latLong.latitude, latLong.longitude)
 
         val locationAccText = binding.locationAccText
-        latLong.accuracy?.let { meters ->
+        latLong.accuracy.let { meters ->
             locationAccText.text = String.format(
                 Locale.US,
                 "±%.2f m",
@@ -204,12 +206,10 @@ open class SensorsFragment: Fragment() {
             val position = LatLng(latLong.latitude, latLong.longitude)
             map.clear()
 
-            // Compute the path of last 10 locations recorded
-            // Note that the last location recorded may not match the current LocationData.
-            recordedLocationList?.let {
-                val locations = it.locationsList ?: emptyList()
+            // Create a polyline path for the recorded locations
+            recordedLocationsList?.let { locations ->
                 if (locations.size > 1) {
-                    val lineColor = requireContext().getColor(R.color.colorPrimaryDark)
+                    val lineColor = requireContext().getColor(R.color.trackPolyline)
                     val polylineOptions = PolylineOptions()
                         .color(lineColor)
                         .width(10f)

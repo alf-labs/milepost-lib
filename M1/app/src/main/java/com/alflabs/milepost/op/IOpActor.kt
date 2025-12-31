@@ -6,5 +6,7 @@ interface IOpActor {
 
     val currentTrackId: Long?
 
+    val currentLocationsList: List<LocationData>?
+
     fun stop()
 }
