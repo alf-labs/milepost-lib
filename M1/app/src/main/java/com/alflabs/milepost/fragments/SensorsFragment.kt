@@ -22,6 +22,7 @@ import com.alflabs.milepost.utils.Units
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.alflabs.utils.ILogger
+import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
@@ -42,12 +43,6 @@ open class SensorsFragment: Fragment() {
         private val TAG = SensorsFragment::class.java.simpleName
         private const val MAPS_ZOOM_LEVEL = 15f
     }
-
-    internal open val operatorMode = OperatorMode.IDLE
-    internal open fun actionToPermissionsDlg(): NavDirections =
-        SensorsFragmentDirections.actionSensorsToPermissionsDlg()
-    internal open fun onStartButton() {}
-    internal open fun onStopButton() {}
 
     private val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
     // TBD: change to DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z")
@@ -200,7 +195,7 @@ open class SensorsFragment: Fragment() {
         // This may potentially be called outside of the proper binding lifecycle.
         if (value == null || _binding == null) return
 
-        val recordedLocationsList = operator.currentLocationsList
+        val recordedLocationsList = getLocationsList()
         val numPoints = recordedLocationsList?.size ?: 0
 
         val latLong = value.latLong
@@ -243,7 +238,7 @@ open class SensorsFragment: Fragment() {
 
             val update = if (setInitialMapZoom) {
                 setInitialMapZoom = false
-                CameraUpdateFactory.newLatLngZoom(position, MAPS_ZOOM_LEVEL)
+                setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
             } else {
                 CameraUpdateFactory.newLatLng(position)
             }
@@ -283,4 +278,24 @@ open class SensorsFragment: Fragment() {
             bearingAccText.setTextColor(accuracyColor(speedBearing.bearingAcc))
         }
     }
+
+    // Interface customized by derived classes
+
+    internal open val operatorMode = OperatorMode.IDLE
+
+    internal open fun actionToPermissionsDlg(): NavDirections =
+        SensorsFragmentDirections.actionSensorsToPermissionsDlg()
+
+    internal open fun onStartButton() {}
+
+    internal open fun onStopButton() {}
+
+    internal open fun getLocationsList(): List<LocationData>? = operator.currentLocationsList
+
+    internal open fun setupInitialMapZoom(map: GoogleMap,
+                                          position: LatLng,
+                                          zoomLevel: Float): CameraUpdate {
+        return CameraUpdateFactory.newLatLngZoom(position, zoomLevel)
+    }
+
 }

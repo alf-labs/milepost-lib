@@ -1,7 +1,6 @@
 package com.alflabs.milepost.op
 
 import com.alflabs.milepost.location.LocationData
-import com.alflabs.milepost.main.GlobalState
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.rx.ISubscriber
 import com.alflabs.utils.ILogger
@@ -12,7 +11,6 @@ import dagger.assisted.AssistedInject
 class OpPlayback @AssistedInject constructor(
     @Assisted val track: TrackEntity,
     private val logger: ILogger,
-    private val globalState: GlobalState,
 ) : IOpActor {
 
     @AssistedFactory
@@ -23,6 +21,9 @@ class OpPlayback @AssistedInject constructor(
     companion object {
         private val TAG = OpPlayback::class.java.simpleName
     }
+
+    val playbackTrack: TrackEntity
+        get() = track
 
     override val currentTrackId: Long
         get() = track.id

@@ -133,13 +133,13 @@ class AdapterPreferenceDataStore(
     private fun <T> putPreference(key: Preferences.Key<T>, value: T?) {
         coroutineScope.launch {
             dataStore.edit {
-                Log.d(AppSettings.TAG, "PUT preference $key with value $value")
                 if (value == null) {
                     it.remove(key)
                 } else {
                     it[key] = value
                 }
             }
+            Log.d(AppSettings.TAG, "PUT preference $key with value $value")
         }
     }
 

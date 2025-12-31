@@ -66,6 +66,14 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.PLAYBACK)
     }
 
+    fun getPlaybackTrack(): TrackEntity? {
+        return if (currentOp is OpPlayback) {
+            (currentOp as OpPlayback).playbackTrack
+        } else {
+            null
+        }
+    }
+
     fun stopPlayback() {
         if (operatorMode != OperatorMode.PLAYBACK) return
         logger.d(TAG, "stopPlayback id=${currentOp.currentTrackId}")
