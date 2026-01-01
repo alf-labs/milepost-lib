@@ -71,6 +71,7 @@ open abstract class SensorsFragmentBase: Fragment() {
     protected abstract val startButton: Button
     protected abstract val stopButton: Button
     protected abstract val mapView: MapView
+    protected abstract val mapViewOpt: MapView?
     protected abstract val statusText: TextView
     protected abstract val locationText: TextView
     protected abstract val locationAccText: TextView?
@@ -126,7 +127,7 @@ open abstract class SensorsFragmentBase: Fragment() {
     override fun onResume() {
         super.onResume()
         logger.d(TAG, "onResume")
-        mapView.onResume()
+        mapViewOpt?.onResume()
         globalState.locationStream.subscribe(AndroidSchedulers.mainThread(), locationSubscriber)
         globalState.serviceModeStream.subscribe(AndroidSchedulers.mainThread(), serviceModeSubscriber)
         globalState.operatorModeStream.subscribe(AndroidSchedulers.mainThread(), operatorModeSubscriber)
@@ -141,16 +142,27 @@ open abstract class SensorsFragmentBase: Fragment() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        logger.d(TAG, "onSaveInstanceState")
+        mapViewOpt?.onSaveInstanceState(outState)
+    }
+
     override fun onPause() {
         super.onPause()
         logger.d(TAG, "onPause")
 
+        // TBD problem: on configuration change, onPause is called and triggers stopService.
+        // However the service takes some time to stop and while doing so the global mode
+        // is still set to running. When the configuration restarts the fragment, the
+        // service is still shutting down, thus global state is running, and thus is it not
+        // automatically restarted.
         if (serviceStartedAutomatically && globalState.operatorMode == OperatorMode.IDLE) {
             serviceStartedAutomatically = false
             LocationService.stopService(requireActivity())
         }
 
-        mapView.onPause()
+        mapViewOpt?.onPause()
         globalState.locationStream.remove(locationSubscriber)
         globalState.serviceModeStream.remove(serviceModeSubscriber)
         globalState.operatorModeStream.remove(operatorModeSubscriber)
@@ -158,14 +170,13 @@ open abstract class SensorsFragmentBase: Fragment() {
 
     override fun onLowMemory() {
         super.onLowMemory()
-        if (hasBinding) {
-            mapView.onLowMemory()
-        }
+        mapViewOpt?.onLowMemory()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         logger.d(TAG, "onDestroyView")
+        mapViewOpt?.onDestroy()
     }
 
     private fun updateButtons() {

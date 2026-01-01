@@ -31,6 +31,7 @@ open class SensorsFragment: SensorsFragmentBase() {
     override val startButton get() = sensorsBinding.startButton
     override val stopButton get() = sensorsBinding.stopButton
     override val mapView get() = sensorsBinding.mapView
+    override val mapViewOpt get() = if (hasBinding) mapView else null
     override val statusText get() = sensorsBinding.statusText
     override val locationText get() = sensorsBinding.locationText
     override val locationAccText get() = sensorsBinding.locationAccText
@@ -70,7 +71,6 @@ open class SensorsFragment: SensorsFragmentBase() {
     override fun onDestroyView() {
         super.onDestroyView()
         logger.d(TAG, "onDestroyView")
-        mapView.onDestroy()
         _sensorsBinding = null
     }
 

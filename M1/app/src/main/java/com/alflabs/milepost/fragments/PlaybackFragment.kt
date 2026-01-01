@@ -187,6 +187,7 @@ class PlaybackFragment : SensorsFragment() {
 
     private fun onMpEstimate(event: MpEstimate) {
         logger.d(TAG, "onMpEstimate: $event")
+        // This may potentially be called outside of the proper binding lifecycle.
         _playbackBinding?.let {
             it.mpText.text = String.format("MP %.1f", event.mp)
 
