@@ -48,7 +48,7 @@ class Operator @Inject constructor(
         currentOp.stop()
         logger.d(TAG, "startSensors")
         currentOp = opIdle
-        changeMode(OperatorMode.RECORD)
+        changeMode(OperatorMode.SENSORS)
     }
 
     fun stopSensors() {
