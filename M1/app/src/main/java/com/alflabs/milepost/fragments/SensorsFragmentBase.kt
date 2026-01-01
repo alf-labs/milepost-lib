@@ -217,6 +217,7 @@ open abstract class SensorsFragmentBase: Fragment() {
             map.clear()
 
             // Create a polyline path for the recorded locations
+            // TBD only recompute polyline if list has changed (during recording) or fragment has resumed
             recordedLocationsList?.let { locations ->
                 if (locations.size > 1) {
                     val width = resources.getDimensionPixelSize(R.dimen.map_track)

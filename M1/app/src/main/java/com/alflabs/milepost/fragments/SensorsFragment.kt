@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.navigation.NavDirections
 import com.alflabs.milepost.databinding.SensorsFragmentBinding
 import com.alflabs.milepost.location.LocationData
@@ -23,28 +24,28 @@ open class SensorsFragment: SensorsFragmentBase() {
     }
 
     // This property is only valid between onCreateView and onDestroyView.
-    protected var _binding: SensorsFragmentBinding? = null
-    protected val binding get() = _binding!!
+    private var _sensorsBinding: SensorsFragmentBinding? = null
+    private val sensorsBinding get() = _sensorsBinding!!
 
-    override val hasBinding get() = _binding != null
-    override val startButton get() = binding.startButton
-    override val stopButton get() = binding.stopButton
-    override val mapView get() = binding.mapView
-    override val statusText get() = binding.statusText
-    override val locationText get() = binding.locationText
-    override val locationAccText get() = binding.locationAccText
-    override val speedText get() = binding.speedText
-    override val bearingText get() = binding.bearingText
-    override val speedAccText get() = binding.speedAccText
-    override val bearingAccText get() = binding.bearingAccText
+    override val hasBinding get() = _sensorsBinding != null
+    override val startButton get() = sensorsBinding.startButton
+    override val stopButton get() = sensorsBinding.stopButton
+    override val mapView get() = sensorsBinding.mapView
+    override val statusText get() = sensorsBinding.statusText
+    override val locationText get() = sensorsBinding.locationText
+    override val locationAccText get() = sensorsBinding.locationAccText
+    override val speedText get() = sensorsBinding.speedText
+    override val bearingText: TextView?; get() = sensorsBinding.bearingText
+    override val speedAccText: TextView?; get() = sensorsBinding.speedAccText
+    override val bearingAccText: TextView?; get() = sensorsBinding.bearingAccText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         logger.d(TAG, "onCreateView")
-        _binding = SensorsFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+        _sensorsBinding = SensorsFragmentBinding.inflate(inflater, container, false)
+        return sensorsBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -70,7 +71,7 @@ open class SensorsFragment: SensorsFragmentBase() {
         super.onDestroyView()
         logger.d(TAG, "onDestroyView")
         mapView.onDestroy()
-        _binding = null
+        _sensorsBinding = null
     }
 
     // Interface customized by derived classes

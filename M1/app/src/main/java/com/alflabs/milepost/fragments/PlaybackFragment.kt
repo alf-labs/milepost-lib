@@ -1,10 +1,15 @@
 package com.alflabs.milepost.fragments
 
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
+import com.alflabs.milepost.databinding.PlaybackFragmentBinding
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
@@ -35,6 +40,22 @@ class PlaybackFragment : SensorsFragment() {
 
     override val operatorMode = OperatorMode.PLAYBACK
 
+    // This property is only valid between onCreateView and onDestroyView.
+    private var _playbackBinding: PlaybackFragmentBinding? = null
+    private val playbackBinding get() = _playbackBinding!!
+
+    override val hasBinding get() = _playbackBinding != null
+    override val startButton get() = playbackBinding.startButton
+    override val stopButton get() = playbackBinding.stopButton
+    override val mapView get() = playbackBinding.mapView
+    override val statusText get() = playbackBinding.statusText
+    override val locationText get() = playbackBinding.locationText
+    override val locationAccText get() = playbackBinding.locationAccText
+    override val speedText get() = playbackBinding.speedText
+    override val bearingText get() = null
+    override val speedAccText get() = null
+    override val bearingAccText get() = null
+
     @Inject lateinit var trackEntityDao: TrackEntityDao
 
     private var playbackTrack: TrackEntity? = null
@@ -49,6 +70,20 @@ class PlaybackFragment : SensorsFragment() {
     override fun getLocationsList(): List<LocationData>? =
         playbackTrack?.locationList?.locationsList ?: operator.currentLocationsList
 
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        logger.d(TAG, "onCreateView")
+        _playbackBinding = PlaybackFragmentBinding.inflate(inflater, container, false)
+        return playbackBinding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        logger.d(TAG, "onViewCreated")
+    }
 
     override fun onResume() {
         super.onResume()
@@ -85,6 +120,11 @@ class PlaybackFragment : SensorsFragment() {
                     endLabel = track.endLabel
                 }
             }
+
+            playbackBinding.trackLabelText.text = playbackTrack?.trackLabel ?: "No track selected"
+            if (globalState.operatorMode != OperatorMode.PLAYBACK) {
+                playbackBinding.directionText.text = "Playback Not Started Yet"
+            }
         }
     }
 
@@ -98,6 +138,7 @@ class PlaybackFragment : SensorsFragment() {
 
         lifecycleScope.launch {
             playbackTrack?.let {
+                playbackBinding.directionText.text = "--"
                 operator.startPlayback(it)
             }
         }
@@ -145,14 +186,15 @@ class PlaybackFragment : SensorsFragment() {
     }
 
     private fun onMpEstimate(event: MpEstimate) {
-        val label = when(event.direction) {
-            MpDirection.TO_START -> startLabel
-            MpDirection.TO_END -> endLabel
-            else -> "--"
-        }
+        logger.d(TAG, "onMpEstimate: $event")
+        _playbackBinding?.let {
+            it.mpText.text = String.format("MP %.1f", event.mp)
 
-        _binding?.let {
-            it.mpText.text = String.format("MP %.1f\n%s", event.mp, label)
+            it.directionText.text = when(event.direction) {
+                MpDirection.TO_START -> startLabel
+                MpDirection.TO_END -> endLabel
+                else -> "--"
+            }
         }
     }
 }
