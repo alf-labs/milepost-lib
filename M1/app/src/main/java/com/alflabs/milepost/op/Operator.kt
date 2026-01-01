@@ -43,6 +43,22 @@ class Operator @Inject constructor(
         operatorModePublisher.publish(operatorMode)
     }
 
+    fun startSensors() {
+        if (operatorMode == OperatorMode.SENSORS) return
+        currentOp.stop()
+        logger.d(TAG, "startSensors")
+        currentOp = opIdle
+        changeMode(OperatorMode.RECORD)
+    }
+
+    fun stopSensors() {
+        if (operatorMode != OperatorMode.SENSORS) return
+        logger.d(TAG, "stopSensors")
+        currentOp.stop()
+        currentOp = opIdle
+        changeMode(OperatorMode.IDLE)
+    }
+
     fun startRecord(track: TrackEntity) {
         if (operatorMode == OperatorMode.RECORD) return
         currentOp.stop()
@@ -55,6 +71,7 @@ class Operator @Inject constructor(
         if (operatorMode != OperatorMode.RECORD) return
         logger.d(TAG, "stopRecord id=${currentOp.currentTrackId}")
         currentOp.stop()
+        currentOp = opIdle
         changeMode(OperatorMode.IDLE)
     }
 
@@ -78,6 +95,7 @@ class Operator @Inject constructor(
         if (operatorMode != OperatorMode.PLAYBACK) return
         logger.d(TAG, "stopPlayback id=${currentOp.currentTrackId}")
         currentOp.stop()
+        currentOp = opIdle
         changeMode(OperatorMode.IDLE)
     }
 

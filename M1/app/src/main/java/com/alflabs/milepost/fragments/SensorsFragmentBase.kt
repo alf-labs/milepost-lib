@@ -88,7 +88,7 @@ open abstract class SensorsFragmentBase: Fragment() {
         accuracyColorPresent = requireContext().getColor(R.color.acc_present)
 
         startButton.text = when (operatorMode) {
-            OperatorMode.IDLE -> "Test"
+            OperatorMode.IDLE, OperatorMode.SENSORS -> "Test"
             OperatorMode.RECORD -> "Record"
             OperatorMode.PLAYBACK -> "Playback"
         }

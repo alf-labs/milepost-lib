@@ -75,14 +75,18 @@ open class SensorsFragment: SensorsFragmentBase() {
 
     // Interface customized by derived classes
 
-    override val operatorMode = OperatorMode.IDLE
+    override val operatorMode = OperatorMode.SENSORS
 
     override fun actionToPermissionsDlg(): NavDirections =
         SensorsFragmentDirections.actionSensorsToPermissionsDlg()
 
-    override fun onStartButton() {}
+    override fun onStartButton() {
+        operator.startSensors()
+    }
 
-    override fun onStopButton() {}
+    override fun onStopButton() {
+        operator.stopSensors()
+    }
 
     override fun getLocationsList(): List<LocationData>? = operator.currentLocationsList
 
