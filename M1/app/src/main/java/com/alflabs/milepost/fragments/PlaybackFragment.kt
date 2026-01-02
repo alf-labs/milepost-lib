@@ -227,9 +227,9 @@ class PlaybackFragment : SensorsFragment() {
             val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
             markerPositionCurrent = map.addMarker(
                 MarkerOptions()
-//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue))
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_purple))
                     .position(position)
+                    .anchor(0.5f, 0.5f)
             )
             val update = setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
             map.animateCamera(update)
@@ -243,9 +243,9 @@ class PlaybackFragment : SensorsFragment() {
                 val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
                 markerMpCurrent = map.addMarker(
                     MarkerOptions()
-//                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_green))
-                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue))
                         .position(position)
+                        .anchor(0.5f, 0.5f)
                 )
             }
         }
@@ -275,7 +275,7 @@ class PlaybackFragment : SensorsFragment() {
         }
 
         lastMp?.let { mp ->
-            if (mp.locIndex >= 0 && mp.locIndex != lastMpIndexRendered) {
+            if (mp.locIndex >= 0 && lastMpIndexRendered >= 0 && mp.locIndex != lastMpIndexRendered) {
                 lastMpIndexRendered = mp.locIndex
 
                 locationsList?.let { locations ->
@@ -284,7 +284,7 @@ class PlaybackFragment : SensorsFragment() {
                             LatLng(it.latLong.latitude, it.latLong.longitude)
                         }
                     trackPolyline2?.points =
-                        locations.takeLast(locations.size - lastMpIndexRendered).map {
+                        locations.takeLast(locations.size - 1 - lastMpIndexRendered).map {
                             LatLng(it.latLong.latitude, it.latLong.longitude)
                         }
                     when (mp.direction) {
@@ -292,11 +292,11 @@ class PlaybackFragment : SensorsFragment() {
                             trackPolyline1?.color = lineColorFwd
                             trackPolyline2?.color = lineColorPrev
                         }
+                        MpDirection.UNKNOWN,
                         MpDirection.TO_END -> {
                             trackPolyline1?.color = lineColorPrev
                             trackPolyline2?.color = lineColorFwd
                         }
-                        else -> {}
                     }
                 }
 

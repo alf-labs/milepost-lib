@@ -71,11 +71,6 @@ class OpPlayback @AssistedInject constructor(
         }
         logger.d(TAG, "onLocationUpdate: $lastIndex --> $newIndex")
 
-        // DEBUG
-        if (newIndex >= 0) {
-            newIndex = (newIndex + 10) % (locations.size)
-        }
-
         // Reject an invalid index
         if (newIndex < 0 || newIndex >= locations.size) return
 
