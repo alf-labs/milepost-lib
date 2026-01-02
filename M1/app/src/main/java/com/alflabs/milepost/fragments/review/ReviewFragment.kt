@@ -443,12 +443,15 @@ class ReviewFragment : Fragment() {
 
         val position = LatLng(locationData.latLong.latitude, locationData.latLong.longitude)
 
-        selectedLocationMarker?.remove()
-        selectedLocationMarker = map.addMarker(
-            MarkerOptions()
-                .position(position)
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
-        )
+        if (selectedLocationMarker == null) {
+            selectedLocationMarker = map.addMarker(
+                MarkerOptions()
+                    .position(position)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+            )
+        } else {
+            selectedLocationMarker!!.position = position
+        }
 
         val update = CameraUpdateFactory.newLatLng(position)
         map.animateCamera(update)

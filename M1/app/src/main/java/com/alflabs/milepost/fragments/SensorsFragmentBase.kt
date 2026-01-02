@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
+import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.main.GlobalState
@@ -224,37 +225,7 @@ open abstract class SensorsFragmentBase: Fragment() {
         locationAccText?.setTextColor(accuracyColor(latLong.accuracy))
 
         googleMap?.let { map ->
-            val position = LatLng(latLong.latitude, latLong.longitude)
-            map.clear()
-
-            // Create a polyline path for the recorded locations
-            // TBD only recompute polyline if list has changed (during recording) or fragment has resumed
-            recordedLocationsList?.let { locations ->
-                if (locations.size > 1) {
-                    val width = resources.getDimensionPixelSize(R.dimen.map_track)
-                    val lineColor = requireContext().getColor(R.color.map_track)
-                    val polylineOptions = PolylineOptions()
-                        .color(lineColor)
-                        .width(width.toFloat())
-
-                    for (location in locations) {
-                        polylineOptions.add(
-                            LatLng(location.latLong.latitude, location.latLong.longitude))
-                    }
-                    map.addPolyline(polylineOptions)
-                }
-            }
-
-            // Place current marker
-            map.addMarker(MarkerOptions().position(position))
-
-            val update = if (setInitialMapZoom) {
-                setInitialMapZoom = false
-                setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
-            } else {
-                CameraUpdateFactory.newLatLng(position)
-            }
-            map.animateCamera(update)
+            updateMapForCurrentLocation(latLong, map)
         }
 
         val instant = Instant.ofEpochMilli(latLong.timestampMillis)
@@ -287,6 +258,44 @@ open abstract class SensorsFragmentBase: Fragment() {
             }
             bearingAccText?.setTextColor(accuracyColor(speedBearing.bearingAcc))
         }
+    }
+
+    protected open fun updateMapForCurrentLocation(
+        currentLatLong: LatLongData,
+        map: GoogleMap,
+    ) {
+        val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
+        map.clear()
+
+        // Create a polyline path for the recorded locations
+        // TBD only recompute polyline if list has changed (during recording) or fragment has resumed
+        getLocationsList()?.let { locations ->
+            if (locations.size > 1) {
+                val width = resources.getDimensionPixelSize(R.dimen.map_track)
+                val lineColor = requireContext().getColor(R.color.map_track)
+                val polylineOptions = PolylineOptions()
+                    .color(lineColor)
+                    .width(width.toFloat())
+
+                for (location in locations) {
+                    polylineOptions.add(
+                        LatLng(location.latLong.latitude, location.latLong.longitude)
+                    )
+                }
+                map.addPolyline(polylineOptions)
+            }
+        }
+
+        // Place current marker
+        map.addMarker(MarkerOptions().position(position))
+
+        val update = if (setInitialMapZoom) {
+            setInitialMapZoom = false
+            setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
+        } else {
+            CameraUpdateFactory.newLatLng(position)
+        }
+        map.animateCamera(update)
     }
 
     // Interface customized by derived classes

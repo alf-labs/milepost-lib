@@ -58,7 +58,6 @@ class OpPlayback @AssistedInject constructor(
     fun onLocationUpdate(newLocation: LocationData?) {
         // Note: this call is synchronous and happens on the MainActivity Looper thread
         // as invoked by the FusedLocationProviderClient.
-        logger.d(TAG, "onLocationChanged: ${newLocation?.latLong?.timestampMillis}")
         if (newLocation == null) return
 
         val newLatLong = newLocation.latLong
@@ -70,11 +69,15 @@ class OpPlayback @AssistedInject constructor(
         } else {
             mpEstimator.examineNearby(locations, newLatLong, lastIndex)
         }
+        logger.d(TAG, "onLocationUpdate: $lastIndex --> $newIndex")
 
         // Reject an invalid index
         if (newIndex < 0 || newIndex >= locations.size) return
 
-        val direction = if (lastIndex < newIndex) -1 else if (lastIndex > newIndex) 1 else 0
+        val direction = if (lastIndex < 0) 0
+            else if (lastIndex < newIndex) -1
+            else if (lastIndex > newIndex) 1
+            else 0
 
         val mp = mpEstimator.interpolateMp(locations, newIndex, newLatLong)
 
@@ -83,8 +86,11 @@ class OpPlayback @AssistedInject constructor(
 
         mpEstimatePublisher.publish(MpEstimate(
             mp = mp,
+            locIndex = newIndex,
+            latLong = locations[newIndex].latLong,
             direction = MpDirection.fromInt(lastDirection)
         ))
     }
+
 }
 

@@ -10,6 +10,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.PlaybackFragmentBinding
+import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
@@ -21,10 +22,16 @@ import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.AdvancedMarkerOptions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PinConfig
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.StyleSpan
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -63,6 +70,13 @@ class PlaybackFragment : SensorsFragment() {
     private var endLabel = "Endbound"
     private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
         ISubscriber<MpEstimate?> { _, event -> onMpEstimate(event) }
+    private var markerTrackStart: Marker? = null
+    private var markerTrackEnd: Marker? = null
+    private var markerMpCurrent: Marker? = null
+    private var markerPositionCurrent: Marker? = null
+    private var trackPolyline: Polyline? = null
+    private var lastMp: MpEstimate? = null
+
 
     override fun actionToPermissionsDlg(): NavDirections =
         PlaybackFragmentDirections.actionPlayToPermissionsDlg()
@@ -163,13 +177,13 @@ class PlaybackFragment : SensorsFragment() {
             val boundsBuilder = LatLngBounds.Builder()
             boundsBuilder.include(startPos)
             boundsBuilder.include(endPos)
-            map.addMarker(
+            markerTrackStart = map.addMarker(
                 MarkerOptions()
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                     .title(if (track.startLabel.isNullOrEmpty()) "Start" else track.startLabel)
                     .position(startPos)
             )
-            map.addMarker(
+            markerTrackEnd = map.addMarker(
                 MarkerOptions()
                     .title(if (track.endLabel.isNullOrEmpty()) "End" else track.endLabel)
                     .position(endPos)
@@ -189,12 +203,79 @@ class PlaybackFragment : SensorsFragment() {
         logger.d(TAG, "onMpEstimate: $event")
         // This may potentially be called outside of the proper binding lifecycle.
         _playbackBinding?.let {
+            lastMp = event
             it.mpText.text = String.format("MP %.1f", event.mp)
 
             it.directionText.text = when(event.direction) {
                 MpDirection.TO_START -> startLabel
                 MpDirection.TO_END -> endLabel
                 else -> "--"
+            } + " [# ${event.locIndex}]" // DEBUG
+        }
+    }
+
+    override fun updateMapForCurrentLocation(
+        currentLatLong: LatLongData,
+        map: GoogleMap,
+    ) {
+        if (markerPositionCurrent == null) {
+            val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
+            val pin = PinConfig.Builder().setGlyph(PinConfig.Glyph(0x00FFFF)).build()
+            markerPositionCurrent = map.addMarker(
+                AdvancedMarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromPinConfig(pin))
+                    .position(position)
+            )
+            val update = setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
+            map.animateCamera(update)
+        } else {
+            val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
+            markerPositionCurrent!!.position = position
+        }
+
+        lastMp?.let { mp ->
+            if (markerMpCurrent == null) {
+                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
+                val pin = PinConfig.Builder().setGlyph(PinConfig.Glyph(0x00FF00)).build()
+                markerMpCurrent = map.addMarker(
+                    AdvancedMarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromPinConfig(pin))
+                        .position(position)
+                )
+            } else {
+                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
+                markerMpCurrent!!.position = position
+            }
+        }
+
+        val locationsList = getLocationsList()
+        locationsList?.let { locations ->
+            if (locations.size > 1) {
+                if (trackPolyline == null) {
+                    val width = resources.getDimensionPixelSize(R.dimen.map_track)
+                    val lineColor = requireContext().getColor(R.color.map_track)
+                    val polylineOptions = PolylineOptions()
+                        .color(lineColor)
+                        .width(width.toFloat())
+
+                    for (location in locations) {
+                        polylineOptions.add(
+                            LatLng(location.latLong.latitude, location.latLong.longitude)
+                        )
+                    }
+                    trackPolyline = map.addPolyline(polylineOptions)
+                }
+            }
+        }
+
+        lastMp?.let { mp ->
+            trackPolyline?.let { polyline ->
+                val sz = locationsList?.size ?: 0
+                // TBD
+//                polyline.spans = listOf(
+//                    StyleSpan(0xFFFFFF, sz / 3.0),
+//                    StyleSpan(0xFFFF00, sz / 3.0 * 2),
+//                )
             }
         }
     }
