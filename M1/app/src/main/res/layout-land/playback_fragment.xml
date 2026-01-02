@@ -49,6 +49,7 @@
                         android:layout_height="wrap_content"
                         android:text=""
                         tools:text="track label"
+                        android:textStyle="bold"
                         android:layout_marginTop="4dp"
                         android:layout_below="@id/start_button"
                         android:layout_centerHorizontal="true"

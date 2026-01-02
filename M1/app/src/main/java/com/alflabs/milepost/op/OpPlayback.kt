@@ -41,7 +41,7 @@ class OpPlayback @AssistedInject constructor(
     private val mpEstimatePublisher: IPublisher<MpEstimate?> = Publishers.latest()
     private val mpEstimator = MpEstimator()
     private var lastIndex = -1
-    private var lastDirection = 0
+    private var lastDirection = MpDirection.UNKNOWN
 
     init {
         logger.d(TAG, "init: ${track.id}")
@@ -64,31 +64,38 @@ class OpPlayback @AssistedInject constructor(
         val locations: List<LocationData> = track.locationList?.locationsList ?: return
         if (locations.isEmpty()) return
 
-        val newIndex = if (lastIndex == -1) {
+        var newIndex = if (lastIndex == -1) {
             mpEstimator.findFirstNearest(locations, newLatLong)
         } else {
             mpEstimator.examineNearby(locations, newLatLong, lastIndex)
         }
         logger.d(TAG, "onLocationUpdate: $lastIndex --> $newIndex")
 
+        // DEBUG
+        if (newIndex >= 0) {
+            newIndex = (newIndex + 10) % (locations.size)
+        }
+
         // Reject an invalid index
         if (newIndex < 0 || newIndex >= locations.size) return
 
-        val direction = if (lastIndex < 0) 0
-            else if (lastIndex < newIndex) -1
-            else if (lastIndex > newIndex) 1
-            else 0
+        val direction = when {
+            lastIndex < 0 -> MpDirection.UNKNOWN
+            lastIndex < newIndex -> MpDirection.TO_END
+            lastIndex > newIndex -> MpDirection.TO_START
+            else -> MpDirection.UNKNOWN
+        }
 
         val mp = mpEstimator.interpolateMp(locations, newIndex, newLatLong)
 
         lastIndex = newIndex
-        if (direction != 0) lastDirection = direction
+        if (direction != MpDirection.UNKNOWN) lastDirection = direction
 
         mpEstimatePublisher.publish(MpEstimate(
             mp = mp,
             locIndex = newIndex,
             latLong = locations[newIndex].latLong,
-            direction = MpDirection.fromInt(lastDirection)
+            direction = lastDirection
         ))
     }
 

@@ -11,6 +11,7 @@
     <color name="colorAccent">#6f74dd</color>
 
     <color name="map_track">#4010E0</color>
+    <color name="map_track_prev">#808080</color>
     <color name="gps_value">#000</color>
     <color name="acc_missing">#F00</color>
     <color name="acc_present">#444</color>

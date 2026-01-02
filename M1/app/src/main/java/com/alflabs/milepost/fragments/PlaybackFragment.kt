@@ -22,16 +22,13 @@ import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.AdvancedMarkerOptions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PinConfig
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.android.gms.maps.model.StyleSpan
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -74,8 +71,12 @@ class PlaybackFragment : SensorsFragment() {
     private var markerTrackEnd: Marker? = null
     private var markerMpCurrent: Marker? = null
     private var markerPositionCurrent: Marker? = null
-    private var trackPolyline: Polyline? = null
+    private var trackPolyline1: Polyline? = null
+    private var trackPolyline2: Polyline? = null
     private var lastMp: MpEstimate? = null
+    private var lastMpIndexRendered = -1
+    private var lineColorFwd: Int = -1
+    private var lineColorPrev: Int = -1
 
 
     override fun actionToPermissionsDlg(): NavDirections =
@@ -91,6 +92,10 @@ class PlaybackFragment : SensorsFragment() {
     ): View {
         logger.d(TAG, "onCreateView")
         _playbackBinding = PlaybackFragmentBinding.inflate(inflater, container, false)
+
+        lineColorFwd = requireContext().getColor(R.color.map_track)
+        lineColorPrev = requireContext().getColor(R.color.map_track_prev)
+
         return playbackBinding.root
     }
 
@@ -220,10 +225,10 @@ class PlaybackFragment : SensorsFragment() {
     ) {
         if (markerPositionCurrent == null) {
             val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
-            val pin = PinConfig.Builder().setGlyph(PinConfig.Glyph(0x00FFFF)).build()
             markerPositionCurrent = map.addMarker(
-                AdvancedMarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromPinConfig(pin))
+                MarkerOptions()
+//                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
                     .position(position)
             )
             val update = setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
@@ -236,46 +241,69 @@ class PlaybackFragment : SensorsFragment() {
         lastMp?.let { mp ->
             if (markerMpCurrent == null) {
                 val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
-                val pin = PinConfig.Builder().setGlyph(PinConfig.Glyph(0x00FF00)).build()
                 markerMpCurrent = map.addMarker(
-                    AdvancedMarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromPinConfig(pin))
+                    MarkerOptions()
+//                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_green))
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA))
                         .position(position)
                 )
-            } else {
-                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
-                markerMpCurrent!!.position = position
             }
         }
 
         val locationsList = getLocationsList()
         locationsList?.let { locations ->
             if (locations.size > 1) {
-                if (trackPolyline == null) {
+                if (trackPolyline1 == null) {
                     val width = resources.getDimensionPixelSize(R.dimen.map_track)
-                    val lineColor = requireContext().getColor(R.color.map_track)
                     val polylineOptions = PolylineOptions()
-                        .color(lineColor)
+                        .color(lineColorFwd)
                         .width(width.toFloat())
-
-                    for (location in locations) {
-                        polylineOptions.add(
-                            LatLng(location.latLong.latitude, location.latLong.longitude)
-                        )
-                    }
-                    trackPolyline = map.addPolyline(polylineOptions)
+                    trackPolyline1 = map.addPolyline(polylineOptions)
+                    trackPolyline1?.points =
+                        locations.map {
+                            LatLng(it.latLong.latitude, it.latLong.longitude)
+                        }
+                }
+                if (trackPolyline2 == null) {
+                    val width = resources.getDimensionPixelSize(R.dimen.map_track)
+                    val polylineOptions = PolylineOptions()
+                        .color(lineColorPrev)
+                        .width(width.toFloat())
+                    trackPolyline2 = map.addPolyline(polylineOptions)
                 }
             }
         }
 
         lastMp?.let { mp ->
-            trackPolyline?.let { polyline ->
-                val sz = locationsList?.size ?: 0
-                // TBD
-//                polyline.spans = listOf(
-//                    StyleSpan(0xFFFFFF, sz / 3.0),
-//                    StyleSpan(0xFFFF00, sz / 3.0 * 2),
-//                )
+            if (mp.locIndex >= 0 && mp.locIndex != lastMpIndexRendered) {
+                lastMpIndexRendered = mp.locIndex
+
+                locationsList?.let { locations ->
+                    trackPolyline1?.points =
+                        locations.take(lastMpIndexRendered).map {
+                            LatLng(it.latLong.latitude, it.latLong.longitude)
+                        }
+                    trackPolyline2?.points =
+                        locations.takeLast(locations.size - lastMpIndexRendered).map {
+                            LatLng(it.latLong.latitude, it.latLong.longitude)
+                        }
+                    when (mp.direction) {
+                        MpDirection.TO_START -> {
+                            trackPolyline1?.color = lineColorFwd
+                            trackPolyline2?.color = lineColorPrev
+                        }
+                        MpDirection.TO_END -> {
+                            trackPolyline1?.color = lineColorPrev
+                            trackPolyline2?.color = lineColorFwd
+                        }
+                        else -> {}
+                    }
+                }
+
+                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
+                markerMpCurrent?.position = position
+                val update = CameraUpdateFactory.newLatLng(position)
+                map.animateCamera(update)
             }
         }
     }
