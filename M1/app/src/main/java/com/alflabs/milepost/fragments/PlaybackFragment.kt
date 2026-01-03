@@ -204,18 +204,49 @@ class PlaybackFragment : SensorsFragment() {
         return super.setupInitialMapZoom(map, position, zoomLevel)
     }
 
-    private fun onMpEstimate(event: MpEstimate) {
-        logger.d(TAG, "onMpEstimate: $event")
+    private fun onMpEstimate(mp: MpEstimate) {
+        logger.d(TAG, "onMpEstimate: $mp")
         // This may potentially be called outside of the proper binding lifecycle.
-        _playbackBinding?.let {
-            lastMp = event
-            it.mpText.text = String.format("MP %.1f", event.mp)
+        if (!hasBinding) return
 
-            it.directionText.text = when(event.direction) {
-                MpDirection.TO_START -> startLabel
-                MpDirection.TO_END -> endLabel
-                else -> "--"
-            } + " [# ${event.locIndex}]" // DEBUG
+        lastMp = mp
+        playbackBinding.mpText.text = String.format("MP %.1f", mp.mp)
+
+        playbackBinding.directionText.text = when(mp.direction) {
+            MpDirection.TO_START -> startLabel
+            MpDirection.TO_END -> endLabel
+            else -> "--"
+        } + " [# ${mp.locIndex}]" // DEBUG
+
+        markerMpCurrent?.let {
+            val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
+            it.position = position
+        }
+
+        if (mp.locIndex >= 0 && mp.locIndex != lastMpIndexRendered) {
+            lastMpIndexRendered = mp.locIndex
+
+            getLocationsList()?.let { locations ->
+                trackPolyline1?.points =
+                    locations.take(lastMpIndexRendered).map {
+                        LatLng(it.latLong.latitude, it.latLong.longitude)
+                    }
+                trackPolyline2?.points =
+                    locations.takeLast(locations.size - 1 - lastMpIndexRendered).map {
+                        LatLng(it.latLong.latitude, it.latLong.longitude)
+                    }
+                when (mp.direction) {
+                    MpDirection.TO_START -> {
+                        trackPolyline1?.color = lineColorFwd
+                        trackPolyline2?.color = lineColorPrev
+                    }
+                    MpDirection.UNKNOWN,
+                    MpDirection.TO_END -> {
+                        trackPolyline1?.color = lineColorPrev
+                        trackPolyline2?.color = lineColorFwd
+                    }
+                }
+            }
         }
     }
 
@@ -223,31 +254,33 @@ class PlaybackFragment : SensorsFragment() {
         currentLatLong: LatLongData,
         map: GoogleMap,
     ) {
+        val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
         if (markerPositionCurrent == null) {
-            val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
             markerPositionCurrent = map.addMarker(
                 MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_purple))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue))
                     .position(position)
                     .anchor(0.5f, 0.5f)
             )
             val update = setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
             map.animateCamera(update)
         } else {
-            val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
             markerPositionCurrent!!.position = position
+            lastMp?.let { mp ->
+                // DEBUG for testing, center on mp location instead of gps location.
+                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
+                val update = CameraUpdateFactory.newLatLng(position)
+                map.animateCamera(update)
+            }
         }
 
-        lastMp?.let { mp ->
-            if (markerMpCurrent == null) {
-                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
-                markerMpCurrent = map.addMarker(
-                    MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue))
-                        .position(position)
-                        .anchor(0.5f, 0.5f)
-                )
-            }
+        if (markerMpCurrent == null) {
+            markerMpCurrent = map.addMarker(
+                MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_purple))
+                    .position(position)
+                    .anchor(0.5f, 0.5f)
+            )
         }
 
         val locationsList = getLocationsList()
@@ -271,39 +304,6 @@ class PlaybackFragment : SensorsFragment() {
                         .width(width.toFloat())
                     trackPolyline2 = map.addPolyline(polylineOptions)
                 }
-            }
-        }
-
-        lastMp?.let { mp ->
-            if (mp.locIndex >= 0 && lastMpIndexRendered >= 0 && mp.locIndex != lastMpIndexRendered) {
-                lastMpIndexRendered = mp.locIndex
-
-                locationsList?.let { locations ->
-                    trackPolyline1?.points =
-                        locations.take(lastMpIndexRendered).map {
-                            LatLng(it.latLong.latitude, it.latLong.longitude)
-                        }
-                    trackPolyline2?.points =
-                        locations.takeLast(locations.size - 1 - lastMpIndexRendered).map {
-                            LatLng(it.latLong.latitude, it.latLong.longitude)
-                        }
-                    when (mp.direction) {
-                        MpDirection.TO_START -> {
-                            trackPolyline1?.color = lineColorFwd
-                            trackPolyline2?.color = lineColorPrev
-                        }
-                        MpDirection.UNKNOWN,
-                        MpDirection.TO_END -> {
-                            trackPolyline1?.color = lineColorPrev
-                            trackPolyline2?.color = lineColorFwd
-                        }
-                    }
-                }
-
-                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
-                markerMpCurrent?.position = position
-                val update = CameraUpdateFactory.newLatLng(position)
-                map.animateCamera(update)
             }
         }
     }

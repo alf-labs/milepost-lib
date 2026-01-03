@@ -55,6 +55,7 @@ class OpPlayback @AssistedInject constructor(
         globalState.locationStream.remove(locationSubscriber)
     }
 
+    private var tempNewIndex = -1
     fun onLocationUpdate(newLocation: LocationData?) {
         // Note: this call is synchronous and happens on the MainActivity Looper thread
         // as invoked by the FusedLocationProviderClient.
@@ -64,15 +65,23 @@ class OpPlayback @AssistedInject constructor(
         val locations: List<LocationData> = track.locationList?.locationsList ?: return
         if (locations.isEmpty()) return
 
-        var newIndex = if (lastIndex == -1) {
-            mpEstimator.findFirstNearest(locations, newLatLong)
-        } else {
-            mpEstimator.examineNearby(locations, newLatLong, lastIndex)
-        }
+// DEBUG... is examineNearby working properly?
+//        var newIndex = if (lastIndex == -1) {
+//            mpEstimator.findFirstNearest(locations, newLatLong)
+//        } else {
+//            mpEstimator.examineNearby(locations, newLatLong, lastIndex)
+//        }
+        var newIndex = mpEstimator.findFirstNearest(locations, newLatLong)
         logger.d(TAG, "onLocationUpdate: $lastIndex --> $newIndex")
 
         // Reject an invalid index
         if (newIndex < 0 || newIndex >= locations.size) return
+
+// DEBUG to force movement for testing
+//        if (lastIndex >= 0) {
+//            newIndex = (newIndex + ++tempNewIndex) % locations.size
+//            logger.d(TAG, "DEBUG : $lastIndex --> $newIndex ($tempNewIndex)")
+//        }
 
         val direction = when {
             lastIndex < 0 -> MpDirection.UNKNOWN
