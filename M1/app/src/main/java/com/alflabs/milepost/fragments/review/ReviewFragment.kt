@@ -235,10 +235,12 @@ class ReviewFragment : Fragment() {
 
     private fun playbackTrack(track: TrackEntity?) {
         if (track == null) return
-        logger.d(TAG, "@@ Set prefs Playback track: ${track.id}")
-        appSettings.setPlaybackTrackId(lifecycleScope, track.id)
-        val action = ReviewFragmentDirections.actionReviewToPlay()
-        findNavController().navigate(action)
+        lifecycleScope.launch {
+            logger.d(TAG, "@@ Set prefs Playback track: ${track.id}")
+            appSettings.setPlaybackTrackId(track.id)
+            val action = ReviewFragmentDirections.actionReviewToPlay()
+            findNavController().navigate(action)
+        }
     }
 
     private fun askAndMaybeDeleteTrack(track: TrackEntity?) {
@@ -248,11 +250,11 @@ class ReviewFragment : Fragment() {
             .setTitle("Delete Track")
             .setMessage("Are you sure you want to delete this track? This action cannot be reversed.")
             .setPositiveButton("Delete") { _, _ ->
-                if (appSettings.playbackTrackId(lifecycleScope) == track.id) {
-                    logger.d(TAG, "@@ Clear prefs Playback track: -1")
-                    appSettings.setPlaybackTrackId(lifecycleScope, -1)
-                }
                 lifecycleScope.launch {
+                    if (appSettings.playbackTrackId() == track.id) {
+                        logger.d(TAG, "@@ Clear prefs Playback track: -1")
+                        appSettings.setPlaybackTrackId(-1)
+                    }
                     trackEntityDao.deleteById(track.id)
                     findNavController().popBackStack()
                 }

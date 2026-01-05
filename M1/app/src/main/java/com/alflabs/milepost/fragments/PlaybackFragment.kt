@@ -116,7 +116,7 @@ class PlaybackFragment : SensorsFragment() {
 
                 if (playbackTrack == null) {
                     // If not, load the current track id from prefs
-                    val trackId = appSettings.playbackTrackId(lifecycleScope)
+                    val trackId = appSettings.playbackTrackId()
                     logger.d(TAG, "@@ Playback onResume: trackId = $trackId")
 
                     if (trackId != -1L) {

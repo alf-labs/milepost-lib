@@ -67,32 +67,33 @@ class TracksFragment : Fragment() {
         setupMenu()
 
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
-        val playbackTrackId = appSettings.playbackTrackId(lifecycleScope)
-
-        val adapter = TrackAdapter(
-            onClick = { track ->
-                showEditDialog(track)
-            },
-            onEdit = { track ->
-                showEditDialog(track)
-            },
-            onDelete = { track ->
-                viewModel.delete(track)
-            },
-            useImperialUnits,
-            playbackTrackId,
-        )
-        val layoutManager = LinearLayoutManager(requireContext())
-        binding.tracksList.adapter = adapter
-        binding.tracksList.layoutManager = layoutManager
-
-        val dividerItemDecoration = DividerItemDecoration(
-            requireContext(),
-            layoutManager.orientation
-        )
-        binding.tracksList.addItemDecoration(dividerItemDecoration)
 
         viewLifecycleOwner.lifecycleScope.launch {
+            val playbackTrackId = appSettings.playbackTrackId()
+
+            val adapter = TrackAdapter(
+                onClick = { track ->
+                    showEditDialog(track)
+                },
+                onEdit = { track ->
+                    showEditDialog(track)
+                },
+                onDelete = { track ->
+                    viewModel.delete(track)
+                },
+                useImperialUnits,
+                playbackTrackId,
+            )
+            val layoutManager = LinearLayoutManager(requireContext())
+            binding.tracksList.adapter = adapter
+            binding.tracksList.layoutManager = layoutManager
+
+            val dividerItemDecoration = DividerItemDecoration(
+                requireContext(),
+                layoutManager.orientation
+            )
+            binding.tracksList.addItemDecoration(dividerItemDecoration)
+
             viewModel.tracks.observe(viewLifecycleOwner) { list ->
                 binding.emptyMessage.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
                 adapter.submitList(list)

@@ -65,13 +65,13 @@ class AppSettings @Inject constructor(
             ?: THRESHOLD_SPEED_MPS_DEFAULT
     }
 
-    fun playbackTrackId(coroutineScope: CoroutineScope): Long {
-        val adapter = createAdapter(coroutineScope)
+    suspend fun playbackTrackId(): Long {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getLong(PLAYBACK_TRACK_ID.name, -1)
     }
 
-    fun setPlaybackTrackId(coroutineScope: CoroutineScope, trackId: Long) {
-        val adapter = createAdapter(coroutineScope)
+    suspend fun setPlaybackTrackId(trackId: Long) {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         adapter.putLong(PLAYBACK_TRACK_ID.name, trackId)
     }
 
@@ -124,7 +124,10 @@ class AppSettings @Inject constructor(
  * Warning: for completeness this implements all types; however for UI preferences.xml types,
  * we'll ONLY use boolean (on/off toggles) and string (including for NUMBERs or ENUMs!)
  * Do not expect to load/store float and int unless it's for internal usage only.
+ *
+ * TBD: deprecate this and re-implement using suspend methods in AsyncPreferenceDataStore.
  */
+@Deprecated("Use AsyncPreferenceDataStore")
 class AdapterPreferenceDataStore(
     val dataStore: DataStore<Preferences>,
     val coroutineScope: CoroutineScope
@@ -188,4 +191,60 @@ class AdapterPreferenceDataStore(
 
     override fun getFloat(key: String, defValue: Float): Float =
         getBlocking(floatPreferencesKey(key), defValue)
+}
+
+class AsyncPreferenceDataStore(val dataStore: DataStore<Preferences>) {
+
+    private suspend fun <T> putAsync(key: Preferences.Key<T>, value: T?) {
+        dataStore.edit {
+            if (value == null) {
+                it.remove(key)
+            } else {
+                it[key] = value
+            }
+        }
+        Log.d(AppSettings.TAG, "PUT preference $key with value $value")
+    }
+
+    private suspend fun <T> getAsync(
+        key: Preferences.Key<T>,
+        defValue: T
+    ): T {
+        return dataStore.data.map { it[key] ?: defValue }.first()
+    }
+
+    suspend fun putString(key: String, value: String?) {
+        putAsync(stringPreferencesKey(key), value)
+    }
+
+    suspend fun getString(key: String, defValue: String?): String =
+        getAsync(stringPreferencesKey(key), defValue ?: "")
+
+    suspend fun putBoolean(key: String, value: Boolean) {
+        putAsync(booleanPreferencesKey(key), value)
+    }
+
+    suspend fun getBoolean(key: String, defValue: Boolean): Boolean =
+        getAsync(booleanPreferencesKey(key), defValue)
+
+    suspend fun putInt(key: String, value: Int) {
+        putAsync(intPreferencesKey(key), value)
+    }
+
+    suspend fun getInt(key: String, defValue: Int): Int =
+        getAsync(intPreferencesKey(key), defValue)
+
+    suspend fun putLong(key: String, value: Long) {
+        putAsync(longPreferencesKey(key), value)
+    }
+
+    suspend fun getLong(key: String, defValue: Long): Long =
+        getAsync(longPreferencesKey(key), defValue)
+
+    suspend fun putFloat(key: String, value: Float) {
+        putAsync(floatPreferencesKey(key), value)
+    }
+
+    suspend fun getFloat(key: String, defValue: Float): Float =
+        getAsync(floatPreferencesKey(key), defValue)
 }
