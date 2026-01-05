@@ -13,7 +13,8 @@ class TrackAdapter(
     private val onClick: (TrackDisplayInfo) -> Unit,
     private val onEdit: (TrackDisplayInfo) -> Unit,
     private val onDelete: (TrackDisplayInfo) -> Unit,
-    private val useImperialUnits: Boolean
+    private val useImperialUnits: Boolean,
+    private val playbackTrackId: Long,
 ) : ListAdapter<TrackDisplayInfo, TrackAdapter.TrackViewHolder>(TrackDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TrackViewHolder {
@@ -22,7 +23,7 @@ class TrackAdapter(
             parent,
             false
         )
-        return TrackViewHolder(binding, onClick, onEdit, onDelete, useImperialUnits)
+        return TrackViewHolder(binding, onClick, onEdit, onDelete, useImperialUnits, playbackTrackId)
     }
 
     override fun onBindViewHolder(holder: TrackViewHolder, position: Int) {
@@ -35,7 +36,8 @@ class TrackAdapter(
         private val onClick: (TrackDisplayInfo) -> Unit,
         private val onEdit: (TrackDisplayInfo) -> Unit,
         private val onDelete: (TrackDisplayInfo) -> Unit,
-        private val useImperialUnits: Boolean
+        private val useImperialUnits: Boolean,
+        private val playbackTrackId: Long,
     ) : RecyclerView.ViewHolder(binding.root) {
         private var currentTrack: TrackDisplayInfo? = null
 
@@ -62,7 +64,8 @@ class TrackAdapter(
 
         fun bind(track: TrackDisplayInfo) {
             currentTrack = track
-            binding.trackName.text = "[${track.id}] ${track.trackLabel?.ifBlank { "(No Title)" }}"
+            val isPlayback = if (track.id == playbackTrackId) " ★" else ""
+            binding.trackName.text = "[${track.id}] ${track.trackLabel?.ifBlank { "(No Title)" }}$isPlayback"
             binding.trackDate.text = track.createdDateISO
             binding.trackSummary.text = track.summary?.toText(useImperialUnits)
         }

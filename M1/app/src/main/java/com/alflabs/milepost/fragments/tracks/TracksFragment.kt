@@ -67,6 +67,7 @@ class TracksFragment : Fragment() {
         setupMenu()
 
         useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
+        val playbackTrackId = appSettings.playbackTrackId(lifecycleScope)
 
         val adapter = TrackAdapter(
             onClick = { track ->
@@ -79,6 +80,7 @@ class TracksFragment : Fragment() {
                 viewModel.delete(track)
             },
             useImperialUnits,
+            playbackTrackId,
         )
         val layoutManager = LinearLayoutManager(requireContext())
         binding.tracksList.adapter = adapter
