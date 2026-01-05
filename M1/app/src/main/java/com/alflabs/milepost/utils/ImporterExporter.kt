@@ -45,6 +45,15 @@ class ImporterExporter @Inject constructor(
         private val TAG = ImporterExporter::class.java.simpleName
     }
 
+    private fun sanitizeTitle(track: TrackEntity): String {
+        var title = track.trackLabel?.trim() ?: ""
+        title = title
+            .replace(Regex("[^A-Za-z0-9_+-]"), " ")
+            .replace(Regex("\\s+"), " ")
+            .trim()
+        return " ${title.take(64)}"
+    }
+
     /**
      * Export a GPS track as CSV for Google My Maps.
     */
@@ -60,7 +69,7 @@ class ImporterExporter @Inject constructor(
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "track_${trackEntity.uuid}.csv")
+            val file = File(cacheDir, "track ${trackEntity.uuid}${sanitizeTitle(trackEntity)}.csv")
 
             val formatter = DateTimeFormatter.ISO_INSTANT
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
@@ -100,7 +109,7 @@ class ImporterExporter @Inject constructor(
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "track_${exported.uuid}.json")
+            val file = File(cacheDir, "track ${exported.uuid}${sanitizeTitle(trackEntity)}.json")
 
             val objectMapper = ObjectMapper()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)

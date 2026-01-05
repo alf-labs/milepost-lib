@@ -72,7 +72,7 @@ class ImporterExporterTest {
 
         trackEntity = TrackEntity(
             uuid = "test-uuid-1234",
-            trackLabel = "Test Track",
+            trackLabel = """  A fairly long Test+!@#$%^&*()!!=\/<>.,;':"[|]?-Track name 42 that is more than 64 characters  """,
             startLabel = "Start Here",
             endLabel = "End There",
             locationList = locations,
@@ -97,7 +97,7 @@ class ImporterExporterTest {
         assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createCsvExportFile")
         assertThat(file).isNotNull()
         file!!
-        assertThat(file.path.replace('\\', '/')).endsWith("/track_test-uuid-1234.csv")
+        assertThat(file.path.replace('\\', '/')).endsWith("/track test-uuid-1234 A fairly long Test+ -Track name 42 that is more than 64 characte.csv")
         assertThat(fakeFileOps.toString(file, Charsets.UTF_8)).isEqualTo(
             """
             isoDateTime,latitude,longitude,speed_mph,mp
@@ -117,14 +117,14 @@ class ImporterExporterTest {
         assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createJsonExportFile")
         assertThat(file).isNotNull()
         file!!
-        assertThat(file.path.replace('\\', '/')).endsWith("/track_test-uuid-1234.json")
+        assertThat(file.path.replace('\\', '/')).endsWith("/track test-uuid-1234 A fairly long Test+ -Track name 42 that is more than 64 characte.json")
         assertThat(fakeFileOps.toString(file, Charsets.UTF_8).replace("\r\n", "\n")).isEqualTo(
             """
             {
               "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
               "updatedDateISO" : "2022-03-04T05:06:07Z",
-              "trackLabel" : "Test Track",
+              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
               "startLabel" : "Start Here",
               "endLabel" : "End There",
               "locationList" : {
@@ -173,7 +173,7 @@ class ImporterExporterTest {
               "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
               "updatedDateISO" : "2022-03-04T05:06:07Z",
-              "trackLabel" : "Test Track",
+              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
               "startLabel" : "Start Here",
               "endLabel" : "End There",
               "locationList" : {
