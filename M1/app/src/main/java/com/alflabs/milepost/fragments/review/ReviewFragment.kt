@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -27,6 +28,7 @@ import com.alflabs.milepost.fragments.tracks.toText
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
+import com.alflabs.milepost.location.LocationDistance
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.changeFlag
 import com.alflabs.milepost.location.clearFlag
@@ -270,6 +272,7 @@ class ReviewFragment : Fragment() {
         val mpEndValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_end_value_edittext)
         val clearMpStartButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_start_button)
         val clearMpEndButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_end_button)
+        val trackLengthText = dialogView.findViewById<TextView>(R.id.track_length)
 
         val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
         val locFirst = locations.firstOrNull()
@@ -282,6 +285,7 @@ class ReviewFragment : Fragment() {
             locLast
         )
 
+        trackLengthText.text = String.format("%.2f mi", Units.m_to_miles(computeTrackLengthMeters(track)))
         trackLabelEditText.setText(track.trackLabel)
         startLabelEditText.setText(startHint)
         endLabelEditText.setText(endHint)
@@ -592,6 +596,27 @@ class ReviewFragment : Fragment() {
             }
         }
     }
+}
+
+internal fun computeTrackLengthMeters(track: TrackEntity): Float {
+    track.summary?.let { summary ->
+        if (summary.hasLengthM()) {
+            return@computeTrackLengthMeters summary.lengthM
+        }
+    }
+
+    val ld = LocationDistance()
+    var meters = 0f
+
+    var lastLoc: LocationData? = null
+    track.locationList?.locationsList?.forEach { loc ->
+        lastLoc?.let { last ->
+            meters += ld.between(last.latLong, loc.latLong)
+        }
+        lastLoc = loc
+    }
+
+    return meters
 }
 
 internal fun computeHintStartEndLabels(
