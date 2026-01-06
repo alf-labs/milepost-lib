@@ -2,6 +2,7 @@ package com.alflabs.milepost.fragments
 
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -103,12 +104,14 @@ open abstract class SensorsFragmentBase: Fragment() {
             } else {
                 setInitialMapZoom = true
                 LocationService.startService(requireActivity())
+                requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 onStartButton()
             }
         }
 
         stopButton.setOnClickListener {
             logger.d(TAG, "On click STOP button")
+            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             LocationService.stopService(requireActivity())
             onStopButton()
         }
