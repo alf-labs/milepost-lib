@@ -66,37 +66,40 @@ class TracksFragment : Fragment() {
 
         setupMenu()
 
-        useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
+        lifecycleScope.launch {
+            useImperialUnits = appSettings.useImperialUnits()
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            val playbackTrackId = appSettings.playbackTrackId()
+            viewLifecycleOwner.lifecycleScope.launch {
+                val playbackTrackId = appSettings.playbackTrackId()
 
-            val adapter = TrackAdapter(
-                onClick = { track ->
-                    showEditDialog(track)
-                },
-                onEdit = { track ->
-                    showEditDialog(track)
-                },
-                onDelete = { track ->
-                    viewModel.delete(track)
-                },
-                useImperialUnits,
-                playbackTrackId,
-            )
-            val layoutManager = LinearLayoutManager(requireContext())
-            binding.tracksList.adapter = adapter
-            binding.tracksList.layoutManager = layoutManager
+                val adapter = TrackAdapter(
+                    onClick = { track ->
+                        showEditDialog(track)
+                    },
+                    onEdit = { track ->
+                        showEditDialog(track)
+                    },
+                    onDelete = { track ->
+                        viewModel.delete(track)
+                    },
+                    useImperialUnits,
+                    playbackTrackId,
+                )
+                val layoutManager = LinearLayoutManager(requireContext())
+                binding.tracksList.adapter = adapter
+                binding.tracksList.layoutManager = layoutManager
 
-            val dividerItemDecoration = DividerItemDecoration(
-                requireContext(),
-                layoutManager.orientation
-            )
-            binding.tracksList.addItemDecoration(dividerItemDecoration)
+                val dividerItemDecoration = DividerItemDecoration(
+                    requireContext(),
+                    layoutManager.orientation
+                )
+                binding.tracksList.addItemDecoration(dividerItemDecoration)
 
-            viewModel.tracks.observe(viewLifecycleOwner) { list ->
-                binding.emptyMessage.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
-                adapter.submitList(list)
+                viewModel.tracks.observe(viewLifecycleOwner) { list ->
+                    binding.emptyMessage.visibility =
+                        if (list.isEmpty()) View.VISIBLE else View.GONE
+                    adapter.submitList(list)
+                }
             }
         }
     }

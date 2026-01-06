@@ -99,54 +99,56 @@ class ReviewFragment : Fragment() {
 
         setupMenu()
 
-        useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
+        lifecycleScope.launch {
+            useImperialUnits = appSettings.useImperialUnits()
 
-        val adapter = ReviewLocationAdapter(
-            useImperialUnits,
-            onMpClicked = ::showReviewMpDialog,
-            onSelection = ::onLocationClicked
-        )
-        val layoutManager = LinearLayoutManager(requireContext())
-        binding.locationsList.adapter = adapter
-        binding.locationsList.layoutManager = layoutManager
+            val adapter = ReviewLocationAdapter(
+                useImperialUnits,
+                onMpClicked = ::showReviewMpDialog,
+                onSelection = ::onLocationClicked
+            )
+            val layoutManager = LinearLayoutManager(requireContext())
+            binding.locationsList.adapter = adapter
+            binding.locationsList.layoutManager = layoutManager
 
-        val dividerItemDecoration = DividerItemDecoration(
-            requireContext(),
-            layoutManager.orientation
-        )
-        binding.locationsList.addItemDecoration(dividerItemDecoration)
+            val dividerItemDecoration = DividerItemDecoration(
+                requireContext(),
+                layoutManager.orientation
+            )
+            binding.locationsList.addItemDecoration(dividerItemDecoration)
 
-        viewModel.track.observe(viewLifecycleOwner) { track ->
-            logger.d(TAG, "@@ Review observe track: ${track?.id} ${track?.trackLabel}")
+            viewModel.track.observe(viewLifecycleOwner) { track ->
+                logger.d(TAG, "@@ Review observe track: ${track?.id} ${track?.trackLabel}")
 
-            if (track == null) {
-                binding.label.text = "No track found"
-            } else {
-                binding.label.text = track.trackLabel?.ifBlank { "(Tap to Add Title)" }
-            }
-            binding.summary.text = track?.summary.toText(useImperialUnits)
+                if (track == null) {
+                    binding.label.text = "No track found"
+                } else {
+                    binding.label.text = track.trackLabel?.ifBlank { "(Tap to Add Title)" }
+                }
+                binding.summary.text = track?.summary.toText(useImperialUnits)
 
-            trackEntity = track
-            reviewList = convert(track?.locationList)
-            updateInterpolatedMp(track, reviewList)
-            adapter.submitList(reviewList)
-            updateTrackSummary(track)
-            logger.d(TAG, "@@ is first load: $firstLoad")
-            if (track != null && firstLoad) {
-                firstLoad = false
-                if (track.trackLabel.isNullOrEmpty()
-                    && track.startLabel.isNullOrEmpty()
-                    && track.endLabel.isNullOrEmpty()
-                ) {
-                    showReviewTitleDialog(track)
+                trackEntity = track
+                reviewList = convert(track?.locationList)
+                updateInterpolatedMp(track, reviewList)
+                adapter.submitList(reviewList)
+                updateTrackSummary(track)
+                logger.d(TAG, "@@ is first load: $firstLoad")
+                if (track != null && firstLoad) {
+                    firstLoad = false
+                    if (track.trackLabel.isNullOrEmpty()
+                        && track.startLabel.isNullOrEmpty()
+                        && track.endLabel.isNullOrEmpty()
+                    ) {
+                        showReviewTitleDialog(track)
+                    }
+                }
+                lifecycleScope.launch {
+                    loadMapTrack()
                 }
             }
-            lifecycleScope.launch {
-                loadMapTrack()
-            }
-        }
 
-        viewModel.loadTrack(fragmentArgs.trackId)
+            viewModel.loadTrack(fragmentArgs.trackId)
+        }
 
         binding.label.setOnClickListener {
             showReviewTitleDialog(trackEntity)

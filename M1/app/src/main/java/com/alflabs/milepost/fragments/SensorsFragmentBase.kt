@@ -86,9 +86,12 @@ open abstract class SensorsFragmentBase: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         logger.d(TAG, "onViewCreated")
 
-        useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
         accuracyColorMissing = requireContext().getColor(R.color.acc_missing)
         accuracyColorPresent = requireContext().getColor(R.color.acc_present)
+
+        lifecycleScope.launch {
+            useImperialUnits = appSettings.useImperialUnits()
+        }
 
         startButton.text = when (operatorMode) {
             OperatorMode.IDLE, OperatorMode.SENSORS -> "Test"

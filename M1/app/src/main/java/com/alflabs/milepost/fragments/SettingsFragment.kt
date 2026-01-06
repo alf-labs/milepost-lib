@@ -14,6 +14,7 @@ import com.alflabs.milepost.R
 import com.alflabs.milepost.main.AppSettings
 import com.alflabs.milepost.utils.Units
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -69,16 +70,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
 
-        useImperialUnits = appSettings.useImperialUnits(lifecycleScope)
+        lifecycleScope.launch {
+            useImperialUnits = appSettings.useImperialUnits()
 
-        thresholdDistancePref?.setUseImperialUnits(useImperialUnits)
-        thresholdSpeedPref?.setUseImperialUnits(useImperialUnits)
+            thresholdDistancePref?.setUseImperialUnits(useImperialUnits)
+            thresholdSpeedPref?.setUseImperialUnits(useImperialUnits)
 
-        appSettings.appSettingsDataStore.data.asLiveData().observe(viewLifecycleOwner) { pref ->
-            pref[AppSettings.USE_IMPERIAL_UNITS]?.let { unit ->
-                useImperialUnits = unit
-                thresholdDistancePref?.setUseImperialUnits(useImperialUnits)
-                thresholdSpeedPref?.setUseImperialUnits(useImperialUnits)
+            appSettings.appSettingsDataStore.data.asLiveData().observe(viewLifecycleOwner) { pref ->
+                pref[AppSettings.USE_IMPERIAL_UNITS]?.let { unit ->
+                    useImperialUnits = unit
+                    thresholdDistancePref?.setUseImperialUnits(useImperialUnits)
+                    thresholdSpeedPref?.setUseImperialUnits(useImperialUnits)
+                }
             }
         }
 

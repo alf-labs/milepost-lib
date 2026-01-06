@@ -57,9 +57,13 @@ class OpRecord @AssistedInject constructor(
 
     init {
         logger.d(TAG, "init: ${track.id}")
-        thresholdDistanceMeters = appSettings.thresholdDistanceMeters(scope)
-        thresholdSpeedMps = appSettings.thresholdSpeedMps(scope)
         globalState.locationStream.subscribe(Schedulers.sync(), locationSubscriber)
+    }
+
+    suspend fun initAsync() : OpRecord {
+        thresholdDistanceMeters = appSettings.thresholdDistanceMeters()
+        thresholdSpeedMps = appSettings.thresholdSpeedMps()
+        return this
     }
 
     override fun stop() {

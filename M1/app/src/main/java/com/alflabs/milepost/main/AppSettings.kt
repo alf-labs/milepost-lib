@@ -48,19 +48,19 @@ class AppSettings @Inject constructor(
 
     // Preferences access
 
-    fun useImperialUnits(coroutineScope: CoroutineScope): Boolean {
-        val adapter = createAdapter(coroutineScope)
+    suspend fun useImperialUnits(): Boolean {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getBoolean(USE_IMPERIAL_UNITS.name, false)
     }
 
-    fun thresholdDistanceMeters(coroutineScope: CoroutineScope): Float {
-        val adapter = createAdapter(coroutineScope)
+    suspend fun thresholdDistanceMeters(): Float {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getString(THRESHOLD_DISTANCE_METERS.name, "").toFloatOrNull()
             ?: THRESHOLD_DISTANCE_METERS_DEFAULT
     }
 
-    fun thresholdSpeedMps(coroutineScope: CoroutineScope): Float {
-        val adapter = createAdapter(coroutineScope)
+    suspend fun thresholdSpeedMps(): Float {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getString(THRESHOLD_SPEED_MPS.name, "").toFloatOrNull()
             ?: THRESHOLD_SPEED_MPS_DEFAULT
     }

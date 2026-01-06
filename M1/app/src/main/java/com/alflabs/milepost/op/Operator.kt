@@ -59,11 +59,11 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.IDLE)
     }
 
-    fun startRecord(track: TrackEntity) {
+    suspend fun startRecord(track: TrackEntity) {
         if (operatorMode == OperatorMode.RECORD) return
         currentOp.stop()
         logger.d(TAG, "startRecord id=${track.id}")
-        currentOp = opRecordFactory.create(track)
+        currentOp = opRecordFactory.create(track).initAsync()
         changeMode(OperatorMode.RECORD)
     }
 
