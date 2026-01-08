@@ -646,7 +646,11 @@ internal fun computeHintStartEndLabels(
 
     val startPos = toLocation(locFirst.latLong.latitude, locFirst.latLong.longitude)
     val endPos = toLocation(locLast.latLong.latitude, locLast.latLong.longitude)
-    val bearing = startPos.bearingTo(endPos)
+    var bearing = startPos.bearingTo(endPos)
+
+    if (bearing < 0) {
+        bearing += 360
+    }
 
     return when (bearing) {
         in  45.0..<135.0 -> Pair("Westbound", "Eastbound")
