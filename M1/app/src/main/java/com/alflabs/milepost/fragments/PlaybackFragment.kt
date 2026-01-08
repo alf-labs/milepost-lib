@@ -12,6 +12,8 @@ import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.PlaybackFragmentBinding
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
+import com.alflabs.milepost.location.LocationFlags
+import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
@@ -78,14 +80,14 @@ class PlaybackFragment : SensorsFragment() {
     private var lastMpDirectionRendered = MpDirection.UNKNOWN
     private var lineColorFwd: Int = -1
     private var lineColorPrev: Int = -1
+    private val filteredLocations = mutableListOf<LocationData>()
 
 
     override fun actionToPermissionsDlg(): NavDirections =
         PlaybackFragmentDirections.actionPlayToPermissionsDlg()
 
     override fun getLocationsList(): List<LocationData>? =
-        playbackTrack?.locationList?.locationsList ?: operator.currentLocationsList
-
+        operator.currentLocationsList ?: filteredLocations
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -133,6 +135,13 @@ class PlaybackFragment : SensorsFragment() {
             }
 
             playbackTrack?.let { track ->
+                track.locationList?.locationsList?.let { list ->
+                    filteredLocations.clear()
+                    filteredLocations.addAll(list.filter { loc ->
+                        !loc.flags.hasFlag(LocationFlags.IGNORE)
+                    })
+                }
+
                 if (!track.startLabel.isNullOrEmpty()) {
                     startLabel = track.startLabel
                 }
@@ -295,8 +304,7 @@ class PlaybackFragment : SensorsFragment() {
             )
         }
 
-        val locationsList = getLocationsList()
-        locationsList?.let { locations ->
+        getLocationsList()?.let { locations ->
             if (locations.size > 1) {
                 if (trackPolylineStart == null) {
                     val width = resources.getDimensionPixelSize(R.dimen.map_track)

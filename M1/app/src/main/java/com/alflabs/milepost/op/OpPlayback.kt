@@ -2,6 +2,8 @@ package com.alflabs.milepost.op
 
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
+import com.alflabs.milepost.location.LocationFlags
+import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
@@ -34,17 +36,25 @@ class OpPlayback @AssistedInject constructor(
         get() = track.id
 
     override val currentLocationsList: List<LocationData>?
-        get() = track.locationList?.locationsList
+        get() = filteredLocations
 
     private val locationSubscriber: ISubscriber<in LocationData?> =
         ISubscriber<LocationData?> { _, event -> onLocationUpdate(event) }
     private val mpEstimatePublisher: IPublisher<MpEstimate?> = Publishers.latest()
     private val mpEstimator = MpEstimator()
+    private val filteredLocations = mutableListOf<LocationData>()
     private var lastIndex = -1
     private var lastDirection = MpDirection.UNKNOWN
 
     init {
         logger.d(TAG, "init: ${track.id}")
+        // Only keep location data points that are not marked "ignore"
+        track.locationList?.locationsList?.let { list ->
+            filteredLocations.clear()
+            filteredLocations.addAll(list.filter { loc ->
+                !loc.flags.hasFlag(LocationFlags.IGNORE)
+            })
+        }
         globalState.locationStream.subscribe(Schedulers.sync(), locationSubscriber)
         globalState.mpEstimateStream.publishWith(mpEstimatePublisher)
     }
@@ -62,8 +72,7 @@ class OpPlayback @AssistedInject constructor(
         if (newLocation == null) return
 
         val newLatLong = newLocation.latLong
-        val locations: List<LocationData> = track.locationList?.locationsList ?: return
-        if (locations.isEmpty()) return
+        if (filteredLocations.isEmpty()) return
 
 // DEBUG... is examineNearby working properly?
 //        var newIndex = if (lastIndex == -1) {
@@ -71,20 +80,20 @@ class OpPlayback @AssistedInject constructor(
 //        } else {
 //            mpEstimator.examineNearby(locations, newLatLong, lastIndex)
 //        }
-        var newIndex = mpEstimator.findFirstNearest(locations, newLatLong)
+        var newIndex = mpEstimator.findFirstNearest(filteredLocations, newLatLong)
         logger.d(TAG, "onLocationUpdate: $lastIndex --> $newIndex")
 
         // Reject an invalid index
-        if (newIndex < 0 || newIndex >= locations.size) return
+        if (newIndex < 0 || newIndex >= filteredLocations.size) return
 
 // DEBUG to force movement for testing
-        if (lastIndex >= 0) {
-            tempNewIndex = (tempNewIndex + 1) % 20
-            val offset = if (tempNewIndex <= 10) tempNewIndex else 20 - tempNewIndex
-
-            newIndex = (newIndex + offset) % locations.size
-            logger.d(TAG, "DEBUG : $lastIndex --> $newIndex ($tempNewIndex)")
-        }
+//        if (lastIndex >= 0) {
+//            val offset = if (tempNewIndex <= 10) tempNewIndex else 20 - tempNewIndex
+//            tempNewIndex = (tempNewIndex + 1) % 20
+//
+//            newIndex = (newIndex + offset) % filteredLocations.size
+//            logger.d(TAG, "DEBUG : $lastIndex --> $newIndex ($tempNewIndex)")
+//        }
 
         val direction = when {
             lastIndex < 0 -> MpDirection.UNKNOWN
@@ -93,7 +102,7 @@ class OpPlayback @AssistedInject constructor(
             else -> MpDirection.UNKNOWN
         }
 
-        val mp = mpEstimator.interpolateMp(locations, newIndex, newLatLong)
+        val mp = mpEstimator.interpolateMp(filteredLocations, newIndex, newLatLong)
 
         lastIndex = newIndex
         if (direction != MpDirection.UNKNOWN) lastDirection = direction
@@ -101,7 +110,7 @@ class OpPlayback @AssistedInject constructor(
         mpEstimatePublisher.publish(MpEstimate(
             mp = mp,
             locIndex = newIndex,
-            latLong = locations[newIndex].latLong,
+            latLong = filteredLocations[newIndex].latLong,
             direction = lastDirection
         ))
     }
