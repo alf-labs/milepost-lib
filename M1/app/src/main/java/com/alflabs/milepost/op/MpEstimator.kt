@@ -36,7 +36,10 @@ class MpEstimator {
 
             if (dist1 < dist2) {
                 high = mid
+            } else if (low != mid) {
+                low = mid
             } else {
+                // we're trying to set low=mid a second time
                 low = mid + 1
             }
         }
