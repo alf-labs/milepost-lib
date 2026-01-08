@@ -6,7 +6,7 @@
         app:startDestination="@id/nav_about">
 
     <!-- Notes:
-        - All fragment destination ids here should match drawer_menu.xml item ids.
+        - All fragment destination ids here should match drawer_mp.xml item ids.
         - The labels automatically become AppBar/Toolbar titles.
 
         As usual with Android, there's no clearly defined XML schema.

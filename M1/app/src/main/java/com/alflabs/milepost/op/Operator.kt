@@ -1,7 +1,7 @@
 package com.alflabs.milepost.op
 
 import com.alflabs.milepost.location.LocationData
-import com.alflabs.milepost.main.GlobalState
+import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers

@@ -35,7 +35,7 @@ import com.alflabs.milepost.location.clearFlag
 import com.alflabs.milepost.location.copy
 import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.location.setFlag
-import com.alflabs.milepost.main.AppSettings
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.milepost.tracks.TrackEntityDao
 import com.alflabs.milepost.tracks.TrackSummary

@@ -1,7 +1,7 @@
 package com.alflabs.milepost.op
 
 import com.alflabs.milepost.location.LocationData
-import com.alflabs.milepost.main.GlobalState
+import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
@@ -57,7 +57,7 @@ class OpPlayback @AssistedInject constructor(
 
     private var tempNewIndex = -1
     fun onLocationUpdate(newLocation: LocationData?) {
-        // Note: this call is synchronous and happens on the MainActivity Looper thread
+        // Note: this call is synchronous and happens on the MpActivity Looper thread
         // as invoked by the FusedLocationProviderClient.
         if (newLocation == null) return
 

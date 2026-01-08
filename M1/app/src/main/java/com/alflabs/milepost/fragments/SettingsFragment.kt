@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import com.alflabs.milepost.R
-import com.alflabs.milepost.main.AppSettings
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.utils.Units
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

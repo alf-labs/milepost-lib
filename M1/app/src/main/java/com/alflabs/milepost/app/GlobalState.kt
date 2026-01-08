@@ -1,4 +1,4 @@
-package com.alflabs.milepost.main
+package com.alflabs.milepost.app
 
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.op.MpEstimate

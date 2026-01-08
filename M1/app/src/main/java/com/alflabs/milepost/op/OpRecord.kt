@@ -3,8 +3,8 @@ package com.alflabs.milepost.op
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.LocationDistance
-import com.alflabs.milepost.main.AppSettings
-import com.alflabs.milepost.main.GlobalState
+import com.alflabs.milepost.app.AppSettings
+import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.tracks.TrackEntity
 import com.alflabs.milepost.tracks.TrackEntityDao
 import com.alflabs.rx.ISubscriber
@@ -73,7 +73,7 @@ class OpRecord @AssistedInject constructor(
     }
 
     fun onLocationUpdate(newLocation: LocationData?) {
-        // Note: this call is synchronous and happens on the MainActivity Looper thread
+        // Note: this call is synchronous and happens on the MpActivity Looper thread
         // as invoked by the FusedLocationProviderClient.
         logger.d(TAG, "onLocationChanged: ${newLocation?.latLong?.timestampMillis}")
         if (newLocation == null) return

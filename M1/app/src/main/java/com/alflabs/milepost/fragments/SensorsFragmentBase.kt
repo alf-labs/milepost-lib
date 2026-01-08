@@ -12,8 +12,8 @@ import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
-import com.alflabs.milepost.main.AppSettings
-import com.alflabs.milepost.main.GlobalState
+import com.alflabs.milepost.app.AppSettings
+import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.op.Operator
 import com.alflabs.milepost.op.OperatorMode
 import com.alflabs.milepost.service.LocationService

@@ -2,6 +2,7 @@ package com.alflabs.milepost.main
 
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.alflabs.milepost.mp.MpActivity
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat
@@ -33,11 +34,11 @@ class MainActivityTest {
 
     @Test
     fun activity_launches() {
-        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        val scenario = ActivityScenario.launch(MpActivity::class.java)
         scenario.onActivity { activity ->
             assertThat(activity).isNotNull()
-            assertThat(fakeLogger.string).contains("MainActivity: onCreate")
-            assertThat(fakeLogger.string).contains("MainActivity: Start page: STOPPED")
+            assertThat(fakeLogger.string).contains("MpActivity: onCreate")
+            assertThat(fakeLogger.string).contains("MpActivity: Start page: STOPPED")
         }
     }
 }

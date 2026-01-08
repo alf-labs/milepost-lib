@@ -22,7 +22,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.TracksFragmentBinding
-import com.alflabs.milepost.main.AppSettings
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.tracks.TrackDisplayInfo
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.utils.ApiHelper

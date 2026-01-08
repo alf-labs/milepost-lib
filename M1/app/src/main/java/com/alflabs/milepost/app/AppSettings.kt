@@ -1,4 +1,4 @@
-package com.alflabs.milepost.main
+package com.alflabs.milepost.app
 
 import android.icu.util.TimeZone
 import android.util.Log

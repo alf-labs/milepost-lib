@@ -19,10 +19,9 @@ import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.speedBearingData
-import com.alflabs.milepost.main.AppSettings
-import com.alflabs.milepost.main.GlobalState
-import com.alflabs.milepost.main.MainActivity
-import com.alflabs.milepost.service.ServiceMode
+import com.alflabs.milepost.app.AppSettings
+import com.alflabs.milepost.app.GlobalState
+import com.alflabs.milepost.mp.MpActivity
 import com.alflabs.milepost.tracks.TrackEntityDao
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
@@ -90,8 +89,8 @@ class LocationService : Service() {
             return START_NOT_STICKY
         }
 
-        val mainActivityIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, mainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
+        val mpActivityIntent = Intent(this, MpActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, mpActivityIntent, PendingIntent.FLAG_IMMUTABLE)
 
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Tracking location...")
