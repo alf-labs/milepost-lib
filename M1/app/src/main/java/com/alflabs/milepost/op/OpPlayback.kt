@@ -78,10 +78,13 @@ class OpPlayback @AssistedInject constructor(
         if (newIndex < 0 || newIndex >= locations.size) return
 
 // DEBUG to force movement for testing
-//        if (lastIndex >= 0) {
-//            newIndex = (newIndex + ++tempNewIndex) % locations.size
-//            logger.d(TAG, "DEBUG : $lastIndex --> $newIndex ($tempNewIndex)")
-//        }
+        if (lastIndex >= 0) {
+            tempNewIndex = (tempNewIndex + 1) % 20
+            val offset = if (tempNewIndex <= 10) tempNewIndex else 20 - tempNewIndex
+
+            newIndex = (newIndex + offset) % locations.size
+            logger.d(TAG, "DEBUG : $lastIndex --> $newIndex ($tempNewIndex)")
+        }
 
         val direction = when {
             lastIndex < 0 -> MpDirection.UNKNOWN

@@ -71,10 +71,11 @@ class PlaybackFragment : SensorsFragment() {
     private var markerTrackEnd: Marker? = null
     private var markerMpCurrent: Marker? = null
     private var markerPositionCurrent: Marker? = null
-    private var trackPolyline1: Polyline? = null
-    private var trackPolyline2: Polyline? = null
+    private var trackPolylineStart: Polyline? = null
+    private var trackPolylineEnd: Polyline? = null
     private var lastMp: MpEstimate? = null
     private var lastMpIndexRendered = -1
+    private var lastMpDirectionRendered = MpDirection.UNKNOWN
     private var lineColorFwd: Int = -1
     private var lineColorPrev: Int = -1
 
@@ -227,25 +228,36 @@ class PlaybackFragment : SensorsFragment() {
             lastMpIndexRendered = mp.locIndex
 
             getLocationsList()?.let { locations ->
-                trackPolyline1?.points =
-                    locations.take(lastMpIndexRendered).map {
+                // Indices: [0 ... render ... size-1]
+                // Number of segments is the usual off-by-one interval problem:
+                // - From start: 0..render = render - 0 + 1
+                // - From end  : render..size-1 = (size-1) - render + 1 = size - render
+                trackPolylineStart?.points =
+                    locations.take(lastMpIndexRendered + 1).map {
                         LatLng(it.latLong.latitude, it.latLong.longitude)
                     }
-                trackPolyline2?.points =
-                    locations.takeLast(locations.size - 1 - lastMpIndexRendered).map {
+                trackPolylineEnd?.points =
+                    locations.takeLast(locations.size - lastMpIndexRendered).map {
                         LatLng(it.latLong.latitude, it.latLong.longitude)
                     }
-                when (mp.direction) {
-                    MpDirection.TO_START -> {
-                        trackPolyline1?.color = lineColorFwd
-                        trackPolyline2?.color = lineColorPrev
-                    }
-                    MpDirection.UNKNOWN,
-                    MpDirection.TO_END -> {
-                        trackPolyline1?.color = lineColorPrev
-                        trackPolyline2?.color = lineColorFwd
-                    }
+            }
+        }
+        if (mp.direction != lastMpDirectionRendered && mp.direction != MpDirection.UNKNOWN) {
+            lastMpDirectionRendered = mp.direction
+            when (mp.direction) {
+                MpDirection.TO_START -> {
+                    trackPolylineStart?.color = lineColorFwd
+                    trackPolylineEnd?.color = lineColorPrev
+                    markerTrackStart?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                    markerTrackEnd?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                 }
+                MpDirection.TO_END -> {
+                    trackPolylineStart?.color = lineColorPrev
+                    trackPolylineEnd?.color = lineColorFwd
+                    markerTrackStart?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                    markerTrackEnd?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                }
+                else -> { /* no-op */ }
             }
         }
     }
@@ -286,23 +298,23 @@ class PlaybackFragment : SensorsFragment() {
         val locationsList = getLocationsList()
         locationsList?.let { locations ->
             if (locations.size > 1) {
-                if (trackPolyline1 == null) {
+                if (trackPolylineStart == null) {
                     val width = resources.getDimensionPixelSize(R.dimen.map_track)
                     val polylineOptions = PolylineOptions()
                         .color(lineColorFwd)
                         .width(width.toFloat())
-                    trackPolyline1 = map.addPolyline(polylineOptions)
-                    trackPolyline1?.points =
+                    trackPolylineStart = map.addPolyline(polylineOptions)
+                    trackPolylineStart?.points =
                         locations.map {
                             LatLng(it.latLong.latitude, it.latLong.longitude)
                         }
                 }
-                if (trackPolyline2 == null) {
+                if (trackPolylineEnd == null) {
                     val width = resources.getDimensionPixelSize(R.dimen.map_track)
                     val polylineOptions = PolylineOptions()
-                        .color(lineColorPrev)
+                        .color(lineColorFwd)
                         .width(width.toFloat())
-                    trackPolyline2 = map.addPolyline(polylineOptions)
+                    trackPolylineEnd = map.addPolyline(polylineOptions)
                 }
             }
         }
