@@ -31,8 +31,8 @@ class MpEstimator {
 
         while (low < high) {
             val mid = low + (high - low) / 2
-            val dist1 = locationDistance.between(newLatLong, locations[mid].latLong)
-            val dist2 = locationDistance.between(newLatLong, locations[mid + 1].latLong)
+            val dist1 = locationDistance.between(newLatLong, locations[low].latLong)
+            val dist2 = locationDistance.between(newLatLong, locations[high].latLong)
 
             if (dist1 < dist2) {
                 high = mid
