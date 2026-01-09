@@ -4,7 +4,7 @@
       tools:showIn="navigation_view">
 
     <!-- Notes:
-        - All item ids here should match mp_nav_graph.xml destination ids.
+        - All item ids here should match nav_graph_mp.xml destination ids.
      -->
 
     <group> <!-- android:checkableBehavior="single" -->
