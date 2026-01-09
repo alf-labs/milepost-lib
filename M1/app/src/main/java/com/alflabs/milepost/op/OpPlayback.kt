@@ -4,7 +4,7 @@ import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.hasFlag
-import com.alflabs.milepost.tracks.TrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Publishers
@@ -15,21 +15,21 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 class OpPlayback @AssistedInject constructor(
-    @Assisted val track: TrackEntity,
+    @Assisted val track: GpsTrackEntity,
     private val logger: ILogger,
     private val globalState: GlobalState,
 ) : IOpActor {
 
     @AssistedFactory
     interface Factory {
-        fun create(track: TrackEntity): OpPlayback
+        fun create(track: GpsTrackEntity): OpPlayback
     }
 
     companion object {
         private val TAG = OpPlayback::class.java.simpleName
     }
 
-    val playbackTrack: TrackEntity
+    val playbackTrack: GpsTrackEntity
         get() = track
 
     override val currentTrackId: Long

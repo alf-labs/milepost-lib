@@ -2,11 +2,9 @@ package com.alflabs.milepost.utils
 
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.net.Uri
 import androidx.core.content.FileProvider
-import com.alflabs.milepost.location.LatLongData
-import com.alflabs.milepost.tracks.TrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.TrackEntityPojo
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
@@ -45,7 +43,7 @@ class ImporterExporter @Inject constructor(
         private val TAG = ImporterExporter::class.java.simpleName
     }
 
-    private fun sanitizeTitle(track: TrackEntity): String {
+    private fun sanitizeTitle(track: GpsTrackEntity): String {
         var title = track.trackLabel?.trim() ?: ""
         title = title
             .replace(Regex("[^A-Za-z0-9_+-]"), " ")
@@ -57,19 +55,19 @@ class ImporterExporter @Inject constructor(
     /**
      * Export a GPS track as CSV for Google My Maps.
     */
-    fun createCsvExportFile(context: Context, trackEntity: TrackEntity?): File? {
+    fun createCsvExportFile(context: Context, gpsTrackEntity: GpsTrackEntity?): File? {
         logger.d(TAG, "createCsvExportFile")
         val csvHeader = "isoDateTime,latitude,longitude,speed_mph,mp\n"
 
-        if (trackEntity == null) {
+        if (gpsTrackEntity == null) {
             return null
         }
-        val locationList = trackEntity.locationList ?: return null
+        val locationList = gpsTrackEntity.locationList ?: return null
 
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "track ${trackEntity.uuid}${sanitizeTitle(trackEntity)}.csv")
+            val file = File(cacheDir, "track ${gpsTrackEntity.uuid}${sanitizeTitle(gpsTrackEntity)}.csv")
 
             val formatter = DateTimeFormatter.ISO_INSTANT
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
@@ -97,19 +95,19 @@ class ImporterExporter @Inject constructor(
     /**
      * Export a GPS track as JSON.
      */
-    fun createJsonExportFile(context: Context, trackEntity: TrackEntity?): File? {
+    fun createJsonExportFile(context: Context, gpsTrackEntity: GpsTrackEntity?): File? {
         logger.d(TAG, "createJsonExportFile")
 
-        if (trackEntity == null) {
+        if (gpsTrackEntity == null) {
             return null
         }
 
-        val exported = trackEntity.toPojo()
+        val exported = gpsTrackEntity.toPojo()
 
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "track ${exported.uuid}${sanitizeTitle(trackEntity)}.json")
+            val file = File(cacheDir, "track ${exported.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
 
             val objectMapper = ObjectMapper()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
@@ -128,7 +126,7 @@ class ImporterExporter @Inject constructor(
     /**
      * Import a GPS track from JSON.
      */
-    fun loadTrackEntityFromUri(context: Context, uri: Uri): TrackEntity? {
+    fun loadTrackEntityFromUri(context: Context, uri: Uri): GpsTrackEntity? {
         logger.d(TAG, "loadTrackEntityFromUri")
 
         return try {

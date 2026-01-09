@@ -1,0 +1,40 @@
+package com.alflabs.milepost.tracks
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Update
+import com.alflabs.milepost.location.LocationDataList
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface GpsTrackEntityDao {
+    @Query("SELECT id, createdDateISO, trackLabel, summary FROM gps_tracks ORDER BY id DESC")
+    fun getAllDisplayInfo(): Flow<List<TrackDisplayInfo>>
+
+    @Query("SELECT * FROM gps_tracks WHERE id = :id")
+    fun getById(id: Long): Flow<GpsTrackEntity?>
+
+    @Query("SELECT * FROM gps_tracks WHERE uuid = :uuid")
+    suspend fun getByUuid(uuid: String): GpsTrackEntity?
+
+    /** Insert a GpsTrackEntity. Set id to 0 to have it auto-generated. The new id is returned. */
+    @Insert
+    suspend fun insert(track: GpsTrackEntity): Long
+
+    /** Update a GpsTrackEntity with a matching id. */
+    @Update
+    suspend fun update(track: GpsTrackEntity)
+
+    @Query("SELECT id FROM gps_tracks WHERE uuid = :uuid")
+    suspend fun getIdByUuid(uuid: String): Long?
+
+    @Query("UPDATE gps_tracks SET locationList = :locationList WHERE id = :id")
+    suspend fun updateLocationList(id: Long, locationList: LocationDataList)
+
+    @Query("UPDATE gps_tracks SET summary = :summary WHERE id = :id")
+    suspend fun updateSummary(id: Long, summary: TrackSummary)
+
+    @Query("DELETE FROM gps_tracks WHERE id = :id")
+    suspend fun deleteById(id: Long)
+}

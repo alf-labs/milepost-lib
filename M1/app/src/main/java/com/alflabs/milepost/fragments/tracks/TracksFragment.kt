@@ -131,7 +131,7 @@ class TracksFragment : Fragment() {
     }
 
     private fun importJsonLoadUri(uri: Uri) {
-        // 2- When a file is selected, load it in memory using the Jackson library for TrackEntity.class
+        // 2- When a file is selected, load it in memory using the Jackson library for GpsTrackEntity.class
         logger.d(TAG, "@@ ImportJSON 2 - Load URI: $uri")
         val entity = importerExporter.loadTrackEntityFromUri(requireContext(), uri)
         if (entity == null) {

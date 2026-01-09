@@ -36,8 +36,8 @@ import com.alflabs.milepost.location.copy
 import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.location.setFlag
 import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.tracks.TrackEntity
-import com.alflabs.milepost.tracks.TrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import com.alflabs.milepost.tracks.TrackSummary
 import com.alflabs.milepost.tracks.copy
 import com.alflabs.milepost.tracks.trackSummary
@@ -70,13 +70,13 @@ class ReviewFragment : Fragment() {
     @Inject lateinit var logger: ILogger
     @Inject lateinit var importerExporter: ImporterExporter
     @Inject lateinit var appSettings: AppSettings
-    @Inject lateinit var trackEntityDao: TrackEntityDao
+    @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
 
     private var _binding: ReviewFragmentBinding? = null
     private val binding get() = _binding!!
     private val fragmentArgs: ReviewFragmentArgs by navArgs()
     private val viewModel: ReviewViewModel by viewModels()
-    private var trackEntity: TrackEntity? = null
+    private var gpsTrackEntity: GpsTrackEntity? = null
     private var googleMap: GoogleMap? = null
     private var selectedLocationMarker: Marker? = null
     private var useImperialUnits = false
@@ -127,7 +127,7 @@ class ReviewFragment : Fragment() {
                 }
                 binding.summary.text = track?.summary.toText(useImperialUnits)
 
-                trackEntity = track
+                gpsTrackEntity = track
                 reviewList = convert(track?.locationList)
                 updateInterpolatedMp(track, reviewList)
                 adapter.submitList(reviewList)
@@ -151,7 +151,7 @@ class ReviewFragment : Fragment() {
         }
 
         binding.label.setOnClickListener {
-            showReviewTitleDialog(trackEntity)
+            showReviewTitleDialog(gpsTrackEntity)
         }
 
         try {
@@ -185,24 +185,24 @@ class ReviewFragment : Fragment() {
 
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
-                logger.d(TAG, "@@ onPrepareMenu -- track entity enabled = ${trackEntity != null}")
-                menu.findItem(R.id.action_playback).isEnabled = (trackEntity != null)
-                menu.findItem(R.id.action_export_csv).isEnabled = (trackEntity != null)
-                menu.findItem(R.id.action_export_json).isEnabled = (trackEntity != null)
-                menu.findItem(R.id.action_delete).isEnabled = (trackEntity != null)
+                logger.d(TAG, "@@ onPrepareMenu -- track entity enabled = ${gpsTrackEntity != null}")
+                menu.findItem(R.id.action_playback).isEnabled = (gpsTrackEntity != null)
+                menu.findItem(R.id.action_export_csv).isEnabled = (gpsTrackEntity != null)
+                menu.findItem(R.id.action_export_json).isEnabled = (gpsTrackEntity != null)
+                menu.findItem(R.id.action_delete).isEnabled = (gpsTrackEntity != null)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 logger.d(TAG, "@@ onMenuItemSelected: ${menuItem.itemId}")
                 return when (menuItem.itemId) {
                     R.id.action_playback -> {
-                        playbackTrack(trackEntity)
+                        playbackTrack(gpsTrackEntity)
                         true
                     }
 
                     R.id.action_export_csv -> {
                         val exportFile =
-                            importerExporter.createCsvExportFile(requireContext(), trackEntity)
+                            importerExporter.createCsvExportFile(requireContext(), gpsTrackEntity)
                         exportFile?.let {
                             importerExporter.shareFile(requireContext(), it)
                         }
@@ -211,7 +211,7 @@ class ReviewFragment : Fragment() {
 
                     R.id.action_export_json -> {
                         val exportFile =
-                            importerExporter.createJsonExportFile(requireContext(), trackEntity)
+                            importerExporter.createJsonExportFile(requireContext(), gpsTrackEntity)
                         exportFile?.let {
                             importerExporter.shareFile(requireContext(), it)
                         }
@@ -219,7 +219,7 @@ class ReviewFragment : Fragment() {
                     }
 
                     R.id.action_delete -> {
-                        askAndMaybeDeleteTrack(trackEntity)
+                        askAndMaybeDeleteTrack(gpsTrackEntity)
                         true
                     }
 
@@ -235,7 +235,7 @@ class ReviewFragment : Fragment() {
         _binding = null
     }
 
-    private fun playbackTrack(track: TrackEntity?) {
+    private fun playbackTrack(track: GpsTrackEntity?) {
         if (track == null) return
         lifecycleScope.launch {
             logger.d(TAG, "@@ Set prefs Playback track: ${track.id}")
@@ -245,7 +245,7 @@ class ReviewFragment : Fragment() {
         }
     }
 
-    private fun askAndMaybeDeleteTrack(track: TrackEntity?) {
+    private fun askAndMaybeDeleteTrack(track: GpsTrackEntity?) {
         if (track == null) return
 
         AlertDialog.Builder(requireContext())
@@ -257,7 +257,7 @@ class ReviewFragment : Fragment() {
                         logger.d(TAG, "@@ Clear prefs Playback track: -1")
                         appSettings.setPlaybackTrackId(-1)
                     }
-                    trackEntityDao.deleteById(track.id)
+                    gpsTrackEntityDao.deleteById(track.id)
                     findNavController().popBackStack()
                 }
             }
@@ -265,7 +265,7 @@ class ReviewFragment : Fragment() {
             .show()
     }
 
-    private fun showReviewTitleDialog(track: TrackEntity?) {
+    private fun showReviewTitleDialog(track: GpsTrackEntity?) {
         if (track == null) return
 
         val dialogView = layoutInflater.inflate(R.layout.review_title_dialog, null)
@@ -329,19 +329,19 @@ class ReviewFragment : Fragment() {
                 logger.d(TAG, "@@  MP End Value: $newMpEnd")
 
                 var changed = false
-                var newTrackEntity: TrackEntity = track
+                var newGpsTrackEntity: GpsTrackEntity = track
 
                 if (newLabel != track.trackLabel) {
                     changed = true
-                    newTrackEntity = newTrackEntity.copy(trackLabel = newLabel)
+                    newGpsTrackEntity = newGpsTrackEntity.copy(trackLabel = newLabel)
                 }
                 if (newStartLabel != track.startLabel) {
                     changed = true
-                    newTrackEntity = newTrackEntity.copy(startLabel = newStartLabel)
+                    newGpsTrackEntity = newGpsTrackEntity.copy(startLabel = newStartLabel)
                 }
                 if (newEndLabel != track.endLabel) {
                     changed = true
-                    newTrackEntity = newTrackEntity.copy(endLabel = newEndLabel)
+                    newGpsTrackEntity = newGpsTrackEntity.copy(endLabel = newEndLabel)
                 }
                 if (track.locationList != null && (newMpStart != mpStart || newMpEnd != mpEnd)) {
                     changed = true
@@ -371,11 +371,11 @@ class ReviewFragment : Fragment() {
                         }
                         listBuilder.setLocations(idx, loc)
                     }
-                    newTrackEntity = newTrackEntity.copy(locationList = listBuilder.build())
+                    newGpsTrackEntity = newGpsTrackEntity.copy(locationList = listBuilder.build())
                 }
                 if (changed) {
                     lifecycleScope.launch {
-                        trackEntityDao.update(newTrackEntity)
+                        gpsTrackEntityDao.update(newGpsTrackEntity)
                     }
                 }
             }
@@ -385,7 +385,7 @@ class ReviewFragment : Fragment() {
 
     private fun showReviewMpDialog(item: ReviewLocationData) {
         val index = item.locIdx
-        val track = trackEntity
+        val track = gpsTrackEntity
         if (index < 0 || item.data == null || track == null) return
         val ld: LocationData = item.data
 
@@ -437,7 +437,7 @@ class ReviewFragment : Fragment() {
                     listBuilder.setLocations(index, loc)
                     val newTrackEntity = track.copy(locationList = listBuilder.build())
                     lifecycleScope.launch {
-                        trackEntityDao.update(newTrackEntity)
+                        gpsTrackEntityDao.update(newTrackEntity)
                     }
                 }
             }
@@ -467,7 +467,7 @@ class ReviewFragment : Fragment() {
 
     fun loadMapTrack() {
         val map = googleMap ?: return
-        val track = trackEntity ?: return
+        val track = gpsTrackEntity ?: return
 
         try {
             map.clear()
@@ -527,7 +527,7 @@ class ReviewFragment : Fragment() {
         }
     }
 
-    fun updateTrackSummary(track: TrackEntity?) {
+    fun updateTrackSummary(track: GpsTrackEntity?) {
         logger.d(TAG, "@@ updateTrackSummary")
         if (track == null) return
 
@@ -549,12 +549,12 @@ class ReviewFragment : Fragment() {
                 logger.d(TAG, "@@ Summary Changed --> Update Summary from [${
                     currentSummary.toText(useImperialUnits)}] to [${
                     newSummary.toText(useImperialUnits)}]")
-                trackEntityDao.updateSummary(track.id, newSummary)
+                gpsTrackEntityDao.updateSummary(track.id, newSummary)
             }
         }
     }
 
-    fun updateInterpolatedMp(track: TrackEntity?, locList: List<ReviewLocationData>) {
+    fun updateInterpolatedMp(track: GpsTrackEntity?, locList: List<ReviewLocationData>) {
         logger.d(TAG, "@@ updateInterpolatedMp")
         if (track == null || track.locationList == null) return
 
@@ -596,13 +596,13 @@ class ReviewFragment : Fragment() {
                 }
             )
             lifecycleScope.launch {
-                trackEntityDao.update(newTrackEntity)
+                gpsTrackEntityDao.update(newTrackEntity)
             }
         }
     }
 }
 
-internal fun computeTrackLengthMeters(track: TrackEntity): Float {
+internal fun computeTrackLengthMeters(track: GpsTrackEntity): Float {
     track.summary?.let { summary ->
         if (summary.hasLengthM()) {
             return@computeTrackLengthMeters summary.lengthM
@@ -667,7 +667,7 @@ private fun toLocation(latitude: Double, longitude: Double): Location {
     return location
 }
 
-internal fun computeTrackSummary(currentSummary: TrackSummary, track: TrackEntity): TrackSummary {
+internal fun computeTrackSummary(currentSummary: TrackSummary, track: GpsTrackEntity): TrackSummary {
     var mpMin: Float? = if (currentSummary.hasMpMin()) currentSummary.mpMin else null
     var mpMax: Float? = if (currentSummary.hasMpMax()) currentSummary.mpMax else null
     var lengthM = 0f

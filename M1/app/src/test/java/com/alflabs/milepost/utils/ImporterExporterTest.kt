@@ -9,7 +9,7 @@ import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.locationDataList
 import com.alflabs.milepost.location.speedBearingData
-import com.alflabs.milepost.tracks.TrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.trackSummary
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
@@ -28,7 +28,7 @@ class ImporterExporterTest {
     private val fakeLogger = FakeLoggerModule.providesLogger() as StringLogger
     private val fakeFileOps = FakeFileOpsModule.providesFileOps() as FakeFileOps
     private val importerExporter = ImporterExporter(fakeLogger, fakeFileOps)
-    private lateinit var trackEntity: TrackEntity
+    private lateinit var gpsTrackEntity: GpsTrackEntity
 
     @Before
     fun setup() {
@@ -70,7 +70,7 @@ class ImporterExporterTest {
             locations.add(location3)
         }
 
-        trackEntity = TrackEntity(
+        gpsTrackEntity = GpsTrackEntity(
             uuid = "test-uuid-1234",
             trackLabel = """  A fairly long Test+!@#$%^&*()!!=\/<>.,;':"[|]?-Track name 42 that is more than 64 characters  """,
             startLabel = "Start Here",
@@ -93,7 +93,7 @@ class ImporterExporterTest {
         val mockContext = mock<Context> {
             on { cacheDir } doReturn File("/tmp")
         }
-        val file = importerExporter.createCsvExportFile(mockContext, trackEntity)
+        val file = importerExporter.createCsvExportFile(mockContext, gpsTrackEntity)
         assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createCsvExportFile")
         assertThat(file).isNotNull()
         file!!
@@ -113,7 +113,7 @@ class ImporterExporterTest {
         val mockContext = mock<Context> {
             on { cacheDir } doReturn File("/tmp")
         }
-        val file = importerExporter.createJsonExportFile(mockContext, trackEntity)
+        val file = importerExporter.createJsonExportFile(mockContext, gpsTrackEntity)
         assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createJsonExportFile")
         assertThat(file).isNotNull()
         file!!
@@ -226,7 +226,7 @@ class ImporterExporterTest {
         assertThat(loadedTrackEntity).isNotNull()
         loadedTrackEntity!!
         // The summary is not part of the JSON, so copy it from the original for comparison.
-        val expectedTrackEntity = trackEntity.copy(summary = loadedTrackEntity.summary)
+        val expectedTrackEntity = gpsTrackEntity.copy(summary = loadedTrackEntity.summary)
         assertThat(loadedTrackEntity).isEqualTo(expectedTrackEntity)
     }
 }

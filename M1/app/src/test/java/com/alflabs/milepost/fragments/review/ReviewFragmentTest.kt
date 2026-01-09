@@ -5,7 +5,7 @@ import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
-import com.alflabs.milepost.tracks.TrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.TrackSummary
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
@@ -36,7 +36,7 @@ class ReviewFragmentTest {
 
     @Test
     fun computeTrackSummary_withEmptyTrack() {
-        val track = TrackEntity(
+        val track = GpsTrackEntity(
             id = 1,
             createdDateISO = "2021-02-03T04:05:06Z",
         )
@@ -58,7 +58,7 @@ class ReviewFragmentTest {
             mp = 5f
         }
         val locationList = LocationDataList.newBuilder().addLocations(location).build()
-        val track = TrackEntity(
+        val track = GpsTrackEntity(
             id = 1,
             locationList = locationList,
             createdDateISO = "2021-02-03T04:05:06Z",
@@ -100,7 +100,7 @@ class ReviewFragmentTest {
             }
         )
         val locationList = LocationDataList.newBuilder().addAllLocations(locations).build()
-        val track = TrackEntity(
+        val track = GpsTrackEntity(
             id = 1,
             locationList = locationList,
             createdDateISO = "2021-02-03T04:05:06Z",
@@ -132,7 +132,7 @@ class ReviewFragmentTest {
             }
         )
         val locationList = LocationDataList.newBuilder().addAllLocations(locations).build()
-        val track = TrackEntity(
+        val track = GpsTrackEntity(
             id = 1,
             locationList = locationList,
             createdDateISO = "2021-02-03T04:05:06Z",
@@ -166,7 +166,7 @@ class ReviewFragmentTest {
             }
         )
         val locationList = LocationDataList.newBuilder().addAllLocations(locations).build()
-        val track = TrackEntity(
+        val track = GpsTrackEntity(
             id = 1,
             locationList = locationList,
             createdDateISO = "2021-02-03T04:05:06Z",

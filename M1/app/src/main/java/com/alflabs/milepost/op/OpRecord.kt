@@ -5,8 +5,8 @@ import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.LocationDistance
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
-import com.alflabs.milepost.tracks.TrackEntity
-import com.alflabs.milepost.tracks.TrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Schedulers
 import com.alflabs.utils.IClock
@@ -19,17 +19,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class OpRecord @AssistedInject constructor(
-    @Assisted val track: TrackEntity,
+    @Assisted val track: GpsTrackEntity,
     private val clock: IClock,
     private val logger: ILogger,
     private val globalState: GlobalState,
     private val appSettings: AppSettings,
-    private val trackEntityDao: TrackEntityDao,
+    private val gpsTrackEntityDao: GpsTrackEntityDao,
 ) : IOpActor {
 
     @AssistedFactory
     interface Factory {
-        fun create(track: TrackEntity): OpRecord
+        fun create(track: GpsTrackEntity): OpRecord
     }
 
     companion object {
@@ -148,7 +148,7 @@ class OpRecord @AssistedInject constructor(
         scope.launch {
             needsWrite = false
             logger.d(TAG, "Writing ${locationDataListBuilder.locationsCount} points from ${Thread.currentThread()}")
-            trackEntityDao.updateLocationList(recordId, locationDataListBuilder.build())
+            gpsTrackEntityDao.updateLocationList(recordId, locationDataListBuilder.build())
             nextWriteTS = clock.elapsedRealtime() + WRITE_INTERVAL_MS
         }
     }

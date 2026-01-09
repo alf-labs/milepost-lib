@@ -14,8 +14,8 @@ import java.util.UUID
 
 // Doc: https://developer.android.com/training/data-storage/room/defining-data
 
-@Entity(tableName = "tracks")
-data class TrackEntity(
+@Entity(tableName = "gps_tracks")
+data class GpsTrackEntity(
     // Note: according to the autoGenerate doc, setting the value to 0 forces it to be generated.
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
@@ -61,7 +61,7 @@ data class TrackEntity(
     )
 }
 
-/// A mirror of [TrackEntity] for JSON import/export.
+/// A mirror of [GpsTrackEntity] for JSON import/export.
 @JsonIgnoreProperties(value = ["id"])
 data class TrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("uuid")             val uuid: String,
@@ -73,7 +73,7 @@ data class TrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("endLabel")         val endLabel: String? = null,
     @param:JsonProperty("locationList")     val locationList: LocationDataListPojo? = null,
 ) {
-    fun toProto() = TrackEntity(
+    fun toProto() = GpsTrackEntity(
         id = 0,
         uuid = uuid,
         createdDateISO = createdDateISO,
@@ -86,7 +86,7 @@ data class TrackEntityPojo @JsonCreator constructor(
     )
 }
 
-// A minimal version of TrackEntity for displaying in the TracksFragment.
+// A minimal version of GpsTrackEntity for displaying in the TracksFragment.
 data class TrackDisplayInfo(
     val id: Long = 0,
     val createdDateISO: String,

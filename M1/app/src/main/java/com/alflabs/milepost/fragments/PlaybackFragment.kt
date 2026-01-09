@@ -17,8 +17,8 @@ import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
-import com.alflabs.milepost.tracks.TrackEntity
-import com.alflabs.milepost.tracks.TrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdate
@@ -62,9 +62,9 @@ class PlaybackFragment : SensorsFragment() {
     override val speedAccText get() = null
     override val bearingAccText get() = null
 
-    @Inject lateinit var trackEntityDao: TrackEntityDao
+    @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
 
-    private var playbackTrack: TrackEntity? = null
+    private var playbackTrack: GpsTrackEntity? = null
     private var startLabel = "Startbound"
     private var endLabel = "Endbound"
     private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
@@ -123,7 +123,7 @@ class PlaybackFragment : SensorsFragment() {
                     logger.d(TAG, "@@ Playback onResume: trackId = $trackId")
 
                     if (trackId != -1L) {
-                        playbackTrack = trackEntityDao.getById(trackId).first()
+                        playbackTrack = gpsTrackEntityDao.getById(trackId).first()
                     }
                 }
             }

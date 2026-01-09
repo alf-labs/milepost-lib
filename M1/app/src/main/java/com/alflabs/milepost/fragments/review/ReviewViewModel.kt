@@ -6,14 +6,14 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
-import com.alflabs.milepost.tracks.TrackEntity
-import com.alflabs.milepost.tracks.TrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class ReviewViewModel @Inject constructor(
-    private val trackEntityDao: TrackEntityDao
+    private val gpsTrackEntityDao: GpsTrackEntityDao
 ) : ViewModel() {
 
     companion object {
@@ -22,8 +22,8 @@ class ReviewViewModel @Inject constructor(
 
     private val _trackId = MutableLiveData<Long>()
 
-    val track: LiveData<TrackEntity?> = _trackId.switchMap { id ->
-        trackEntityDao.getById(id).asLiveData()
+    val track: LiveData<GpsTrackEntity?> = _trackId.switchMap { id ->
+        gpsTrackEntityDao.getById(id).asLiveData()
     }
 
     fun loadTrack(trackId: Long) {

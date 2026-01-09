@@ -2,7 +2,7 @@ package com.alflabs.milepost.op
 
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
-import com.alflabs.milepost.tracks.TrackEntity
+import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -59,7 +59,7 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.IDLE)
     }
 
-    suspend fun startRecord(track: TrackEntity) {
+    suspend fun startRecord(track: GpsTrackEntity) {
         if (operatorMode == OperatorMode.RECORD) return
         currentOp.stop()
         logger.d(TAG, "startRecord id=${track.id}")
@@ -75,7 +75,7 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.IDLE)
     }
 
-    fun startPlayback(track: TrackEntity) {
+    fun startPlayback(track: GpsTrackEntity) {
         if (operatorMode == OperatorMode.PLAYBACK) return
         currentOp.stop()
         logger.d(TAG, "startPlayback id=${track.id}")
@@ -83,7 +83,7 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.PLAYBACK)
     }
 
-    fun getPlaybackTrack(): TrackEntity? {
+    fun getPlaybackTrack(): GpsTrackEntity? {
         return if (currentOp is OpPlayback) {
             (currentOp as OpPlayback).playbackTrack
         } else {

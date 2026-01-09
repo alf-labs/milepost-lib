@@ -17,8 +17,8 @@ import org.junit.runner.RunWith
 import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
-class TrackEntityDaoTest {
-    private lateinit var dao: TrackEntityDao
+class GpsTrackEntityDaoTest {
+    private lateinit var dao: GpsTrackEntityDao
     private lateinit var db: AppDatabase
 
     @Before
@@ -38,7 +38,7 @@ class TrackEntityDaoTest {
     @Throws(Exception::class)
     fun insert_newEntity() {
         runBlocking {
-            val track = TrackEntity(
+            val track = GpsTrackEntity(
                 id = 0, // auto-generates a new unique id.
                 uuid = "test-uuid-1",
                 trackLabel = "Test Track 1",
@@ -56,7 +56,7 @@ class TrackEntityDaoTest {
     @Throws(Exception::class)
     fun insert_dupEntity() {
         runBlocking {
-            val track0 = TrackEntity(
+            val track0 = GpsTrackEntity(
                 id = 0, // auto-generates a new unique id.
                 uuid = "test-uuid-1",
                 trackLabel = "Test Track 1",
@@ -71,13 +71,13 @@ class TrackEntityDaoTest {
 
             // Try to insert the same track again with an existing id
             // This next call fails with exception message:
-            // android.database.sqlite.SQLiteConstraintException: UNIQUE constraint failed: tracks.id
+            // android.database.sqlite.SQLiteConstraintException: UNIQUE constraint failed: gps_tracks.id
             val thrownException = assertThrows(SQLiteConstraintException::class.java) {
                 runBlocking {
                     dao.insert(track1)
                 }
             }
-            assertThat(thrownException).hasMessageThat().contains("UNIQUE constraint failed: tracks.id")
+            assertThat(thrownException).hasMessageThat().contains("UNIQUE constraint failed: gps_tracks.id")
 
         }
     }

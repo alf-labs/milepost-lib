@@ -22,7 +22,7 @@ import com.alflabs.milepost.location.speedBearingData
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.mp.MpActivity
-import com.alflabs.milepost.tracks.TrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -63,7 +63,7 @@ class LocationService : Service() {
     @Inject lateinit var locationRequest: LocationRequest
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
-    @Inject lateinit var trackEntityDao: TrackEntityDao
+    @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
     @Inject lateinit var appSettings: AppSettings
 
     private lateinit var locationCallback: LocationCallback
