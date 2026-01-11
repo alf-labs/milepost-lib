@@ -135,7 +135,7 @@ class TracksFragment : Fragment() {
         logger.d(TAG, "@@ ImportJSON 2 - Load URI: $uri")
         val entity = importerExporter.loadTrackEntityFromUri(requireContext(), uri)
         if (entity == null) {
-            Toast.makeText(requireContext(), "Invalid JSON", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Failed to load JSON", Toast.LENGTH_LONG).show()
             return
         }
 
