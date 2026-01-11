@@ -23,17 +23,17 @@ class Converters {
     }
 
     @TypeConverter
-    fun fromTrackSummary(value: TrackSummary?): String? {
+    fun fromTrackSummary(value: GpsTrackSummary?): String? {
         return value?.let {
             Base64.encode(it.toByteArray())
         }
     }
 
     @TypeConverter
-    fun toTrackSummary(value: String?): TrackSummary? {
+    fun toTrackSummary(value: String?): GpsTrackSummary? {
         return value?.let {
             val decoded = Base64.decode(it)
-            TrackSummary.parseFrom(decoded)
+            GpsTrackSummary.parseFrom(decoded)
         }
     }
 }

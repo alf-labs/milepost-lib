@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.alflabs.milepost.tracks.TrackDisplayInfo
 import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.GpsTrackEntityDao
-import com.alflabs.milepost.tracks.trackSummary
+import com.alflabs.milepost.tracks.gpsTrackSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -29,7 +29,7 @@ class TracksViewModel @Inject constructor(
             var track = GpsTrackEntity(
                 trackLabel = "Track ${Random.nextInt(1000)}",
                 createdDateISO = Date().toString(),
-                summary = trackSummary {
+                summary = gpsTrackSummary {
                     mpMin = min(a, b)
                     mpMax = max(a, b)
                 },

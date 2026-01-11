@@ -6,7 +6,7 @@ import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.TrackSummary
+import com.alflabs.milepost.tracks.GpsTrackSummary
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -40,7 +40,7 @@ class ReviewFragmentTest {
             id = 1,
             createdDateISO = "2021-02-03T04:05:06Z",
         )
-        val summary = computeTrackSummary(TrackSummary.getDefaultInstance(), track)
+        val summary = computeTrackSummary(GpsTrackSummary.getDefaultInstance(), track)
         expect.that(summary.hasMpMin()).isFalse()
         expect.that(summary.hasMpMax()).isFalse()
         expect.that(summary.lengthM).isEqualTo(0f)
@@ -64,7 +64,7 @@ class ReviewFragmentTest {
             createdDateISO = "2021-02-03T04:05:06Z",
         )
 
-        val summary = computeTrackSummary(TrackSummary.getDefaultInstance(), track)
+        val summary = computeTrackSummary(GpsTrackSummary.getDefaultInstance(), track)
         expect.that(summary.mpMin).isEqualTo(5f)
         expect.that(summary.mpMax).isEqualTo(5f)
         expect.that(summary.lengthM).isEqualTo(0f)
@@ -106,7 +106,7 @@ class ReviewFragmentTest {
             createdDateISO = "2021-02-03T04:05:06Z",
             )
 
-        val summary = computeTrackSummary(TrackSummary.getDefaultInstance(), track)
+        val summary = computeTrackSummary(GpsTrackSummary.getDefaultInstance(), track)
         expect.that(summary.mpMin).isEqualTo(10f)
         expect.that(summary.mpMax).isEqualTo(12f)
         expect.that(summary.durationS).isEqualTo(2f)
@@ -138,7 +138,7 @@ class ReviewFragmentTest {
             createdDateISO = "2021-02-03T04:05:06Z",
         )
 
-        val summary = computeTrackSummary(TrackSummary.getDefaultInstance(), track)
+        val summary = computeTrackSummary(GpsTrackSummary.getDefaultInstance(), track)
         expect.that(summary.hasMpMin()).isFalse()
         expect.that(summary.hasMpMax()).isFalse()
         expect.that(summary.durationS).isEqualTo(1f)
@@ -172,7 +172,7 @@ class ReviewFragmentTest {
             createdDateISO = "2021-02-03T04:05:06Z",
         )
 
-        val currentSummary = TrackSummary.newBuilder().setMpMin(99f).setDurationS(5f).build()
+        val currentSummary = GpsTrackSummary.newBuilder().setMpMin(99f).setDurationS(5f).build()
 
         val summary = computeTrackSummary(currentSummary, track)
         expect.that(summary.mpMin).isEqualTo(99f) // Keeps existing mpMin

@@ -44,7 +44,7 @@ data class GpsTrackEntity(
 
     // Optional summary info for list tracks fragment.
     @ColumnInfo
-    val summary: TrackSummary? = null,
+    val summary: GpsTrackSummary? = null,
 
     // Actual location data (empty before first gps fix).
     @ColumnInfo
@@ -91,5 +91,5 @@ data class TrackDisplayInfo(
     val id: Long = 0,
     val createdDateISO: String,
     val trackLabel: String? = null,
-    val summary: TrackSummary? = null,
+    val summary: GpsTrackSummary? = null,
 )

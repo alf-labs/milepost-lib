@@ -33,7 +33,7 @@ class ConvertersTest {
     fun testTrackSummaryConverter1() {
         val converters = Converters()
 
-        val originalSummary = trackSummary {
+        val originalSummary = gpsTrackSummary {
             mpMin = 1.0f
             mpMax = 2.0f
             lengthM = 3.0f
@@ -51,7 +51,7 @@ class ConvertersTest {
     fun testTrackSummaryConverter2() {
         val converters = Converters()
 
-        val originalSummary = trackSummary {
+        val originalSummary = gpsTrackSummary {
             mpMin = 1.0f
             mpMax = 2.0f
         }

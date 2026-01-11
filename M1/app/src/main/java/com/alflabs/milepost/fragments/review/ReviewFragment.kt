@@ -38,9 +38,9 @@ import com.alflabs.milepost.location.setFlag
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.GpsTrackEntityDao
-import com.alflabs.milepost.tracks.TrackSummary
+import com.alflabs.milepost.tracks.GpsTrackSummary
 import com.alflabs.milepost.tracks.copy
-import com.alflabs.milepost.tracks.trackSummary
+import com.alflabs.milepost.tracks.gpsTrackSummary
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
@@ -531,7 +531,7 @@ class ReviewFragment : Fragment() {
         logger.d(TAG, "@@ updateTrackSummary")
         if (track == null) return
 
-        val currentSummary = track.summary ?: TrackSummary.getDefaultInstance()
+        val currentSummary = track.summary ?: GpsTrackSummary.getDefaultInstance()
 
         // Do nothing if all fields are set
         if (currentSummary.hasMpMin()
@@ -577,7 +577,7 @@ class ReviewFragment : Fragment() {
             val newLocList = listBuilder.build()
 
             // Update the track summary to use the min/max new MPs
-            val currentSummary = track.summary ?: TrackSummary.getDefaultInstance()
+            val currentSummary = track.summary ?: GpsTrackSummary.getDefaultInstance()
             var mpMin: Float? = null
             var mpMax: Float? = null
             newLocList.locationsList.forEach { data ->
@@ -667,7 +667,7 @@ private fun toLocation(latitude: Double, longitude: Double): Location {
     return location
 }
 
-internal fun computeTrackSummary(currentSummary: TrackSummary, track: GpsTrackEntity): TrackSummary {
+internal fun computeTrackSummary(currentSummary: GpsTrackSummary, track: GpsTrackEntity): GpsTrackSummary {
     var mpMin: Float? = if (currentSummary.hasMpMin()) currentSummary.mpMin else null
     var mpMax: Float? = if (currentSummary.hasMpMax()) currentSummary.mpMax else null
     var lengthM = 0f
@@ -702,7 +702,7 @@ internal fun computeTrackSummary(currentSummary: TrackSummary, track: GpsTrackEn
         lastLatLong = ll
     }
 
-    return trackSummary {
+    return gpsTrackSummary {
         mpMin?.let { this.mpMin = it }
         mpMax?.let { this.mpMax = it }
         this.lengthM = lengthM

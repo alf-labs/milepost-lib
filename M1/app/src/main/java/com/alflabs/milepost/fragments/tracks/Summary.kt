@@ -1,9 +1,9 @@
 package com.alflabs.milepost.fragments.tracks
 
-import com.alflabs.milepost.tracks.TrackSummary
+import com.alflabs.milepost.tracks.GpsTrackSummary
 import com.alflabs.milepost.utils.Units
 
-fun TrackSummary?.toText(useImperialUnits: Boolean): CharSequence {
+fun GpsTrackSummary?.toText(useImperialUnits: Boolean): CharSequence {
     val s = this ?: return "No summary found"
     return String.format(
         "MP: %s - %s, %s %s, %s s",

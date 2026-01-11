@@ -10,7 +10,7 @@ import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.locationDataList
 import com.alflabs.milepost.location.speedBearingData
 import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.trackSummary
+import com.alflabs.milepost.tracks.gpsTrackSummary
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat
@@ -77,7 +77,7 @@ class ImporterExporterTest {
             endLabel = "End There",
             locationList = locations,
             // This summary should not be exported
-            summary = trackSummary {
+            summary = gpsTrackSummary {
                 mpMin = 10f
                 mpMax = 42f
                 lengthM = 2400f

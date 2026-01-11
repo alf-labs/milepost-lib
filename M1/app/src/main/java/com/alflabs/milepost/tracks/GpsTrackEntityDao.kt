@@ -33,7 +33,7 @@ interface GpsTrackEntityDao {
     suspend fun updateLocationList(id: Long, locationList: LocationDataList)
 
     @Query("UPDATE gps_tracks SET summary = :summary WHERE id = :id")
-    suspend fun updateSummary(id: Long, summary: TrackSummary)
+    suspend fun updateSummary(id: Long, summary: GpsTrackSummary)
 
     @Query("DELETE FROM gps_tracks WHERE id = :id")
     suspend fun deleteById(id: Long)
