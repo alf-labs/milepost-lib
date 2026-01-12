@@ -18,7 +18,7 @@ import com.alflabs.milepost.fragments.PermissionsFragment
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
-import com.alflabs.milepost.location.speedBearingData
+import com.alflabs.milepost.location.speedData
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.mp.MpActivity
@@ -176,15 +176,11 @@ private fun toLocationData(location: Location): LocationData = locationData {
         }
     }
 
-    if (location.hasSpeed() && location.hasBearing()) {
-        speedBearing = speedBearingData {
+    if (location.hasSpeed()) {
+        speed = speedData {
             speedMps = location.speed
-            bearingAcc = location.bearing
             if (location.hasSpeedAccuracy()) {
                 speedAcc = location.speedAccuracyMetersPerSecond
-            }
-            if (location.hasBearingAccuracy()) {
-                bearingAcc = location.bearingAccuracyDegrees
             }
         }
     }

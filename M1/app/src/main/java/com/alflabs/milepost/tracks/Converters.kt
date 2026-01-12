@@ -18,6 +18,9 @@ class Converters {
     fun toLocationDataList(value: String?): LocationDataList? {
         return value?.let {
             val decoded = Base64.decode(it)
+            // Note: Protobuf Lite does not have DiscardUnknownFieldsParser. Unknown fields (e.g.
+            // deleted/reserved fields) are still accumulated as "unknown" fields when
+            // deserializing.
             LocationDataList.parseFrom(decoded)
         }
     }

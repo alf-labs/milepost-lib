@@ -8,7 +8,7 @@ import com.alflabs.milepost.dagger.FakeLoggerModule
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.locationDataList
-import com.alflabs.milepost.location.speedBearingData
+import com.alflabs.milepost.location.speedData
 import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.gpsTrackSummary
 import com.alflabs.utils.FakeFileOps
@@ -38,7 +38,7 @@ class ImporterExporterTest {
                 longitude = 121.9652
                 timestampMillis = Instant.parse("2020-01-02T03:04:05Z").toEpochMilli()
             }
-            speedBearing = speedBearingData {
+            speed = speedData {
                 speedMps = 4.4704f
             }
             mp = 10.0f
@@ -58,7 +58,7 @@ class ImporterExporterTest {
                 longitude = 121.8885
                 timestampMillis = Instant.parse("2020-01-02T03:24:05Z").toEpochMilli()
             }
-            speedBearing = speedBearingData {
+            speed = speedData {
                 speedMps = 8.9408f
             }
             mp = 42.0f
@@ -134,9 +134,8 @@ class ImporterExporterTest {
                     "latitude" : 37.5805,
                     "longitude" : 121.9652
                   },
-                  "speedBearing" : {
-                    "speedMps" : 4.4704,
-                    "bearingDeg" : 0.0
+                  "speed" : {
+                    "speedMps" : 4.4704
                   },
                   "mp" : 10.0,
                   "flags" : 0
@@ -153,9 +152,8 @@ class ImporterExporterTest {
                     "latitude" : 37.594,
                     "longitude" : 121.8885
                   },
-                  "speedBearing" : {
-                    "speedMps" : 8.9408,
-                    "bearingDeg" : 0.0
+                  "speed" : {
+                    "speedMps" : 8.9408
                   },
                   "mp" : 42.0,
                   "flags" : 0
@@ -166,7 +164,7 @@ class ImporterExporterTest {
     }
 
     @Test
-    fun loadTrackEntityFromUri_loadsCorrectTrackEntity() {
+    fun loadTrackEntityFromUri_loadsOldFormatWithBearing() {
         val jsonString = """
             {
               "id" : 0,
@@ -205,6 +203,69 @@ class ImporterExporterTest {
                   "speedBearing" : {
                     "speedMps" : 8.9408,
                     "bearingDeg" : 0.0
+                  },
+                  "mp" : 42.0,
+                  "flags" : 0
+                } ]
+              }
+            }
+        """.trimIndent()
+        val mockUri = mock<Uri>()
+        val mockContentResolver = mock<android.content.ContentResolver> {
+            on { openInputStream(mockUri) } doReturn ByteArrayInputStream(jsonString.toByteArray())
+        }
+        val mockContext = mock<Context> {
+            on { contentResolver } doReturn mockContentResolver
+        }
+
+        val loadedTrackEntity = importerExporter.loadTrackEntityFromUri(mockContext, mockUri)
+
+        assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: loadTrackEntityFromUri")
+        assertThat(loadedTrackEntity).isNotNull()
+        loadedTrackEntity!!
+        // The summary is not part of the JSON, so copy it from the original for comparison.
+        val expectedTrackEntity = gpsTrackEntity.copy(summary = loadedTrackEntity.summary)
+        assertThat(loadedTrackEntity).isEqualTo(expectedTrackEntity)
+    }
+
+    @Test
+    fun loadTrackEntityFromUri_loadsCorrectTrackEntity() {
+        val jsonString = """
+            {
+              "id" : 0,
+              "uuid" : "test-uuid-1234",
+              "createdDateISO" : "2021-02-03T04:05:06Z",
+              "updatedDateISO" : "2022-03-04T05:06:07Z",
+              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
+              "startLabel" : "Start Here",
+              "endLabel" : "End There",
+              "locationList" : {
+                "locations" : [ {
+                  "latLong" : {
+                    "timestampMillis" : 1577934245000,
+                    "latitude" : 37.5805,
+                    "longitude" : 121.9652
+                  },
+                  "speed" : {
+                    "speedMps" : 4.4704
+                  },
+                  "mp" : 10.0,
+                  "flags" : 0
+                }, {
+                  "latLong" : {
+                    "timestampMillis" : 1577934845000,
+                    "latitude" : 37.58725,
+                    "longitude" : 121.92685
+                  },
+                  "flags" : 0
+                }, {
+                  "latLong" : {
+                    "timestampMillis" : 1577935445000,
+                    "latitude" : 37.594,
+                    "longitude" : 121.8885
+                  },
+                  "speed" : {
+                    "speedMps" : 8.9408
                   },
                   "mp" : 42.0,
                   "flags" : 0

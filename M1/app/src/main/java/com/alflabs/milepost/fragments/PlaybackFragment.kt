@@ -58,9 +58,7 @@ class PlaybackFragment : SensorsFragment() {
     override val locationText get() = playbackBinding.locationText
     override val locationAccText get() = playbackBinding.locationAccText
     override val speedText get() = playbackBinding.speedText
-    override val bearingText get() = null
     override val speedAccText get() = null
-    override val bearingAccText get() = null
 
     @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
 

@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.alflabs.milepost.location.LatLongDataPojo
 import com.alflabs.milepost.location.LocationDataListPojo
 import com.alflabs.milepost.location.LocationDataPojo
-import com.alflabs.milepost.location.SpeedBearingDataPojo
+import com.alflabs.milepost.location.SpeedDataPojo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -144,11 +144,9 @@ class PojoPerformanceTest {
                     timestampMillis = longVal++,
                     accuracy = fltVal++,
                 ),
-                speedBearing = SpeedBearingDataPojo(
+                speed = SpeedDataPojo(
                     speedMps = fltVal++,
-                    bearingDeg = fltVal++,
                     speedAcc = fltVal++,
-                    bearingAcc = fltVal++,
                 ),
                 mp = fltVal++,
                 flags = 4

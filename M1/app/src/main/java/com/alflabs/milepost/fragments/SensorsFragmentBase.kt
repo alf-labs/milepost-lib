@@ -78,9 +78,7 @@ open abstract class SensorsFragmentBase: Fragment() {
     protected abstract val locationText: TextView
     protected abstract val locationAccText: TextView?
     protected abstract val speedText: TextView
-    protected abstract val bearingText: TextView?
     protected abstract val speedAccText: TextView?
-    protected abstract val bearingAccText: TextView?
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -237,32 +235,21 @@ open abstract class SensorsFragmentBase: Fragment() {
         val instant = Instant.ofEpochMilli(latLong.timestampMillis)
         statusText.text = dateTimeFormatter.format(instant)
 
-        val speedBearing = value.speedBearing
-        if (speedBearing != null) {
+        val speed = value.speed
+        if (speed != null) {
             speedText.text = String.format(
                 Locale.US,
                 "%.1f %s",
-                Units.mpsToUnit(speedBearing.speedMps, useImperialUnits),
+                Units.mpsToUnit(speed.speedMps, useImperialUnits),
                 Units.mpsUnitName(useImperialUnits)
             )
 
-            bearingText?.text = String.format(Locale.US,
-                "%.1f°",
-                speedBearing.bearingDeg)
-
-            speedBearing.speedAcc.let { mps ->
+            speed.speedAcc.let { mps ->
                 speedAccText?.text = String.format(Locale.US,
                     "±%.3f",
                     Units.mpsToUnit(mps, useImperialUnits))
             }
-            speedAccText?.setTextColor(accuracyColor(speedBearing.speedAcc))
-
-            speedBearing.bearingAcc.let { deg ->
-                bearingAccText?.text = String.format(Locale.US,
-                    "±%.3f°",
-                    deg)
-            }
-            bearingAccText?.setTextColor(accuracyColor(speedBearing.bearingAcc))
+            speedAccText?.setTextColor(accuracyColor(speed.speedAcc))
         }
     }
 

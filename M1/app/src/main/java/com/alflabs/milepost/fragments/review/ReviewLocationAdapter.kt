@@ -64,7 +64,7 @@ class ReviewLocationAdapter(
                 binding.latLong.text = "${ld.latLong.latitude}, ${ld.latLong.longitude}"
                 binding.distAcc.text = String.format("%.1f m", ld.latLong.accuracy)
                 binding.speed.text = String.format("%.1f %s",
-                    Units.mpsToUnit(ld.speedBearing.speedMps, useImperialUnits),
+                    Units.mpsToUnit(ld.speed.speedMps, useImperialUnits),
                     Units.mpsUnitName(useImperialUnits)
                 )
                 binding.mp.text = if (ignore) "Ignored" else String.format("%.1f mi", ld.mp)

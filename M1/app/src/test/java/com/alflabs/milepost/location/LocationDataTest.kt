@@ -21,18 +21,14 @@ class LocationDataTest {
     }
 
     @Test
-    fun testSpeedBearingData() {
-        val speedBearingData = speedBearingData {
+    fun testSpeedData() {
+        val speedData = speedData {
             speedMps = 25.0f
-            bearingDeg = 180.0f
             speedAcc = 1.0f
-            bearingAcc = 5.0f
         }
 
-        assertThat(speedBearingData.speedMps).isWithin(0.0f).of(25.0f)
-        assertThat(speedBearingData.bearingDeg).isWithin(0.0f).of(180.0f)
-        assertThat(speedBearingData.speedAcc).isWithin(0.0f).of(1.0f)
-        assertThat(speedBearingData.bearingAcc).isWithin(0.0f).of(5.0f)
+        assertThat(speedData.speedMps).isWithin(0.0f).of(25.0f)
+        assertThat(speedData.speedAcc).isWithin(0.0f).of(1.0f)
     }
 
     @Test
@@ -44,22 +40,20 @@ class LocationDataTest {
             accuracy = 10.0f
         }
 
-        val speedBearingData = speedBearingData {
+        val speedData = speedData {
             speedMps = 25.0f
-            bearingDeg = 180.0f
             speedAcc = 1.0f
-            bearingAcc = 5.0f
         }
 
         val locationData = locationData {
             this.latLong = latLongData
-            this.speedBearing = speedBearingData
+            this.speed = speedData
             mp = 100.0f
             flags = 1
         }
 
         assertThat(locationData.latLong).isEqualTo(latLongData)
-        assertThat(locationData.speedBearing).isEqualTo(speedBearingData)
+        assertThat(locationData.speed).isEqualTo(speedData)
         assertThat(locationData.mp).isWithin(0.0f).of(100.0f)
         assertThat(locationData.flags).isEqualTo(1)
     }

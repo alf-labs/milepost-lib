@@ -36,9 +36,7 @@ open class SensorsFragment: SensorsFragmentBase() {
     override val locationText get() = sensorsBinding.locationText
     override val locationAccText get() = sensorsBinding.locationAccText
     override val speedText get() = sensorsBinding.speedText
-    override val bearingText: TextView?; get() = sensorsBinding.bearingText
     override val speedAccText: TextView?; get() = sensorsBinding.speedAccText
-    override val bearingAccText: TextView?; get() = sensorsBinding.bearingAccText
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

@@ -2,7 +2,9 @@ package com.alflabs.milepost.location
 
 import com.alflabs.serial.SerialReader
 import com.alflabs.serial.SerialWriter
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -41,34 +43,35 @@ data class LocationDataListPojo @JsonCreator constructor(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class LocationDataPojo @JsonCreator constructor(
     @param:JsonProperty("latLong")      val latLong: LatLongDataPojo,
-    @param:JsonProperty("speedBearing") val speedBearing: SpeedBearingDataPojo? = null,
+    @param:JsonAlias("speedBearing")
+    @param:JsonProperty("speed")        val speed: SpeedDataPojo? = null,
     @param:JsonProperty("mp")           val mp: Float? = null,
     @param:JsonProperty("flags")        val flags: Int = 0,
 ) {
     constructor(proto: LocationData) : this(
         LatLongDataPojo(proto.latLong),
-        if (proto.hasSpeedBearing()) SpeedBearingDataPojo(proto.speedBearing) else null,
+        if (proto.hasSpeed()) SpeedDataPojo(proto.speed) else null,
         if (proto.hasMp()) proto.mp else null,
         proto.flags,
     )
 
     fun toProto(): LocationData = locationData {
         latLong = this@LocationDataPojo.latLong.toProto()
-        this@LocationDataPojo.speedBearing?.let { speedBearing = it.toProto() }
+        this@LocationDataPojo.speed?.let { this.speed = it.toProto() }
         this@LocationDataPojo.mp?.let { mp = it }
         flags = this@LocationDataPojo.flags
     }
 
     fun saveInto(writer: SerialWriter) {
         latLong.saveInto(writer)
-        speedBearing?.saveInto(writer)
+        this@LocationDataPojo.speed?.saveInto(writer)
         mp?.let { writer.addFloat("mp", it) }
         writer.addInt("flags", flags)
     }
 
     constructor(reader: SerialReader) : this(
         LatLongDataPojo(reader),
-        if (reader.hasName("speedBearing")) SpeedBearingDataPojo(reader) else null,
+        if (reader.hasName("speed")) SpeedDataPojo(reader) else null,
         if (reader.hasName("mp")) reader.getFloat("mp") else null,
         reader.getInt("flags"),
     )
@@ -111,37 +114,28 @@ data class LatLongDataPojo @JsonCreator constructor(
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class SpeedBearingDataPojo @JsonCreator constructor(
+@JsonIgnoreProperties(value = ["bearingDeg", "bearingAcc"])
+data class SpeedDataPojo @JsonCreator constructor(
     @param:JsonProperty("speedMps")     val speedMps: Float? = null,
-    @param:JsonProperty("bearingDeg")   val bearingDeg: Float? = null,
     @param:JsonProperty("speedAcc")     val speedAcc: Float? = null,
-    @param:JsonProperty("bearingAcc")   val bearingAcc: Float? = null,
 ) {
-    constructor(proto: SpeedBearingData) : this(
+    constructor(proto: SpeedData) : this(
         proto.speedMps,
-        proto.bearingDeg,
         if (proto.hasSpeedAcc()) proto.speedAcc else null,
-        if (proto.hasBearingAcc()) proto.bearingAcc else null,
     )
 
-    fun toProto(): SpeedBearingData = speedBearingData {
-        this@SpeedBearingDataPojo.speedMps?.let { speedMps = it }
-        this@SpeedBearingDataPojo.bearingDeg?.let { bearingDeg = it }
-        this@SpeedBearingDataPojo.speedAcc?.let { speedAcc = it }
-        this@SpeedBearingDataPojo.bearingAcc?.let { bearingAcc = it }
+    fun toProto(): SpeedData = speedData {
+        this@SpeedDataPojo.speedMps?.let { speedMps = it }
+        this@SpeedDataPojo.speedAcc?.let { speedAcc = it }
     }
 
     fun saveInto(writer: SerialWriter) {
         speedMps?.let { writer.addFloat("speedMps", it) }
-        bearingDeg?.let { writer.addFloat("bearingDeg", it) }
         speedAcc?.let { writer.addFloat("speedAcc", it) }
-        bearingAcc?.let { writer.addFloat("bearingAcc", it) }
     }
 
     constructor(reader: SerialReader) : this(
         if (reader.hasName("speedMps")) reader.getFloat("speedMps") else null,
-        if (reader.hasName("bearingDeg")) reader.getFloat("bearingDeg") else null,
         if (reader.hasName("speedAcc")) reader.getFloat("speedAcc") else null,
-        if (reader.hasName("bearingAcc")) reader.getFloat("bearingAcc") else null,
     )
 }

@@ -100,7 +100,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:text=" "
-                android:lines="2"
+                android:lines="1"
                 android:background="@color/colorAccent"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:layout_alignParentTop="true"
@@ -130,30 +130,6 @@
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:layout_toEndOf="@id/center_divider"
                 android:layout_alignTop="@id/center_divider"
-                />
-
-        <TextView
-                android:id="@+id/bearing_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                tools:text="Bearing"
-                android:textColor="@color/gps_value"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:layout_toStartOf="@id/center_divider"
-                android:layout_alignBottom="@id/center_divider"
-                />
-
-        <TextView
-                android:id="@+id/bearing_acc_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                tools:text="accuracy"
-                android:textColor="@color/acc_missing"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:layout_toEndOf="@id/center_divider"
-                android:layout_alignBottom="@id/center_divider"
                 />
 
     </RelativeLayout>

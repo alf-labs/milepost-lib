@@ -74,7 +74,7 @@ class ImporterExporter @Inject constructor(
                 writer.write(csvHeader)
                 locationList.locationsList.forEach { data ->
                     val ll = data.latLong
-                    val sb = if (data.hasSpeedBearing()) data.speedBearing else null
+                    val sb = if (data.hasSpeed()) data.speed else null
                     val speed = if (sb != null) Units.mps_to_mph(sb.speedMps) else ""
                     val mp = if (data.hasMp()) data.mp.toString() else ""
                     val instant = Instant.ofEpochMilli(ll.timestampMillis)

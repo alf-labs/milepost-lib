@@ -7,7 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
-import com.alflabs.milepost.location.speedBearingData
+import com.alflabs.milepost.location.speedData
 import com.alflabs.milepost.tracks.Converters
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
@@ -143,11 +143,9 @@ class ProtobufPerformanceTest {
                     timestampMillis = longVal++
                     accuracy = fltVal++
                 }
-                speedBearing = speedBearingData {
+                speed = speedData {
                     speedMps = fltVal++
-                    bearingDeg = fltVal++
                     speedAcc = fltVal++
-                    bearingAcc = fltVal++
                 }
                 mp = fltVal++
                 flags = 4

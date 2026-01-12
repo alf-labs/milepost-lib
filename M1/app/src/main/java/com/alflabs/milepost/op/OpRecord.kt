@@ -101,8 +101,8 @@ class OpRecord @AssistedInject constructor(
                 } else if (!shouldAdd) {
                     // If the point is closer than the threshold distance but the speed
                     // is valid and has fallen under a 1 m/s threshold, consider adding it.
-                    val newSpeedData = if (newLocation.hasSpeedBearing()) newLocation.speedBearing else null
-                    val lastSpeedData = if (lastLoc.hasSpeedBearing()) lastLoc.speedBearing else null
+                    val newSpeedData = if (newLocation.hasSpeed()) newLocation.speed else null
+                    val lastSpeedData = if (lastLoc.hasSpeed()) lastLoc.speed else null
 
                     var newSpeed = newSpeedData?.speedMps ?: -1f
                     var lastSpeed = lastSpeedData?.speedMps ?: -1f
