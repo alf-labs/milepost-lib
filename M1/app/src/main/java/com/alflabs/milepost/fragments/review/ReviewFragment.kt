@@ -153,6 +153,14 @@ class ReviewFragment : Fragment() {
                 }
                 lifecycleScope.launch {
                     loadMapTrack()
+                    val pos = reviewLocationAdapter?.selectedPosition ?: RecyclerView.NO_POSITION
+                    if (pos != RecyclerView.NO_POSITION) {
+                        logger.d(TAG, "@@ RELOAD - Scroll to position: $pos")
+                        binding.locationsList.scrollToPosition(pos)
+                        reviewList.getOrNull(pos)?.let { item ->
+                            onLocationClicked(item)
+                        }
+                    }
                 }
             }
 
@@ -186,6 +194,7 @@ class ReviewFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         reviewLocationAdapter?.let { adapter ->
+            logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
             outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
     }
