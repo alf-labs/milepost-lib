@@ -4,4 +4,7 @@
     <color name="gps_value">#FF0</color>
     <color name="acc_missing">#F00</color>
     <color name="acc_present">#CCC</color>
+
+    <color name="list_highlight">#5255A6</color>
+
 </resources>

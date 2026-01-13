@@ -22,6 +22,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.ReviewFragmentBinding
 import com.alflabs.milepost.fragments.tracks.toText
@@ -65,6 +66,7 @@ class ReviewFragment : Fragment() {
     companion object {
         private val TAG = ReviewFragment::class.java.simpleName
         private const val MAPS_ZOOM_LEVEL = 15f
+        private const val KEY_SELECTED_POSITION = "selected-position"
     }
 
     @Inject lateinit var logger: ILogger
@@ -76,6 +78,7 @@ class ReviewFragment : Fragment() {
     private val binding get() = _binding!!
     private val fragmentArgs: ReviewFragmentArgs by navArgs()
     private val viewModel: ReviewViewModel by viewModels()
+    private var reviewLocationAdapter: ReviewLocationAdapter? = null
     private var gpsTrackEntity: GpsTrackEntity? = null
     private var googleMap: GoogleMap? = null
     private var selectedLocationMarker: Marker? = null
@@ -102,14 +105,20 @@ class ReviewFragment : Fragment() {
         lifecycleScope.launch {
             useImperialUnits = appSettings.useImperialUnits()
 
-            val adapter = ReviewLocationAdapter(
+            reviewLocationAdapter = ReviewLocationAdapter(
                 useImperialUnits,
                 onMpClicked = ::showReviewMpDialog,
                 onSelection = ::onLocationClicked
             )
+
             val layoutManager = LinearLayoutManager(requireContext())
-            binding.locationsList.adapter = adapter
+            binding.locationsList.adapter = reviewLocationAdapter
             binding.locationsList.layoutManager = layoutManager
+
+            savedInstanceState?.let {
+                val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
+                reviewLocationAdapter?.setSelectedPosition(selectedPosition)
+            }
 
             val dividerItemDecoration = DividerItemDecoration(
                 requireContext(),
@@ -130,7 +139,7 @@ class ReviewFragment : Fragment() {
                 gpsTrackEntity = track
                 reviewList = convert(track?.locationList)
                 updateInterpolatedMp(track, reviewList)
-                adapter.submitList(reviewList)
+                reviewLocationAdapter?.submitList(reviewList)
                 updateTrackSummary(track)
                 logger.d(TAG, "@@ is first load: $firstLoad")
                 if (track != null && firstLoad) {
@@ -172,6 +181,12 @@ class ReviewFragment : Fragment() {
         } catch (e: Exception) {
             googleMap = null
             logger.d(TAG, "@@ onCreate MapView failed", e)
+        }
+    }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        reviewLocationAdapter?.let { adapter ->
+            outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
     }
 

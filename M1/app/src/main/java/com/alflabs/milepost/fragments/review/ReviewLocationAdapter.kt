@@ -1,5 +1,6 @@
 package com.alflabs.milepost.fragments.review
 
+import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.view.LayoutInflater
@@ -8,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.ReviewLocationItemBinding
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.hasFlag
@@ -18,6 +20,20 @@ class ReviewLocationAdapter(
     private val onMpClicked: (ReviewLocationData) -> Unit,
     private val onSelection: (ReviewLocationData) -> Unit
 ) : ListAdapter<ReviewLocationData, ReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
+
+    var selectedPosition = RecyclerView.NO_POSITION
+        private set
+
+    fun setSelectedPosition(position: Int) {
+        val previousPosition = selectedPosition
+        selectedPosition = position
+        if (previousPosition != RecyclerView.NO_POSITION) {
+            notifyItemChanged(previousPosition)
+        }
+        if (selectedPosition != RecyclerView.NO_POSITION) {
+            notifyItemChanged(selectedPosition)
+        }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
         val binding = ReviewLocationItemBinding.inflate(
@@ -30,10 +46,10 @@ class ReviewLocationAdapter(
 
     override fun onBindViewHolder(holder: ReviewViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item)
+        holder.bind(item, position == selectedPosition)
     }
 
-    class ReviewViewHolder(
+    inner class ReviewViewHolder(
         private val binding: ReviewLocationItemBinding,
         private val useImperialUnits: Boolean,
         private val onMpClicked: (ReviewLocationData) -> Unit,
@@ -42,7 +58,7 @@ class ReviewLocationAdapter(
 
         private val italic = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
 
-        fun bind(item: ReviewLocationData) {
+        fun bind(item: ReviewLocationData, isSelected: Boolean) {
             val ld = item.data
             if (ld == null) {
                 binding.index.text = "Idx"
@@ -74,7 +90,18 @@ class ReviewLocationAdapter(
                 }
                 binding.root.setOnClickListener {
                     onSelection(item)
+                    // Highlight the selected item in the recycler view
+                    val currentPosition = adapterPosition
+                    if (currentPosition != RecyclerView.NO_POSITION && currentPosition != selectedPosition) {
+                        setSelectedPosition(currentPosition)
+                    }
                 }
+
+                itemView.setBackgroundColor(if (isSelected) {
+                    itemView.context.getColor(R.color.list_highlight)
+                } else {
+                    Color.TRANSPARENT
+                })
 
                 binding.timestamp.typeface = Typeface.DEFAULT
                 binding.latLong.typeface = Typeface.DEFAULT
