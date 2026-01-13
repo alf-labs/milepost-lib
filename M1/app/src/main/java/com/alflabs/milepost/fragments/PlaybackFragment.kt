@@ -218,7 +218,7 @@ class PlaybackFragment : SensorsFragment() {
         if (!hasBinding) return
 
         lastMp = mp
-        playbackBinding.mpText.text = String.format("MP %.1f", mp.mp)
+        playbackBinding.mpText.text = String.format("MP %.2f", mp.mp)
 
         playbackBinding.directionText.text = when(mp.direction) {
             MpDirection.TO_START -> startLabel

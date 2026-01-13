@@ -67,7 +67,7 @@ class ReviewLocationAdapter(
                     Units.mpsToUnit(ld.speed.speedMps, useImperialUnits),
                     Units.mpsUnitName(useImperialUnits)
                 )
-                binding.mp.text = if (ignore) "Ignored" else String.format("%.1f mi", ld.mp)
+                binding.mp.text = if (ignore) "Ignored" else String.format("%.2f mi", ld.mp)
 
                 binding.mp.setOnClickListener {
                     onMpClicked(item)
