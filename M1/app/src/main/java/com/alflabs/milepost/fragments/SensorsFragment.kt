@@ -37,6 +37,8 @@ open class SensorsFragment: SensorsFragmentBase() {
     override val locationAccText get() = sensorsBinding.locationAccText
     override val speedText get() = sensorsBinding.speedText
     override val speedAccText: TextView?; get() = sensorsBinding.speedAccText
+    override val zoomInButton get() = sensorsBinding.zoomInBtn
+    override val zoomOutButton get() = sensorsBinding.zoomOutBtn
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -92,6 +94,7 @@ open class SensorsFragment: SensorsFragmentBase() {
     override fun setupInitialMapZoom(map: GoogleMap,
                                      position: LatLng,
                                      zoomLevel: Float): CameraUpdate {
+        logger.d(TAG, "@@ setupInitialMapZoom with zoom level = $zoomLevel")
         return CameraUpdateFactory.newLatLngZoom(position, zoomLevel)
     }
 

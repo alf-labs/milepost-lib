@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -41,7 +42,6 @@ open abstract class SensorsFragmentBase: Fragment() {
 
     companion object {
         private val TAG = SensorsFragmentBase::class.java.simpleName
-        protected const val MAPS_ZOOM_LEVEL = 15f
     }
 
     protected val dateTimeFormatter = DateTimeFormatter.ISO_INSTANT
@@ -68,6 +68,7 @@ open abstract class SensorsFragmentBase: Fragment() {
     protected var useImperialUnits = false
     protected var serviceStartedAutomatically = false
         private set
+    protected var mapZoomLevel = AppSettings.MAP_ZOOM_LEVEL_DEFAULT
 
     protected abstract val hasBinding: Boolean
     protected abstract val startButton: Button
@@ -79,6 +80,8 @@ open abstract class SensorsFragmentBase: Fragment() {
     protected abstract val locationAccText: TextView?
     protected abstract val speedText: TextView
     protected abstract val speedAccText: TextView?
+    protected abstract val zoomInButton: ImageButton
+    protected abstract val zoomOutButton: ImageButton
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -126,6 +129,16 @@ open abstract class SensorsFragmentBase: Fragment() {
                 requireContext(),
                 it,
                 logger) }
+            zoomInButton.setOnClickListener {
+                onMapZoom(map, 1)
+            }
+            zoomOutButton.setOnClickListener {
+                onMapZoom(map, -1)
+            }
+            lifecycleScope.launch {
+                mapZoomLevel = appSettings.mapZoomLevel()
+                logger.d(TAG, "@@ Settings map zoom level: $mapZoomLevel")
+            }
         }
     }
 
@@ -191,6 +204,17 @@ open abstract class SensorsFragmentBase: Fragment() {
         // Start button is enabled if running state is not already started or not desired mode
         startButton.isEnabled = !isRunning || !isOperatorMode
         stopButton.isEnabled = !startButton.isEnabled
+    }
+
+    private fun onMapZoom(map: GoogleMap, delta: Int) {
+        lifecycleScope.launch {
+            when {
+                delta > 0 -> map.animateCamera(CameraUpdateFactory.zoomIn())
+                delta < 0 -> map.animateCamera(CameraUpdateFactory.zoomOut())
+            }
+            appSettings.setMapZoomLevel(map.cameraPosition.zoom)
+            logger.d(TAG, "@@ Map zoom: ${map.cameraPosition.zoom}")
+        }
     }
 
     protected fun accuracyColor(value: Float?) : Int =
@@ -284,7 +308,7 @@ open abstract class SensorsFragmentBase: Fragment() {
 
         val update = if (setInitialMapZoom) {
             setInitialMapZoom = false
-            setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
+            setupInitialMapZoom(map, position, mapZoomLevel)
         } else {
             CameraUpdateFactory.newLatLng(position)
         }

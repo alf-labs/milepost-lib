@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.ReviewFragmentBinding
 import com.alflabs.milepost.fragments.tracks.toText
 import com.alflabs.milepost.location.LatLongData
@@ -36,7 +37,6 @@ import com.alflabs.milepost.location.clearFlag
 import com.alflabs.milepost.location.copy
 import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.location.setFlag
-import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import com.alflabs.milepost.tracks.GpsTrackSummary
@@ -65,7 +65,6 @@ import javax.inject.Inject
 class ReviewFragment : Fragment() {
     companion object {
         private val TAG = ReviewFragment::class.java.simpleName
-        private const val MAPS_ZOOM_LEVEL = 15f
         private const val KEY_SELECTED_POSITION = "selected-position"
     }
 
@@ -84,6 +83,8 @@ class ReviewFragment : Fragment() {
     private var selectedLocationMarker: Marker? = null
     private var useImperialUnits = false
     private var firstLoad = true
+    private var mapZoomLevel = AppSettings.MAP_ZOOM_LEVEL_DEFAULT
+
     private lateinit var reviewList: List<ReviewLocationData>
 
     override fun onCreateView(
@@ -182,7 +183,15 @@ class ReviewFragment : Fragment() {
                         logger
                     )
                 }
+                binding.zoomInBtn?.setOnClickListener {
+                    onMapZoom(map, 1)
+                }
+                binding.zoomOutBtn?.setOnClickListener {
+                    onMapZoom(map, -1)
+                }
                 lifecycleScope.launch {
+                    mapZoomLevel = appSettings.mapZoomLevel()
+                    logger.d(TAG, "@@ Settings map zoom level: $mapZoomLevel")
                     loadMapTrack()
                 }
             }
@@ -481,12 +490,14 @@ class ReviewFragment : Fragment() {
                     .position(position)
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
             )
+            // For the first selection, zoom in to the prerecorded level
+            val update = CameraUpdateFactory.newLatLngZoom(position, mapZoomLevel)
+            map.animateCamera(update)
         } else {
             selectedLocationMarker!!.position = position
+            val update = CameraUpdateFactory.newLatLng(position)
+            map.animateCamera(update)
         }
-
-        val update = CameraUpdateFactory.newLatLng(position)
-        map.animateCamera(update)
     }
 
     fun loadMapTrack() {
@@ -502,8 +513,8 @@ class ReviewFragment : Fragment() {
                 val movePos = LatLng(location.latLong.latitude, location.latLong.longitude)
 
                 map.addMarker(MarkerOptions().position(movePos))
-                val update = CameraUpdateFactory.newLatLngZoom(movePos, MAPS_ZOOM_LEVEL)
-                logger.d(TAG, "@@ Camera move to: $movePos")
+                val update = CameraUpdateFactory.newLatLngZoom(movePos, mapZoomLevel)
+                logger.d(TAG, "@@ Camera move to: $movePos with zoom level $mapZoomLevel")
                 map.moveCamera(update)
 
             } else if (locations.size > 1) {
@@ -548,6 +559,17 @@ class ReviewFragment : Fragment() {
             }
         } catch (e: Exception) {
             logger.d(TAG, "@@ loadMapTrack", e)
+        }
+    }
+
+    private fun onMapZoom(map: GoogleMap, delta: Int) {
+        lifecycleScope.launch {
+            when {
+                delta > 0 -> map.animateCamera(CameraUpdateFactory.zoomIn())
+                delta < 0 -> map.animateCamera(CameraUpdateFactory.zoomOut())
+            }
+            appSettings.setMapZoomLevel(map.cameraPosition.zoom)
+            logger.d(TAG, "@@ Map zoom: ${map.cameraPosition.zoom}")
         }
     }
 

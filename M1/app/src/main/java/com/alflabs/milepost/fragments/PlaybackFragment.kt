@@ -59,6 +59,8 @@ class PlaybackFragment : SensorsFragment() {
     override val locationAccText get() = playbackBinding.locationAccText
     override val speedText get() = playbackBinding.speedText
     override val speedAccText get() = null
+    override val zoomInButton get() = playbackBinding.zoomInBtn
+    override val zoomOutButton get() = playbackBinding.zoomOutBtn
 
     @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
 
@@ -66,7 +68,7 @@ class PlaybackFragment : SensorsFragment() {
     private var startLabel = "Startbound"
     private var endLabel = "Endbound"
     private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
-        ISubscriber<MpEstimate?> { _, event -> onMpEstimate(event) }
+        ISubscriber<MpEstimate?> { _, event -> onMpEstimate(googleMap, event) }
     private var markerTrackStart: Marker? = null
     private var markerTrackEnd: Marker? = null
     private var markerMpCurrent: Marker? = null
@@ -212,12 +214,21 @@ class PlaybackFragment : SensorsFragment() {
         return super.setupInitialMapZoom(map, position, zoomLevel)
     }
 
-    private fun onMpEstimate(mp: MpEstimate) {
+    private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate) {
         logger.d(TAG, "onMpEstimate: $mp")
         // This may potentially be called outside of the proper binding lifecycle.
         if (!hasBinding) return
 
+        if (lastMp == null && map != null) {
+            // This is the first MP. Center on mp location.
+            val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
+            val update = CameraUpdateFactory.newLatLngZoom(position, mapZoomLevel)
+            map.animateCamera(update)
+            logger.d(TAG, "@@ First MP update: $update with zoom level $mapZoomLevel")
+        }
+
         lastMp = mp
+
         playbackBinding.mpText.text = String.format("MP %.2f", mp.mp)
 
         playbackBinding.directionText.text = when(mp.direction) {
@@ -281,16 +292,13 @@ class PlaybackFragment : SensorsFragment() {
                     .position(position)
                     .anchor(0.5f, 0.5f)
             )
-            val update = setupInitialMapZoom(map, position, MAPS_ZOOM_LEVEL)
+            val update = setupInitialMapZoom(map, position, mapZoomLevel)
+            logger.d(TAG, "@@ First location update: $update with zoom level $mapZoomLevel")
             map.animateCamera(update)
         } else {
             markerPositionCurrent!!.position = position
-            lastMp?.let { mp ->
-                // DEBUG for testing, center on mp location instead of gps location.
-                val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
-                val update = CameraUpdateFactory.newLatLng(position)
-                map.animateCamera(update)
-            }
+            val update = CameraUpdateFactory.newLatLng(position)
+            map.animateCamera(update)
         }
 
         if (markerMpCurrent == null) {

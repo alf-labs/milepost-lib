@@ -28,20 +28,26 @@ class AppSettings @Inject constructor(
     companion object {
         internal val TAG = AppSettings::class.java.simpleName
 
-        // A warning on expected key types:
+        // A warning on expected key types used in visual preference fragment editor:
         // For numerics, it's typical to use <EditTextPreference> in preferences.xml.
         // This _always_ uses getString / putString in the data store adapter as it knows
         // nothing about actual numeric types. The typical behavior is to store all numbers
         // as stringPreferencesKey, and then provide an app-specific getter that does the
         // type conversion (e.g. toFloat, etc., with a reasonable fallback default value.)
+        //
+        // This does not apply to values used only in-app and not visible in the settings fragment.
 
+        // Values visible in the settings fragment, they must be boolean (checkbox) or string.
         val USE_IMPERIAL_UNITS = booleanPreferencesKey("use_imperial_units")
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
+        // The following values are only used internally, they can be of any type.
         val PLAYBACK_TRACK_ID = longPreferencesKey("playback_track_id")
+        val MAP_ZOOM_LEVEL = floatPreferencesKey("map_zoom_level")
 
         const val THRESHOLD_DISTANCE_METERS_DEFAULT = 100.0f
         const val THRESHOLD_SPEED_MPS_DEFAULT = 0.25f
+        const val MAP_ZOOM_LEVEL_DEFAULT = 15f
     }
 
     @Inject lateinit var appSettingsDataStore: DataStore<Preferences>
@@ -73,6 +79,16 @@ class AppSettings @Inject constructor(
     suspend fun setPlaybackTrackId(trackId: Long) {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         adapter.putLong(PLAYBACK_TRACK_ID.name, trackId)
+    }
+
+    suspend fun mapZoomLevel(): Float {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getFloat(MAP_ZOOM_LEVEL.name, MAP_ZOOM_LEVEL_DEFAULT)
+    }
+
+    suspend fun setMapZoomLevel(level: Float) {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        adapter.putFloat(MAP_ZOOM_LEVEL.name, level)
     }
 
     // ------
