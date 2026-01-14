@@ -4,13 +4,15 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:baselineAligned="false"
         android:orientation="horizontal"
         android:padding="8dp"
         tools:context=".fragments.tracks.TracksFragment">
 
-    <RelativeLayout
+    <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:orientation="vertical"
             android:layout_marginEnd="4dp"
             android:layout_weight="1">
 
@@ -20,8 +22,6 @@
                 android:layout_height="wrap_content"
                 android:text="Title"
                 android:textAppearance="?attr/textAppearanceHeadline6"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentStart="true"
                 />
 
         <TextView
@@ -29,8 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:layout_below="@id/label"
-                android:layout_alignParentStart="true"
+                tools:text="summary"
                 />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -40,11 +39,9 @@
                 android:scrollbars="vertical"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:layout_below="@id/summary"
-                android:layout_alignParentBottom="true"
                 />
 
-    </RelativeLayout>
+    </LinearLayout>
 
     <RelativeLayout
             android:layout_width="0dp"
