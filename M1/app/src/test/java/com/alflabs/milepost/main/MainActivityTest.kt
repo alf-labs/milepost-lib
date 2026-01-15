@@ -2,7 +2,7 @@ package com.alflabs.milepost.main
 
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.alflabs.milepost.mp.MpActivity
+import com.alflabs.milepost.activity.MpActivity
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat

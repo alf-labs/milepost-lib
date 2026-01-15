@@ -21,7 +21,7 @@ import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.speedData
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
-import com.alflabs.milepost.mp.MpActivity
+import com.alflabs.milepost.activity.MpActivity
 import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
