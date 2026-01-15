@@ -123,7 +123,7 @@ class PermissionsFragment : DialogFragment() {
     private fun checkGpsPermissions() {
         checkPermissions(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            "MilePost Trackr needs access to the GPS fine location. Please allow access in the next dialog to enable the feature.",
+            "MilePost Docent needs access to the GPS fine location. Please allow access in the next dialog to enable the feature.",
             ::isGpsGranted,
         )
     }
@@ -131,7 +131,7 @@ class PermissionsFragment : DialogFragment() {
     private fun checkNotificationPermissions() {
         checkPermissions(
             Manifest.permission.POST_NOTIFICATIONS,
-            "MilePost Trackr needs to show Notifications. Please allow access in the next dialog to enable the feature.",
+            "MilePost Docent needs to show Notifications. Please allow access in the next dialog to enable the feature.",
             ::isNotificationGranted,
         )
     }

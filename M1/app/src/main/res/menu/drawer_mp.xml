@@ -12,19 +12,37 @@
                 android:id="@+id/nav_about"
                 android:icon="@drawable/ic_info_light"
                 android:title="About" />
-        <item
-                android:id="@+id/nav_tracks"
-                android:icon="@drawable/ic_art_track_24"
-                android:title="Milepost Tracks" />
-        <item
-                android:id="@+id/nav_record_track"
-                android:icon="@drawable/ic_manual_record"
-                android:title="Record Track" />
-        <item
-                android:id="@+id/nav_play_track"
-                android:icon="@drawable/ic_autoplay"
-                android:title="Playback Track"  />
     </group>
+
+    <item android:title="Audio Tracks">
+        <menu>
+            <item
+                    android:id="@+id/nav_records"
+                    android:icon="@drawable/ic_art_track_24"
+                    android:title="Audio Records" />
+            <item
+                    android:id="@+id/nav_play_record"
+                    android:icon="@drawable/ic_autoplay"
+                    android:title="Playback Audio Track"  />
+        </menu>
+    </item>
+
+    <item android:title="GPS Tracks">
+        <menu>
+            <item
+                    android:id="@+id/nav_tracks"
+                    android:icon="@drawable/ic_art_track_24"
+                    android:title="Milepost GPS Tracks" />
+            <item
+                    android:id="@+id/nav_record_track"
+                    android:icon="@drawable/ic_manual_record"
+                    android:title="Record GPS Track" />
+            <item
+                    android:id="@+id/nav_play_track"
+                    android:icon="@drawable/ic_autoplay"
+                    android:title="Playback GPS Track"  />
+        </menu>
+    </item>
 
     <item android:title="More">
         <menu>
