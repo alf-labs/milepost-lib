@@ -3,17 +3,25 @@ package com.alflabs.milepost.fragments
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.webkit.WebViewClientCompat
+import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AboutFragmentBinding
 import com.alflabs.utils.ILogger
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.ByteArrayOutputStream
 import javax.inject.Inject
+import androidx.core.graphics.createBitmap
 
 @AndroidEntryPoint
 class AboutFragment : Fragment() {
@@ -42,8 +50,8 @@ class AboutFragment : Fragment() {
             binding.webview.webViewClient = WebViewClientCompat()
             binding.webview.settings.javaScriptEnabled = true
 
-            val jsVersion = JSVersion(requireContext())
-            binding.webview.addJavascriptInterface(jsVersion, "JSAppVersion")
+            val jsAppData = JSAppData(requireContext())
+            binding.webview.addJavascriptInterface(jsAppData, "JSAppData")
             // Make the webview transparent
             binding.webview.setBackgroundColor(0x00000000)
             binding.webview.loadUrl("file:///android_asset/about.html")
@@ -60,8 +68,8 @@ class AboutFragment : Fragment() {
 }
 
 // ---
-private class JSVersion(val context: Context) {
-    private val TAG = JSVersion::class.java.simpleName
+private class JSAppData(val context: Context) {
+    private val TAG = JSAppData::class.java.simpleName
     private var version: String? = null
 
     @JavascriptInterface
@@ -84,5 +92,34 @@ private class JSVersion(val context: Context) {
         var v = longVersion()
         v = v.substring(0, v.lastIndexOf('.'))
         return v
+    }
+
+    @JavascriptInterface
+    fun getAppIcon(): String {
+        val drawableId = R.mipmap.ic_launcher_mp
+        val drawable = ContextCompat.getDrawable(context, drawableId) ?: return ""
+
+        val density = context.resources.displayMetrics.density
+        val widthPx = if (drawable.intrinsicWidth > 0) {
+            (drawable.intrinsicWidth / density).toInt()
+        } else {
+            (25 * density).toInt()
+        }
+        val heightPx = if (drawable.intrinsicHeight > 0) {
+            (drawable.intrinsicHeight / density).toInt()
+        } else {
+            (25 * density).toInt()
+        }
+        Log.d(TAG, "@@ getAppIcon: $density --> $widthPx x $heightPx")
+
+        val bitmap = createBitmap(widthPx, heightPx)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return "data:image/png;base64," + Base64.encodeToString(byteArray, Base64.NO_WRAP)
     }
 }
