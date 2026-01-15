@@ -13,6 +13,7 @@ message LocationData {
   optional SpeedData speed = 2;
   optional float mp = 3;
   int32 flags = 4;
+  optional string poi_label = 5;
 }
 
 message LatLongData {
@@ -24,9 +25,8 @@ message LatLongData {
 
 message SpeedData {
   float speed_mps = 1;
-  reserved 2;
-  reserved "bearing_deg";
   optional float speed_acc = 3;
-  reserved 4;
-  reserved "bearing_acc";
+
+  reserved 2; reserved "bearing_deg";
+  reserved 4; reserved "bearing_acc";
 }

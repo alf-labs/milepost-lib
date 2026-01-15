@@ -424,11 +424,22 @@ class ReviewFragment : Fragment() {
 
         val layoutInflater = LayoutInflater.from(requireContext())
         val dialogView = layoutInflater.inflate(R.layout.review_mp_dialog, null)
+        val poiLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.poi_label_edittext)
+        val clearPoiButton = dialogView.findViewById<ImageButton>(R.id.clear_poi_button)
         val mpValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_value_edittext)
         val clearMpButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_button)
         val ignoreCheckbox = dialogView.findViewById<CheckBox>(R.id.ignore_checkbox)
-        val mpStart : Float? = if (ld.hasMp()) ld.mp else null
+        val mpStart = if (ld.hasMp()) ld.mp else null
+        val poiStart = if (ld.hasPoiLabel()) ld.poiLabel.trim() else ""
         val ignoreStart = ld.flags.hasFlag(LocationFlags.IGNORE)
+
+        if (poiStart.isNotEmpty()) {
+            poiLabelEditText.setText(poiStart)
+        }
+
+        clearPoiButton.setOnClickListener {
+            poiLabelEditText.text?.clear()
+        }
 
         mpStart?.let {
             mpValueEditText.setText(it.toString())
@@ -444,16 +455,19 @@ class ReviewFragment : Fragment() {
             .setTitle("Edit Milepost")
             .setView(dialogView)
             .setPositiveButton("Apply") { _, _ ->
+                val newPoi = poiLabelEditText.text?.toString()?.trim() ?: ""
                 val mpNew = mpValueEditText.text.toString().toFloatOrNull()
                 val ignoredNew = ignoreCheckbox.isChecked
 
                 logger.d(TAG, "@@Apply MP clicked:")
-                logger.d(TAG, "@@  Item: ${item.data?.latLong?.timestampMillis}")
+                logger.d(TAG, "@@  Item: ${item.data.latLong.timestampMillis}")
+                logger.d(TAG, "@@  POI Label: $newPoi")
                 logger.d(TAG, "@@  MP Value: $mpNew")
                 logger.d(TAG, "@@  Ignore: $ignoredNew")
 
                 if (track.locationList != null
-                    && (mpNew != mpStart
+                    && (newPoi != poiStart
+                        || mpNew != mpStart
                         || ignoredNew != ignoreStart)
                     && index < track.locationList.locationsCount) {
                     val listBuilder = track.locationList.toBuilder()
@@ -464,6 +478,12 @@ class ReviewFragment : Fragment() {
                         } else {
                             clearMp()
                             flags = flags.clearFlag(LocationFlags.USER_MP)
+                        }
+
+                        if (newPoi.isNotEmpty()) {
+                            poiLabel = newPoi
+                        } else {
+                            clearPoiLabel()
                         }
                         flags = flags.changeFlag(LocationFlags.IGNORE, ignoredNew)
                     }

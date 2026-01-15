@@ -47,12 +47,14 @@ data class LocationDataPojo @JsonCreator constructor(
     @param:JsonProperty("speed")        val speed: SpeedDataPojo? = null,
     @param:JsonProperty("mp")           val mp: Float? = null,
     @param:JsonProperty("flags")        val flags: Int = 0,
+    @param:JsonProperty("poiLabel")     val poiLabel: String? = null,
 ) {
     constructor(proto: LocationData) : this(
         LatLongDataPojo(proto.latLong),
         if (proto.hasSpeed()) SpeedDataPojo(proto.speed) else null,
         if (proto.hasMp()) proto.mp else null,
         proto.flags,
+        if (proto.hasPoiLabel()) proto.poiLabel else null,
     )
 
     fun toProto(): LocationData = locationData {
@@ -60,13 +62,15 @@ data class LocationDataPojo @JsonCreator constructor(
         this@LocationDataPojo.speed?.let { this.speed = it.toProto() }
         this@LocationDataPojo.mp?.let { mp = it }
         flags = this@LocationDataPojo.flags
+        this@LocationDataPojo.poiLabel?.let { poiLabel = it }
     }
 
     fun saveInto(writer: SerialWriter) {
         latLong.saveInto(writer)
-        this@LocationDataPojo.speed?.saveInto(writer)
+        speed?.saveInto(writer)
         mp?.let { writer.addFloat("mp", it) }
         writer.addInt("flags", flags)
+        poiLabel?.let { writer.addString("poiLabel", it) }
     }
 
     constructor(reader: SerialReader) : this(
@@ -74,6 +78,7 @@ data class LocationDataPojo @JsonCreator constructor(
         if (reader.hasName("speed")) SpeedDataPojo(reader) else null,
         if (reader.hasName("mp")) reader.getFloat("mp") else null,
         reader.getInt("flags"),
+        if (reader.hasName("poiLabel")) reader.getString("poiLabel") else null,
     )
 }
 

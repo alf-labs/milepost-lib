@@ -50,12 +50,14 @@ class LocationDataTest {
             this.speed = speedData
             mp = 100.0f
             flags = 1
+            poiLabel = "Test POI"
         }
 
         assertThat(locationData.latLong).isEqualTo(latLongData)
         assertThat(locationData.speed).isEqualTo(speedData)
         assertThat(locationData.mp).isWithin(0.0f).of(100.0f)
         assertThat(locationData.flags).isEqualTo(1)
+        assertThat(locationData.poiLabel).isEqualTo("Test POI")
     }
 
     @Test

@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
@@ -67,6 +68,7 @@ class ReviewLocationAdapter(
                 binding.distAcc.text = "Acc."
                 binding.speed.text = "Speed"
                 binding.mp.text = "MP"
+                binding.poiLabel.visibility = View.GONE
 
                 binding.timestamp.typeface = Typeface.DEFAULT_BOLD
                 binding.latLong.typeface = Typeface.DEFAULT_BOLD
@@ -83,11 +85,20 @@ class ReviewLocationAdapter(
                     Units.mpsToUnit(ld.speed.speedMps, useImperialUnits),
                     Units.mpsUnitName(useImperialUnits)
                 )
-                binding.mp.text = if (ignore) "Ignored" else String.format("%.2f mi", ld.mp)
 
+                binding.mp.text = if (ignore) "Ignored" else String.format("%.2f mi", ld.mp)
                 binding.mp.setOnClickListener {
                     onMpClicked(item)
                 }
+
+                binding.poiLabel.visibility = View.GONE
+                if (ld.hasPoiLabel()) {
+                    binding.poiLabel.text = ld.poiLabel
+                    binding.poiLabel.visibility = View.VISIBLE
+                } else {
+                    binding.poiLabel.visibility = View.GONE
+                }
+
                 binding.root.setOnClickListener {
                     onSelection(item)
                     // Highlight the selected item in the recycler view

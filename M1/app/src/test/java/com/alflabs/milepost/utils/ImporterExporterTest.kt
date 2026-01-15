@@ -34,34 +34,38 @@ class ImporterExporterTest {
     fun setup() {
         val location1 = locationData {
             latLong = latLongData {
-                latitude = 37.5805
-                longitude = 121.9652
+                latitude = 37.592879
+                longitude = -121.88799
                 timestampMillis = Instant.parse("2020-01-02T03:04:05Z").toEpochMilli()
             }
             speed = speedData {
                 speedMps = 4.4704f
             }
-            mp = 10.0f
+            mp = 35.63f
+            poiLabel = "Sunol"
         }
 
         val location2 = locationData {
             latLong = latLongData {
-                latitude = 37.58725
-                longitude = 121.92685
+                latitude = 37.598261
+                longitude = -121.921506
                 timestampMillis = Instant.parse("2020-01-02T03:14:05Z").toEpochMilli()
             }
         }
 
         val location3 = locationData {
             latLong = latLongData {
-                latitude = 37.5940
-                longitude = 121.8885
+                latitude = 37.578987
+                longitude = -121.981725
+                accuracy = 2.44f
                 timestampMillis = Instant.parse("2020-01-02T03:24:05Z").toEpochMilli()
             }
             speed = speedData {
                 speedMps = 8.9408f
             }
-            mp = 42.0f
+            mp = 29.0f
+            flags = 1
+            poiLabel = "Niles"
         }
 
         val locations = locationDataList {
@@ -101,9 +105,9 @@ class ImporterExporterTest {
         assertThat(fakeFileOps.toString(file, Charsets.UTF_8)).isEqualTo(
             """
             isoDateTime,latitude,longitude,speed_mph,mp
-            2020-01-02T03:04:05Z,37.5805,121.9652,10.0,10.0
-            2020-01-02T03:14:05Z,37.58725,121.92685,,
-            2020-01-02T03:24:05Z,37.594,121.8885,20.0,42.0
+            2020-01-02T03:04:05Z,37.592879,-121.88799,10.0,35.63
+            2020-01-02T03:14:05Z,37.598261,-121.921506,,
+            2020-01-02T03:24:05Z,37.578987,-121.981725,20.0,29.0
 
         """.trimIndent())
     }
@@ -131,32 +135,35 @@ class ImporterExporterTest {
                 "locations" : [ {
                   "latLong" : {
                     "timestampMillis" : 1577934245000,
-                    "latitude" : 37.5805,
-                    "longitude" : 121.9652
+                    "latitude" : 37.592879,
+                    "longitude" : -121.88799
                   },
                   "speed" : {
                     "speedMps" : 4.4704
                   },
-                  "mp" : 10.0,
-                  "flags" : 0
+                  "mp" : 35.63,
+                  "flags" : 0,
+                  "poiLabel" : "Sunol"
                 }, {
                   "latLong" : {
                     "timestampMillis" : 1577934845000,
-                    "latitude" : 37.58725,
-                    "longitude" : 121.92685
+                    "latitude" : 37.598261,
+                    "longitude" : -121.921506
                   },
                   "flags" : 0
                 }, {
                   "latLong" : {
                     "timestampMillis" : 1577935445000,
-                    "latitude" : 37.594,
-                    "longitude" : 121.8885
+                    "latitude" : 37.578987,
+                    "longitude" : -121.981725,
+                    "accuracy" : 2.44
                   },
                   "speed" : {
                     "speedMps" : 8.9408
                   },
-                  "mp" : 42.0,
-                  "flags" : 0
+                  "mp" : 29.0,
+                  "flags" : 1,
+                  "poiLabel" : "Niles"
                 } ]
               }
             }
@@ -178,34 +185,37 @@ class ImporterExporterTest {
                 "locations" : [ {
                   "latLong" : {
                     "timestampMillis" : 1577934245000,
-                    "latitude" : 37.5805,
-                    "longitude" : 121.9652
+                    "latitude" : 37.592879,
+                    "longitude" : -121.88799
                   },
                   "speedBearing" : {
                     "speedMps" : 4.4704,
                     "bearingDeg" : 0.0
                   },
-                  "mp" : 10.0,
-                  "flags" : 0
+                  "mp" : 35.63,
+                  "flags" : 0,
+                  "poiLabel" : "Sunol"
                 }, {
                   "latLong" : {
                     "timestampMillis" : 1577934845000,
-                    "latitude" : 37.58725,
-                    "longitude" : 121.92685
+                    "latitude" : 37.598261,
+                    "longitude" : -121.921506
                   },
                   "flags" : 0
                 }, {
                   "latLong" : {
                     "timestampMillis" : 1577935445000,
-                    "latitude" : 37.594,
-                    "longitude" : 121.8885
+                    "latitude" : 37.578987,
+                    "longitude" : -121.981725,
+                    "accuracy" : 2.44
                   },
                   "speedBearing" : {
                     "speedMps" : 8.9408,
                     "bearingDeg" : 0.0
                   },
-                  "mp" : 42.0,
-                  "flags" : 0
+                  "mp" : 29.0,
+                  "flags" : 1,
+                  "poiLabel" : "Niles"
                 } ]
               }
             }
@@ -243,32 +253,35 @@ class ImporterExporterTest {
                 "locations" : [ {
                   "latLong" : {
                     "timestampMillis" : 1577934245000,
-                    "latitude" : 37.5805,
-                    "longitude" : 121.9652
+                    "latitude" : 37.592879,
+                    "longitude" : -121.88799
                   },
                   "speed" : {
                     "speedMps" : 4.4704
                   },
-                  "mp" : 10.0,
-                  "flags" : 0
+                  "mp" : 35.63,
+                  "flags" : 0,
+                  "poiLabel" : "Sunol"
                 }, {
                   "latLong" : {
                     "timestampMillis" : 1577934845000,
-                    "latitude" : 37.58725,
-                    "longitude" : 121.92685
+                    "latitude" : 37.598261,
+                    "longitude" : -121.921506
                   },
                   "flags" : 0
                 }, {
                   "latLong" : {
                     "timestampMillis" : 1577935445000,
-                    "latitude" : 37.594,
-                    "longitude" : 121.8885
+                    "latitude" : 37.578987,
+                    "longitude" : -121.981725,
+                    "accuracy" : 2.44
                   },
                   "speed" : {
                     "speedMps" : 8.9408
                   },
-                  "mp" : 42.0,
-                  "flags" : 0
+                  "mp" : 29.0,
+                  "flags" : 1,
+                  "poiLabel" : "Niles"
                 } ]
               }
             }
