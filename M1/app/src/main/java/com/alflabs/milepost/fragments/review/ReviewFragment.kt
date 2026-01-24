@@ -544,15 +544,25 @@ class ReviewFragment : Fragment() {
                     .color(lineColor)
                     .width(width.toFloat())
 
+                val locFirst = locations.first()
+                val locLast = locations.last()
                 for (location in locations) {
-                    polylineOptions.add(
-                        LatLng(location.latLong.latitude, location.latLong.longitude)
-                    )
+                    val position = LatLng(location.latLong.latitude, location.latLong.longitude)
+                    polylineOptions.add(position)
+
+                    if (location.hasPoiLabel() && location != locFirst && location != locLast) {
+                        map.addMarker(
+                            MarkerOptions()
+                                .position(position)
+                                .icon(BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_YELLOW))
+                                .title(location.poiLabel)
+                                .alpha(0.5f)
+                        )
+                    }
                 }
                 map.addPolyline(polylineOptions)
 
-                val locFirst = locations.first()
-                val locLast = locations.last()
                 val startPos = LatLng(locFirst.latLong.latitude, locFirst.latLong.longitude)
                 val endPos = LatLng(locLast.latLong.latitude, locLast.latLong.longitude)
                 val boundsBuilder = LatLngBounds.Builder()
@@ -561,12 +571,16 @@ class ReviewFragment : Fragment() {
                 map.addMarker(
                     MarkerOptions()
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        .title(if (track.startLabel.isNullOrEmpty()) "Start" else track.startLabel)
+                        .title(if (locFirst.hasPoiLabel()) locFirst.poiLabel
+                               else if (track.startLabel.isNullOrEmpty()) "Start"
+                               else track.startLabel)
                         .position(startPos)
                 )
                 map.addMarker(
                     MarkerOptions()
-                        .title(if (track.endLabel.isNullOrEmpty()) "End" else track.endLabel)
+                        .title(if (locLast.hasPoiLabel()) locLast.poiLabel
+                               else if (track.endLabel.isNullOrEmpty()) "End"
+                               else track.endLabel)
                         .position(endPos)
                 )
 
