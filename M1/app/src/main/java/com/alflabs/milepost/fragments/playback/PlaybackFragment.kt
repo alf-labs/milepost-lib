@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments
+package com.alflabs.milepost.fragments.playback
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,6 +11,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.PlaybackFragmentBinding
+import com.alflabs.milepost.fragments.SensorsFragment
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationFlags

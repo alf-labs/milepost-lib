@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments
+package com.alflabs.milepost.fragments.playback
 
 import androidx.lifecycle.ViewModel
 import com.alflabs.milepost.location.LocationData

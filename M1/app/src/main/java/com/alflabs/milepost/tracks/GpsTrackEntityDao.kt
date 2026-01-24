@@ -15,9 +15,6 @@ interface GpsTrackEntityDao {
     @Query("SELECT * FROM gps_tracks WHERE id = :id")
     fun getById(id: Long): Flow<GpsTrackEntity?>
 
-    @Query("SELECT * FROM gps_tracks WHERE uuid = :uuid")
-    suspend fun getByUuid(uuid: String): GpsTrackEntity?
-
     /** Insert a GpsTrackEntity. Set id to 0 to have it auto-generated. The new id is returned. */
     @Insert
     suspend fun insert(track: GpsTrackEntity): Long

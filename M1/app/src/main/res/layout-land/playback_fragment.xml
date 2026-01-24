@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:orientation="horizontal"
         android:padding="8dp"
-        tools:context=".fragments.PlaybackFragment"
+        tools:context=".fragments.playback.PlaybackFragment"
         >
 
     <LinearLayout

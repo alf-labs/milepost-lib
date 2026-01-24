@@ -22,30 +22,8 @@ class TracksViewModel @Inject constructor(
 
     val tracks = gpsTrackEntityDao.getAllDisplayInfo().asLiveData()
 
-    fun createRandomTrack() {
-        val a = Random.nextInt( 1, 1000) / 10f
-        val b = Random.nextInt(50, 1000) / 10f
-        viewModelScope.launch {
-            var track = GpsTrackEntity(
-                trackLabel = "Track ${Random.nextInt(1000)}",
-                createdDateISO = Date().toString(),
-                summary = gpsTrackSummary {
-                    mpMin = min(a, b)
-                    mpMax = max(a, b)
-                },
-            )
-            val id = gpsTrackEntityDao.insert(track)
-            track = track.copy(id = id)
-            println("@@ DB INSERT track = $track")
-        }
-    }
-
     suspend fun getIdByUuid(uuid: String): Long? {
         return gpsTrackEntityDao.getIdByUuid(uuid)
-    }
-
-    suspend fun getByUuid(uuid: String): GpsTrackEntity? {
-        return gpsTrackEntityDao.getByUuid(uuid)
     }
 
     /** Insert a GpsTrackEntity. Set id to 0 to have it auto-generated. The new id is returned. */
