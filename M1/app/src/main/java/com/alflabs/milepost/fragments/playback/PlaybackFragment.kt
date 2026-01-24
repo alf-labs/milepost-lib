@@ -132,15 +132,6 @@ class PlaybackFragment : SensorsFragment() {
             }
 
             viewModel.playbackTrack?.let { track ->
-                if (viewModel.filteredLocations.isEmpty()) {
-                    track.locationList?.locationsList?.let { list ->
-                        viewModel.filteredLocations.clear()
-                        viewModel.filteredLocations.addAll(list.filter { loc ->
-                            !loc.flags.hasFlag(LocationFlags.IGNORE)
-                        })
-                    }
-                }
-
                 if (!track.startLabel.isNullOrEmpty()) {
                     viewModel.startLabel = track.startLabel
                 }
@@ -148,9 +139,31 @@ class PlaybackFragment : SensorsFragment() {
                     viewModel.endLabel = track.endLabel
                 }
 
-                playbackBinding.linearTrackView.startStationName = viewModel.startLabel ?: "Start"
-                playbackBinding.linearTrackView.endStationName = viewModel.endLabel ?: "End"
-                playbackBinding.linearTrackView.midStationName = "Middle"
+                if (viewModel.filteredLocations.isEmpty()) {
+                    track.locationList?.locationsList?.let { list ->
+                        viewModel.filteredLocations.clear()
+                        viewModel.filteredLocations.addAll(list.filter { loc ->
+                            !loc.flags.hasFlag(LocationFlags.IGNORE)
+                        })
+
+                        playbackBinding.linearTrackView.setStations(list
+                            .filterIndexed { index, loc ->
+                                index == 0 || index == list.lastIndex || loc.hasPoiLabel()
+                            }
+                            .mapIndexed { index, loc ->
+                                val title =
+                                    if (loc.hasPoiLabel()) loc.poiLabel
+                                    else if (index == 0) viewModel.startLabel
+                                    else if (index == list.lastIndex) viewModel.endLabel
+                                    else "--"
+                                Pair(loc.mp, title)
+                            }
+                            // TODO we'll want more control on the DISPLAY direction as it
+                            // is likely to differ from the GPS acquisition direction.
+                             .sortedBy { it.first }
+                        )
+                    }
+                }
             }
 
             playbackBinding.trackLabelText.text = viewModel.playbackTrack?.trackLabel ?: "No track selected"
@@ -243,6 +256,7 @@ class PlaybackFragment : SensorsFragment() {
 
         viewModel.lastMp = mp
 
+        playbackBinding.linearTrackView.setCurrentMp(mp.mp)
         playbackBinding.mpText.text = String.format("MP %.2f", mp.mp)
 
         playbackBinding.directionText.text = when(mp.direction) {
@@ -250,12 +264,6 @@ class PlaybackFragment : SensorsFragment() {
             MpDirection.TO_END -> viewModel.endLabel
             else -> "--"
         } + " [# ${mp.locIndex}]" // DEBUG
-
-        getLocationsList()?.let { locations ->
-            if (locations.isNotEmpty()) {
-                playbackBinding.linearTrackView.progress = mp.locIndex.toFloat() / (locations.size - 1).coerceAtLeast(1).toFloat()
-            }
-        }
 
         markerMpCurrent?.let {
             it.position = position

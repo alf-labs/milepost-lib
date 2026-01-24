@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import kotlin.math.max
 
 class LinearTrackView @JvmOverloads constructor(
     context: Context,
@@ -24,10 +25,22 @@ class LinearTrackView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    private val textStartPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLACK
+        textSize = 24f
+        textAlign = Paint.Align.LEFT
+    }
+
+    private val textMiddlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.BLACK
         textSize = 24f
         textAlign = Paint.Align.CENTER
+    }
+
+    private val textEndPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.BLACK
+        textSize = 24f
+        textAlign = Paint.Align.RIGHT
     }
 
     private val trainPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -35,31 +48,55 @@ class LinearTrackView @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
     }
 
-    var progress: Float = 0f
-        set(value) {
-            field = value.coerceIn(0f, 1f)
-            invalidate()
-        }
+    private var progress = 0f
 
-    var startStationName: String = "Start"
-        set(value) {
-            field = value
-            invalidate()
-        }
+    private val stations = mutableListOf<LinearStation>()
 
-    var midStationName: String = "Middle"
-        set(value) {
-            field = value
-            invalidate()
-        }
+    // Unicode:
+    // 0x1F682 = 0xD83D 0xDE82 = 🚂
+    // 0x1F686 = 0xD83D 0xDE86 = 🚆
+    private val trainSymbol = "\uD83D\uDE82"
 
-    var endStationName: String = "End"
-        set(value) {
-            field = value
-            invalidate()
+    fun setStations(newStations: List<Pair<Float, String>>) {
+        stations.clear()
+        val maxIndex = newStations.size - 1
+        val cntSegments = max(1f, maxIndex.toFloat())
+        newStations.forEachIndexed { index, pair ->
+            val pct = index.toFloat() / cntSegments
+            stations.add(LinearStation(
+                pair.first,
+                pair.second,
+                pct,
+                when (index) {
+                    0 -> textStartPaint
+                    maxIndex -> textEndPaint
+                    else -> textMiddlePaint
+                }
+            ))
         }
+        invalidate()
+    }
 
-    private val trainSymbol = "\uD83D\uDE86" // 🚆
+    fun setCurrentMp(mp: Float) {
+        var p = 0f
+        var last : LinearStation? = null
+        for (station in stations) {
+            if (last == null) {
+                last = station
+            } else {
+                val deltaMp = station.mp - last.mp
+                if (deltaMp > 0) {
+                    if (mp >= last.mp && mp < station.mp) {
+                        p = (mp - last.mp) / deltaMp
+                        progress = p
+                        invalidate()
+                        return
+                    }
+                    last = station
+                }
+            }
+        }
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -75,26 +112,23 @@ class LinearTrackView @JvmOverloads constructor(
         val centerY = paddingTop + height / 2f
         val startX = paddingLeft + 40f
         val endX = width + paddingLeft - 40f
-        val midX = (startX + endX) / 2f
 
         // Draw horizontal line
         canvas.drawLine(startX, centerY, endX, centerY, linePaint)
 
-        // Draw station markers
+        // Draw stations markers
         val stationRadius = 10f
-        canvas.drawCircle(startX, centerY, stationRadius, stationPaint)
-        canvas.drawCircle(midX, centerY, stationRadius, stationPaint)
-        canvas.drawCircle(endX, centerY, stationRadius, stationPaint)
-
-        // Draw station names
         val textOffsetY = 40f
-        canvas.drawText(startStationName, startX, centerY + textOffsetY, textPaint)
-        canvas.drawText(midStationName, midX, centerY + textOffsetY, textPaint)
-        canvas.drawText(endStationName, endX, centerY + textOffsetY, textPaint)
+        for (station in stations) {
+            val x = startX + (endX - startX) * station.pct
+            canvas.drawCircle(x, centerY, stationRadius, stationPaint)
+            canvas.drawText(String.format("%.2f", station.mp), x, centerY + textOffsetY, station.paint)
+            canvas.drawText(station.title, x, centerY + 2 * textOffsetY, station.paint)
+        }
 
         // Draw train position
         val trainX = startX + (endX - startX) * progress
-        canvas.drawText(trainSymbol, trainX, centerY - 10f, trainPaint)
+        canvas.drawText(trainSymbol, trainX, centerY - 20f, trainPaint)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -112,3 +146,10 @@ class LinearTrackView @JvmOverloads constructor(
         setMeasuredDimension(width, height)
     }
 }
+
+private data class LinearStation(
+    val mp: Float,
+    val title: String,
+    val pct: Float,
+    val paint: Paint,
+)
