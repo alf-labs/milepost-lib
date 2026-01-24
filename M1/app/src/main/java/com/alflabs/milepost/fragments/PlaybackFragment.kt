@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
@@ -17,7 +18,6 @@ import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
-import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.GpsTrackEntityDao
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
@@ -64,9 +64,8 @@ class PlaybackFragment : SensorsFragment() {
 
     @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
 
-    private var playbackTrack: GpsTrackEntity? = null
-    private var startLabel = "Startbound"
-    private var endLabel = "Endbound"
+    private val viewModel: PlaybackViewModel by viewModels()
+
     private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
         ISubscriber<MpEstimate?> { _, event -> onMpEstimate(googleMap, event) }
     private var markerTrackStart: Marker? = null
@@ -75,22 +74,19 @@ class PlaybackFragment : SensorsFragment() {
     private var markerPositionCurrent: Marker? = null
     private var trackPolylineStart: Polyline? = null
     private var trackPolylineEnd: Polyline? = null
-    private var lastMp: MpEstimate? = null
-    private var lastMpIndexRendered = -1
-    private var lastMpDirectionRendered = MpDirection.UNKNOWN
     private var lineColorFwd: Int = -1
     private var lineColorPrev: Int = -1
-    private val filteredLocations = mutableListOf<LocationData>()
 
 
     override fun actionToPermissionsDlg(): NavDirections =
         PlaybackFragmentDirections.actionPlayToPermissionsDlg()
 
     override fun getLocationsList(): List<LocationData>? =
-        operator.currentLocationsList ?: filteredLocations
+        operator.currentLocationsList ?: viewModel.filteredLocations
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         logger.d(TAG, "onCreateView")
@@ -113,46 +109,51 @@ class PlaybackFragment : SensorsFragment() {
         globalState.mpEstimateStream.subscribe(AndroidSchedulers.mainThread(), mpEstimateSubscriber)
 
         lifecycleScope.launch {
-            if (playbackTrack == null) {
+            if (viewModel.playbackTrack == null) {
                 // Get current op playback track if ongoing
-                playbackTrack = operator.getPlaybackTrack()
+                viewModel.playbackTrack = operator.getPlaybackTrack()
 
-                if (playbackTrack == null) {
+                if (viewModel.playbackTrack == null) {
                     // If not, load the current track id from prefs
                     val trackId = appSettings.playbackTrackId()
                     logger.d(TAG, "@@ Playback onResume: trackId = $trackId")
 
                     if (trackId != -1L) {
-                        playbackTrack = gpsTrackEntityDao.getById(trackId).first()
+                        viewModel.playbackTrack = gpsTrackEntityDao.getById(trackId).first()
                     }
                 }
             }
 
-            if (playbackTrack == null) {
+            if (viewModel.playbackTrack == null) {
                 // Close the fragment if no track is found
                 Toast.makeText(requireContext(), "Please select an existing track first.", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }
 
-            playbackTrack?.let { track ->
-                track.locationList?.locationsList?.let { list ->
-                    filteredLocations.clear()
-                    filteredLocations.addAll(list.filter { loc ->
-                        !loc.flags.hasFlag(LocationFlags.IGNORE)
-                    })
+            viewModel.playbackTrack?.let { track ->
+                if (viewModel.filteredLocations.isEmpty()) {
+                    track.locationList?.locationsList?.let { list ->
+                        viewModel.filteredLocations.clear()
+                        viewModel.filteredLocations.addAll(list.filter { loc ->
+                            !loc.flags.hasFlag(LocationFlags.IGNORE)
+                        })
+                    }
                 }
 
                 if (!track.startLabel.isNullOrEmpty()) {
-                    startLabel = track.startLabel
+                    viewModel.startLabel = track.startLabel
                 }
                 if (!track.endLabel.isNullOrEmpty()) {
-                    endLabel = track.endLabel
+                    viewModel.endLabel = track.endLabel
                 }
             }
 
-            playbackBinding.trackLabelText.text = playbackTrack?.trackLabel ?: "No track selected"
+            playbackBinding.trackLabelText.text = viewModel.playbackTrack?.trackLabel ?: "No track selected"
             if (globalState.operatorMode != OperatorMode.PLAYBACK) {
                 playbackBinding.directionText.text = "Playback Not Started Yet"
+            } else {
+                // Restore UI from viewModel if already in playback
+                viewModel.lastMp?.let { onMpEstimate(googleMap, it) }
             }
         }
     }
@@ -166,7 +167,7 @@ class PlaybackFragment : SensorsFragment() {
         if (globalState.operatorMode == operatorMode) return
 
         lifecycleScope.launch {
-            playbackTrack?.let {
+            viewModel.playbackTrack?.let {
                 playbackBinding.directionText.text = "--"
                 operator.startPlayback(it)
             }
@@ -182,7 +183,7 @@ class PlaybackFragment : SensorsFragment() {
     override fun setupInitialMapZoom(map: GoogleMap,
                                      position: LatLng,
                                      zoomLevel: Float): CameraUpdate {
-        val track = playbackTrack
+        val track = viewModel.playbackTrack
         val locations = getLocationsList()
         if (track != null && locations != null && locations.isNotEmpty()) {
             val locFirst = locations.first()
@@ -224,24 +225,24 @@ class PlaybackFragment : SensorsFragment() {
         if (!hasBinding) return
 
         val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
-        if (lastMp == null && map != null) {
+        if (viewModel.lastMp == null && map != null) {
             // This is the first MP. Center on mp location.
             val update = CameraUpdateFactory.newLatLngZoom(position, mapZoomLevel)
             map.animateCamera(update)
             logger.d(TAG, "@@ First MP update: $update with zoom level $mapZoomLevel")
-        } else if (map != null) {
+        } else if (map != null && mp != viewModel.lastMp) {
             // Just center on the new MP location, no zoom.
             val update = CameraUpdateFactory.newLatLng(position)
             map.animateCamera(update)
         }
 
-        lastMp = mp
+        viewModel.lastMp = mp
 
         playbackBinding.mpText.text = String.format("MP %.2f", mp.mp)
 
         playbackBinding.directionText.text = when(mp.direction) {
-            MpDirection.TO_START -> startLabel
-            MpDirection.TO_END -> endLabel
+            MpDirection.TO_START -> viewModel.startLabel
+            MpDirection.TO_END -> viewModel.endLabel
             else -> "--"
         } + " [# ${mp.locIndex}]" // DEBUG
 
@@ -249,8 +250,8 @@ class PlaybackFragment : SensorsFragment() {
             it.position = position
         }
 
-        if (mp.locIndex >= 0 && mp.locIndex != lastMpIndexRendered) {
-            lastMpIndexRendered = mp.locIndex
+        if (mp.locIndex >= 0 && (mp.locIndex != viewModel.lastMpIndexRendered || trackPolylineStart?.points?.isEmpty() == true)) {
+            viewModel.lastMpIndexRendered = mp.locIndex
 
             getLocationsList()?.let { locations ->
                 // Indices: [0 ... render ... size-1]
@@ -258,17 +259,19 @@ class PlaybackFragment : SensorsFragment() {
                 // - From start: 0..render = render - 0 + 1
                 // - From end  : render..size-1 = (size-1) - render + 1 = size - render
                 trackPolylineStart?.points =
-                    locations.take(lastMpIndexRendered + 1).map {
+                    locations.take(viewModel.lastMpIndexRendered + 1).map {
                         LatLng(it.latLong.latitude, it.latLong.longitude)
                     }
                 trackPolylineEnd?.points =
-                    locations.takeLast(locations.size - lastMpIndexRendered).map {
+                    locations.takeLast(locations.size - viewModel.lastMpIndexRendered).map {
                         LatLng(it.latLong.latitude, it.latLong.longitude)
                     }
             }
         }
-        if (mp.direction != lastMpDirectionRendered && mp.direction != MpDirection.UNKNOWN) {
-            lastMpDirectionRendered = mp.direction
+        if ((mp.direction != viewModel.lastMpDirectionRendered && mp.direction != MpDirection.UNKNOWN)
+            || (mp.direction != MpDirection.UNKNOWN && markerTrackStart?.title == null)) { // title null means markers might need icon update
+
+            viewModel.lastMpDirectionRendered = mp.direction
             when (mp.direction) {
                 MpDirection.TO_START -> {
                     trackPolylineStart?.color = lineColorFwd
@@ -304,14 +307,14 @@ class PlaybackFragment : SensorsFragment() {
                     .anchor(0.5f, 0.5f)
             )
             // only move the map if the current MP is not known
-            if (lastMp == null) {
+            if (viewModel.lastMp == null) {
                 val update = setupInitialMapZoom(map, position, mapZoomLevel)
                 logger.d(TAG, "@@ First location update: $update with zoom level $mapZoomLevel")
                 map.animateCamera(update)
             }
         } else {
             markerPositionCurrent!!.position = position
-            if (lastMp == null) {
+            if (viewModel.lastMp == null) {
                 val update = CameraUpdateFactory.newLatLng(position)
                 map.animateCamera(update)
             }
@@ -346,11 +349,11 @@ class PlaybackFragment : SensorsFragment() {
                     val locFirst = locations.first()
                     val locLast = locations.last()
                     for (location in locations) {
-                        val position = LatLng(location.latLong.latitude, location.latLong.longitude)
+                        val pos = LatLng(location.latLong.latitude, location.latLong.longitude)
                         if (location.hasPoiLabel() && location != locFirst && location != locLast) {
                             map.addMarker(
                                 MarkerOptions()
-                                    .position(position)
+                                    .position(pos)
                                     .icon(BitmapDescriptorFactory.defaultMarker(
                                         BitmapDescriptorFactory.HUE_YELLOW))
                                     .title(location.poiLabel)
@@ -366,6 +369,11 @@ class PlaybackFragment : SensorsFragment() {
                         .width(width.toFloat())
                     trackPolylineEnd = map.addPolyline(polylineOptions)
                 }
+
+                // If we are restoring state, we might need to re-apply the MP rendering logic
+                // if it hasn't happened yet because onMpEstimate was called before the map was fully ready
+                // or before polylines were initialized here.
+                viewModel.lastMp?.let { onMpEstimate(map, it) }
             }
         }
     }
