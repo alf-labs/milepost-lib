@@ -28,6 +28,7 @@ import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
@@ -281,11 +282,16 @@ open abstract class SensorsFragmentBase: Fragment() {
         currentLatLong: LatLongData,
         map: GoogleMap,
     ) {
-        val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
+        // Implementation detail: there is no "load map the first time" function as this can be used
+        // during recording where we start with no map track data. Instead every call to this method
+        // clears the map and fully repopulates it. This is known to not be efficient, and could be
+        // optimized later to only recompute polyline if the list has changed (during recording) or
+        // the fragment has resumed.
         map.clear()
 
+        val currentPosition = LatLng(currentLatLong.latitude, currentLatLong.longitude)
+
         // Create a polyline path for the recorded locations
-        // TBD only recompute polyline if list has changed (during recording) or fragment has resumed
         getLocationsList()?.let { locations ->
             if (locations.size > 1) {
                 val width = resources.getDimensionPixelSize(R.dimen.map_track)
@@ -294,23 +300,34 @@ open abstract class SensorsFragmentBase: Fragment() {
                     .color(lineColor)
                     .width(width.toFloat())
 
+                val locFirst = locations.first()
+                val locLast = locations.last()
                 for (location in locations) {
-                    polylineOptions.add(
-                        LatLng(location.latLong.latitude, location.latLong.longitude)
-                    )
+                    val position = LatLng(location.latLong.latitude, location.latLong.longitude)
+                    polylineOptions.add(position)
+                    if (location.hasPoiLabel() && location != locFirst && location != locLast) {
+                        map.addMarker(
+                            MarkerOptions()
+                                .position(position)
+                                .icon(BitmapDescriptorFactory.defaultMarker(
+                                    BitmapDescriptorFactory.HUE_YELLOW))
+                                .title(location.poiLabel)
+                                .alpha(0.5f)
+                        )
+                    }
                 }
                 map.addPolyline(polylineOptions)
             }
         }
 
         // Place current marker
-        map.addMarker(MarkerOptions().position(position))
+        map.addMarker(MarkerOptions().position(currentPosition))
 
         val update = if (setInitialMapZoom) {
             setInitialMapZoom = false
-            setupInitialMapZoom(map, position, mapZoomLevel)
+            setupInitialMapZoom(map, currentPosition, mapZoomLevel)
         } else {
-            CameraUpdateFactory.newLatLng(position)
+            CameraUpdateFactory.newLatLng(currentPosition)
         }
         map.animateCamera(update)
     }

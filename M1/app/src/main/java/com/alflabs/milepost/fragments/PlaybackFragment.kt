@@ -195,12 +195,16 @@ class PlaybackFragment : SensorsFragment() {
             markerTrackStart = map.addMarker(
                 MarkerOptions()
                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                    .title(if (track.startLabel.isNullOrEmpty()) "Start" else track.startLabel)
+                    .title(if (locFirst.hasPoiLabel()) locFirst.poiLabel
+                            else if (track.startLabel.isNullOrEmpty()) "Start"
+                            else track.startLabel)
                     .position(startPos)
             )
             markerTrackEnd = map.addMarker(
                 MarkerOptions()
-                    .title(if (track.endLabel.isNullOrEmpty()) "End" else track.endLabel)
+                    .title(if (locLast.hasPoiLabel()) locLast.poiLabel
+                            else if (track.endLabel.isNullOrEmpty()) "End"
+                            else track.endLabel)
                     .position(endPos)
             )
             // Zoom to the requested bounds with offset from edges of the map in pixels
@@ -219,12 +223,16 @@ class PlaybackFragment : SensorsFragment() {
         // This may potentially be called outside of the proper binding lifecycle.
         if (!hasBinding) return
 
+        val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
         if (lastMp == null && map != null) {
             // This is the first MP. Center on mp location.
-            val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
             val update = CameraUpdateFactory.newLatLngZoom(position, mapZoomLevel)
             map.animateCamera(update)
             logger.d(TAG, "@@ First MP update: $update with zoom level $mapZoomLevel")
+        } else if (map != null) {
+            // Just center on the new MP location, no zoom.
+            val update = CameraUpdateFactory.newLatLng(position)
+            map.animateCamera(update)
         }
 
         lastMp = mp
@@ -238,7 +246,6 @@ class PlaybackFragment : SensorsFragment() {
         } + " [# ${mp.locIndex}]" // DEBUG
 
         markerMpCurrent?.let {
-            val position = LatLng(mp.latLong.latitude, mp.latLong.longitude)
             it.position = position
         }
 
@@ -284,6 +291,10 @@ class PlaybackFragment : SensorsFragment() {
         currentLatLong: LatLongData,
         map: GoogleMap,
     ) {
+        // Implementation detail: there is no "load map the first time" function as this can be used
+        // during recording where we start with no map track data. Instead every call to this method
+        // checks if member fields are null and only initializes them once if they are not set yet.
+
         val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
         if (markerPositionCurrent == null) {
             markerPositionCurrent = map.addMarker(
@@ -292,13 +303,18 @@ class PlaybackFragment : SensorsFragment() {
                     .position(position)
                     .anchor(0.5f, 0.5f)
             )
-            val update = setupInitialMapZoom(map, position, mapZoomLevel)
-            logger.d(TAG, "@@ First location update: $update with zoom level $mapZoomLevel")
-            map.animateCamera(update)
+            // only move the map if the current MP is not known
+            if (lastMp == null) {
+                val update = setupInitialMapZoom(map, position, mapZoomLevel)
+                logger.d(TAG, "@@ First location update: $update with zoom level $mapZoomLevel")
+                map.animateCamera(update)
+            }
         } else {
             markerPositionCurrent!!.position = position
-            val update = CameraUpdateFactory.newLatLng(position)
-            map.animateCamera(update)
+            if (lastMp == null) {
+                val update = CameraUpdateFactory.newLatLng(position)
+                map.animateCamera(update)
+            }
         }
 
         if (markerMpCurrent == null) {
@@ -312,6 +328,9 @@ class PlaybackFragment : SensorsFragment() {
 
         getLocationsList()?.let { locations ->
             if (locations.size > 1) {
+                // This creates the track path before "playback" starts.
+                // All polyline segments are initially in the "start polyline" with
+                // the "forward color" to appear the expected blue.
                 if (trackPolylineStart == null) {
                     val width = resources.getDimensionPixelSize(R.dimen.map_track)
                     val polylineOptions = PolylineOptions()
@@ -322,6 +341,23 @@ class PlaybackFragment : SensorsFragment() {
                         locations.map {
                             LatLng(it.latLong.latitude, it.latLong.longitude)
                         }
+
+                    // Create the POI markers once.
+                    val locFirst = locations.first()
+                    val locLast = locations.last()
+                    for (location in locations) {
+                        val position = LatLng(location.latLong.latitude, location.latLong.longitude)
+                        if (location.hasPoiLabel() && location != locFirst && location != locLast) {
+                            map.addMarker(
+                                MarkerOptions()
+                                    .position(position)
+                                    .icon(BitmapDescriptorFactory.defaultMarker(
+                                        BitmapDescriptorFactory.HUE_YELLOW))
+                                    .title(location.poiLabel)
+                                    .alpha(0.5f)
+                            )
+                        }
+                    }
                 }
                 if (trackPolylineEnd == null) {
                     val width = resources.getDimensionPixelSize(R.dimen.map_track)
