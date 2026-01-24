@@ -147,6 +147,10 @@ class PlaybackFragment : SensorsFragment() {
                 if (!track.endLabel.isNullOrEmpty()) {
                     viewModel.endLabel = track.endLabel
                 }
+
+                playbackBinding.linearTrackView.startStationName = viewModel.startLabel ?: "Start"
+                playbackBinding.linearTrackView.endStationName = viewModel.endLabel ?: "End"
+                playbackBinding.linearTrackView.midStationName = "Middle"
             }
 
             playbackBinding.trackLabelText.text = viewModel.playbackTrack?.trackLabel ?: "No track selected"
@@ -246,6 +250,12 @@ class PlaybackFragment : SensorsFragment() {
             MpDirection.TO_END -> viewModel.endLabel
             else -> "--"
         } + " [# ${mp.locIndex}]" // DEBUG
+
+        getLocationsList()?.let { locations ->
+            if (locations.isNotEmpty()) {
+                playbackBinding.linearTrackView.progress = mp.locIndex.toFloat() / (locations.size - 1).coerceAtLeast(1).toFloat()
+            }
+        }
 
         markerMpCurrent?.let {
             it.position = position

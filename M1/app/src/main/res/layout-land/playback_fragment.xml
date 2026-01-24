@@ -5,178 +5,192 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="8dp"
         tools:context=".fragments.playback.PlaybackFragment"
         >
 
     <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1">
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            >
 
-        <!-- TOP -->
+        <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1">
 
-        <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                >
+            <!-- TOP -->
 
-            <Button
-                    android:id="@+id/start_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentStart="true"
-                    android:text="Playback"
-                    />
+            <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1.2"
+                    >
 
-            <Button
-                    android:id="@+id/stop_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
-                    android:layout_alignParentEnd="true"
-                    android:text="Stop"
-                    />
+                <Button
+                        android:id="@+id/start_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentStart="true"
+                        android:text="Playback"
+                        />
+
+                <Button
+                        android:id="@+id/stop_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:text="Stop"
+                        />
+
+                    <TextView
+                            android:id="@+id/track_label_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            tools:text="track label"
+                            android:textStyle="bold"
+                            android:layout_marginTop="4dp"
+                            android:layout_below="@id/start_button"
+                            android:layout_centerHorizontal="true"
+                            />
 
                 <TextView
-                        android:id="@+id/track_label_text"
+                        android:id="@+id/status_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text=""
-                        tools:text="track label"
-                        android:textStyle="bold"
-                        android:layout_marginTop="4dp"
-                        android:layout_below="@id/start_button"
+                        tools:text="status placeholder"
+                        android:layout_marginTop="8dp"
+                        android:layout_below="@id/track_label_text"
                         android:layout_centerHorizontal="true"
                         />
 
-            <TextView
-                    android:id="@+id/status_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    tools:text="status placeholder"
-                    android:layout_marginTop="16dp"
-                    android:layout_below="@id/track_label_text"
-                    android:layout_centerHorizontal="true"
+                <TextView
+                        android:id="@+id/location_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Location unknown"
+                        android:textColor="@color/gps_value"
+                        android:textStyle="bold"
+                        android:layout_marginTop="4dp"
+                        android:layout_below="@id/status_text"
+                        android:layout_centerHorizontal="true"
+                        />
+
+                <TextView
+                        android:id="@+id/location_acc_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        tools:text="distance accuracy"
+                        android:textColor="@color/acc_missing"
+                        android:layout_below="@id/location_text"
+                        android:layout_centerHorizontal="true"
+                        />
+
+            </RelativeLayout>
+
+            <!-- BOTTOM -->
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:orientation="vertical"
+                    android:layout_weight="1"
+                >
+
+                <TextView
+                        android:id="@+id/mp_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:text=""
+                        tools:text="MP Value"
+                        android:textStyle="bold"
+                        android:textColor="@color/gps_value"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        android:layout_gravity="center_horizontal"
+                        />
+
+                <TextView
+                        android:id="@+id/direction_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text=""
+                        tools:text="direction"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        android:layout_gravity="center_horizontal"
+                        />
+
+                <TextView
+                        android:id="@+id/speed_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        tools:text="SPEED"
+                        android:textColor="@color/gps_value"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                        android:layout_gravity="center_horizontal"
+                        />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <RelativeLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1">
+
+            <com.google.android.gms.maps.MapView
+                    android:id="@+id/map_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentTop="true"
+                    android:layout_above="@id/zoom_out_btn"
                     />
 
-            <TextView
-                    android:id="@+id/location_text"
+            <ImageButton
+                    android:id="@+id/zoom_out_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Location unknown"
-                    android:textColor="@color/gps_value"
-                    android:textStyle="bold"
-                    android:layout_marginTop="4dp"
-                    android:layout_below="@id/status_text"
-                    android:layout_centerHorizontal="true"
+                    android:padding="16dp"
+                    android:src="@drawable/zoom_out"
+                    android:contentDescription="Zoom Out"
+                    android:backgroundTint="@color/colorAccent"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentBottom="true"
                     />
 
-            <TextView
-                    android:id="@+id/location_acc_text"
+            <ImageButton
+                    android:id="@+id/zoom_in_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text=""
-                    tools:text="distance accuracy"
-                    android:textColor="@color/acc_missing"
-                    android:layout_below="@id/location_text"
-                    android:layout_centerHorizontal="true"
+                    android:padding="16dp"
+                    android:src="@drawable/zoom_in"
+                    android:contentDescription="Zoom In"
+                    android:backgroundTint="@color/colorAccent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
                     />
-
         </RelativeLayout>
 
-        <!-- BOTTOM -->
-
-        <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:orientation="vertical"
-                android:layout_weight="1"
-            >
-
-            <TextView
-                    android:id="@+id/mp_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text=""
-                    tools:text="MP Value"
-                    android:textStyle="bold"
-                    android:textColor="@color/gps_value"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:layout_gravity="center_horizontal"
-                    />
-
-            <TextView
-                    android:id="@+id/direction_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text=""
-                    tools:text="direction"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:layout_gravity="center_horizontal"
-                    />
-
-            <TextView
-                    android:id="@+id/speed_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    tools:text="SPEED"
-                    android:textColor="@color/gps_value"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:layout_gravity="center_horizontal"
-                    />
-
-        </LinearLayout>
     </LinearLayout>
 
-    <RelativeLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
-            android:layout_weight="1">
-
-        <com.google.android.gms.maps.MapView
-                android:id="@+id/map_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_alignParentTop="true"
-                android:layout_above="@id/zoom_out_btn"
-                />
-
-        <ImageButton
-                android:id="@+id/zoom_out_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:src="@drawable/zoom_out"
-                android:contentDescription="Zoom Out"
-                android:backgroundTint="@color/colorAccent"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentBottom="true"
-                />
-
-        <ImageButton
-                android:id="@+id/zoom_in_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:src="@drawable/zoom_in"
-                android:contentDescription="Zoom In"
-                android:backgroundTint="@color/colorAccent"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentBottom="true"
-                />
-    </RelativeLayout>
+    <com.alflabs.milepost.fragments.LinearTrackView
+            android:id="@+id/linear_track_view"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            />
 
 </LinearLayout>
-
