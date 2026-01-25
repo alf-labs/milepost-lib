@@ -27,6 +27,7 @@ class LinearTrackView @JvmOverloads constructor(
     private var textDescentPx = 0
     private var trainLineHeightPx = 40
     private var trainDescentPx = 0
+    private var directionToStart = false
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.GRAY
@@ -141,7 +142,17 @@ class LinearTrackView @JvmOverloads constructor(
 
         // Draw train position
         val trainX = startX + (endX - startX) * progress
-        canvas.drawText(trainSymbol, trainX, lineY - stationRadiusPx - trainDescentPx, trainPaint)
+        val trainY = lineY - stationRadiusPx - trainDescentPx
+        if (directionToStart) {
+            // Unicode symbol normally points towards the "start" station.
+            canvas.drawText(trainSymbol, trainX, trainY, trainPaint)
+        } else {
+            // Mirror horizontally for the "Unicode symbol to point towards the "end" station.
+            canvas.save()
+            canvas.scale(-1f, 1f, trainX, trainY)
+            canvas.drawText(trainSymbol, trainX, trainY, trainPaint)
+            canvas.restore()
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
