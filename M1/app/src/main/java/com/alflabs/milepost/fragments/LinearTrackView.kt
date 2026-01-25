@@ -5,14 +5,28 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import kotlin.math.max
+
 
 class LinearTrackView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
+
+    companion object {
+        private val TAG = LinearTrackView::class.java.simpleName
+        private const val stationRadius = 10f
+    }
+
+    private var stationRadiusPx = 10f
+    private val paddingPx = 40f
+    private var textLineHeightPx = 30
+    private var textDescentPx = 0
+    private var trainLineHeightPx = 40
+    private var trainDescentPx = 0
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.GRAY
@@ -21,7 +35,7 @@ class LinearTrackView @JvmOverloads constructor(
     }
 
     private val stationPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.DKGRAY
+        color = Color.GRAY
         style = Paint.Style.FILL
     }
 
@@ -109,30 +123,47 @@ class LinearTrackView @JvmOverloads constructor(
         val width = width - paddingLeft - paddingRight
         val height = height - paddingTop - paddingBottom
 
-        val centerY = paddingTop + height / 2f
-        val startX = paddingLeft + 40f
-        val endX = width + paddingLeft - 40f
+        val lineY = paddingTop + trainLineHeightPx + stationRadiusPx
+        val startX = paddingLeft + paddingPx
+        val endX = width + paddingLeft - paddingPx
 
         // Draw horizontal line
-        canvas.drawLine(startX, centerY, endX, centerY, linePaint)
+        canvas.drawLine(startX, lineY, endX, lineY, linePaint)
 
         // Draw stations markers
-        val stationRadius = 10f
-        val textOffsetY = 40f
+        val textY = lineY + stationRadiusPx + textLineHeightPx - textDescentPx
         for (station in stations) {
             val x = startX + (endX - startX) * station.pct
-            canvas.drawCircle(x, centerY, stationRadius, stationPaint)
-            canvas.drawText(String.format("%.2f", station.mp), x, centerY + textOffsetY, station.paint)
-            canvas.drawText(station.title, x, centerY + 2 * textOffsetY, station.paint)
+            canvas.drawCircle(x, lineY, stationRadiusPx, stationPaint)
+            canvas.drawText(String.format("%.2f", station.mp), x, textY, station.paint)
+            canvas.drawText(station.title, x, textY + textLineHeightPx, station.paint)
         }
 
         // Draw train position
         val trainX = startX + (endX - startX) * progress
-        canvas.drawText(trainSymbol, trainX, centerY - 20f, trainPaint)
+        canvas.drawText(trainSymbol, trainX, lineY - stationRadiusPx - trainDescentPx, trainPaint)
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val minHeight = 150
+
+        val metrics = textMiddlePaint.fontMetrics
+        val trainMetrics = trainPaint.fontMetrics
+        // (descent is positive, ascent is negative, so this result is positive)
+        textLineHeightPx = (metrics.descent - metrics.ascent).toInt()
+        trainLineHeightPx = (trainMetrics.descent - trainMetrics.ascent).toInt()
+        textDescentPx = metrics.descent.toInt()
+        trainDescentPx = trainMetrics.descent.toInt()
+        Log.d(TAG, "@@ textLineHeightPx = $textLineHeightPx")
+        Log.d(TAG, "@@ trainLineHeightPx = $trainLineHeightPx")
+
+        // convert the dpi-neutral stationRadius into a pixel value
+        stationRadiusPx = (stationRadius * resources.displayMetrics.density)
+        Log.d(TAG, "@@ stationRadiusPx = $stationRadiusPx")
+
+        val minHeight = (2 * stationRadiusPx + 2 * textLineHeightPx + trainLineHeightPx).toInt()
+        Log.d(TAG, "@@ minHeight = $minHeight")
+
+
         val width = MeasureSpec.getSize(widthMeasureSpec)
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val heightSize = MeasureSpec.getSize(heightMeasureSpec)
@@ -143,6 +174,7 @@ class LinearTrackView @JvmOverloads constructor(
             else -> minHeight
         }
 
+        Log.d(TAG, "@@ LinearTrackView onMeasure: width = $width, height = $height")
         setMeasuredDimension(width, height)
     }
 }

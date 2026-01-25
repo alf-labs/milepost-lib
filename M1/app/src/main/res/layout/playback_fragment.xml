@@ -164,7 +164,7 @@
     <com.alflabs.milepost.fragments.LinearTrackView
             android:id="@+id/linear_track_view"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             />
 
