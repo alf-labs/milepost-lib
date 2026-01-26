@@ -529,7 +529,9 @@ class ReviewFragment : Fragment() {
         try {
             map.clear()
 
+            // Note: the review track displays all points, *including the ignored ones*
             val locations = track.locationList?.locationsList ?: emptyList<LocationData>()
+
             if (locations.size == 1) {
                 val location = locations[0]
                 val movePos = LatLng(location.latLong.latitude, location.latLong.longitude)
@@ -595,15 +597,18 @@ class ReviewFragment : Fragment() {
                 logger.d(TAG, "@@ Camera bounds: $bounds")
                 map.moveCamera(update)
 
-                binding.linearTrackView?.setStations(locations
+                val notIgnored = locations.filter { loc ->
+                    !loc.flags.hasFlag(LocationFlags.IGNORE)
+                }
+                binding.linearTrackView?.setStations(notIgnored
                     .filterIndexed { index, loc ->
-                        index == 0 || index == locations.lastIndex || loc.hasPoiLabel()
+                        index == 0 || index == notIgnored.lastIndex || loc.hasPoiLabel()
                     }
                     .mapIndexed { index, loc ->
                         val title =
                             if (loc.hasPoiLabel()) loc.poiLabel
                             else if (index == 0) trackStartLabel
-                            else if (index == locations.lastIndex) trackEndLabel
+                            else if (index == notIgnored.lastIndex) trackEndLabel
                             else "--"
                         Pair(loc.mp, title)
                     }
