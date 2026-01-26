@@ -104,24 +104,28 @@ class LinearTrackView @JvmOverloads constructor(
     }
 
     fun setCurrentMp(mp: Float) {
-        var p = 0f
-        if (stations.size > 1) {
-            // Handle out of bounds gracefully.
-            val mpFirst = stations.first().mp
-            val mpLast = stations.last().mp
-            if (mpLast > mpFirst) {
-                if (mp < mpFirst) {
-                    p = 0f
-                } else if (mp > mpLast) {
-                    p = 1f
-                }
-            } else {
-                if (mp > mpFirst) {
-                    p = 0f
-                } else if (mp < mpLast) {
-                    p = 1f
-                }
+        if (stations.size < 2) {
+            return
+        }
+
+        var p = -1f
+        // Handle out of bounds gracefully.
+        val mpFirst = stations.first().mp
+        val mpLast = stations.last().mp
+        if (mpLast > mpFirst) {
+            if (mp < mpFirst) {
+                p = 0f
+            } else if (mp > mpLast) {
+                p = 1f
             }
+        } else {
+            if (mp > mpFirst) {
+                p = 0f
+            } else if (mp < mpLast) {
+                p = 1f
+            }
+        }
+        if (p >= 0f) {
             trainPositionPct = p
             invalidate()
             return
@@ -129,26 +133,26 @@ class LinearTrackView @JvmOverloads constructor(
 
         // Linear search each interval.
         // The mp direction can be either increasing or decreasing. Handle both.
-        var last : LinearStation? = null
+        // Note that the pct progress is not related to the MP distance but the
+        // *index* in the list since all station points are drawn equidistant.
         val epsilon = 0.001f
-        for (station in stations) {
-            if (last == null) {
-                last = station
-            } else {
-                val deltaMp = station.mp - last.mp
-                if (kotlin.math.abs(deltaMp) > epsilon) {
-                    val mpMin = minOf(last.mp, station.mp)
-                    val mpMax = maxOf(last.mp, station.mp)
-                    if (mp in mpMin..mpMax) {
-                        p = (mp - last.mp) / deltaMp
-                        trainPositionPct = min(1f, max(0f, p))
-                        invalidate()
-                        return
-                    }
-                    last = station
+        var previousMp = mpFirst
+        stations.forEachIndexed { index, station ->
+            if (index == 0) return@forEachIndexed // skip first one
+            val deltaMp = station.mp - previousMp
+            if (kotlin.math.abs(deltaMp) > epsilon) {
+                val mpMin = minOf(mpFirst, station.mp)
+                val mpMax = maxOf(mpFirst, station.mp)
+                if (mp in mpMin..mpMax) {
+                    p = ((index - 1) + (mp - previousMp) / deltaMp) / stations.lastIndex
+                    trainPositionPct = min(1f, max(0f, p))
+                    invalidate()
+                    return
                 }
             }
+            previousMp = station.mp
         }
+
         // If we haven't found anything, use the end position.
         trainPositionPct = 1f
         invalidate()
@@ -166,14 +170,10 @@ class LinearTrackView @JvmOverloads constructor(
         val paddingLeft = paddingLeft.toFloat()
         val paddingRight = paddingRight.toFloat()
         val paddingTop = paddingTop.toFloat()
-        val paddingBottom = paddingBottom.toFloat()
-
-        val width = width - paddingLeft - paddingRight
-        val height = height - paddingTop - paddingBottom
 
         val lineY = paddingTop + trainLineHeightPx + stationRadiusPx
         val startX = paddingLeft + paddingPx
-        val endX = width + paddingLeft - paddingPx
+        val endX = this.width - paddingRight - paddingPx
 
         // Draw horizontal line
         canvas.drawLine(startX, lineY, endX, lineY, linePaint)
@@ -191,6 +191,12 @@ class LinearTrackView @JvmOverloads constructor(
         trainPositionPct?.let { pct ->
             val trainX = startX + (endX - startX) * pct
             val trainY = lineY - stationRadiusPx - trainDescentPx
+            val tickY = lineY - stationRadiusPx
+
+            // Draw a tick
+            canvas.drawLine(trainX, lineY, trainX, tickY, linePaint)
+
+            // Draw the train text symbol
             if (directionTowardsStart ?: false) {
                 // Unicode symbol normally points towards the "start" station.
                 canvas.drawText(trainSymbol, trainX, trainY, trainPaint)

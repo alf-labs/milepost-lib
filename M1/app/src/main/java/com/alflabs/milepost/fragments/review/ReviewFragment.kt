@@ -518,6 +518,8 @@ class ReviewFragment : Fragment() {
             val update = CameraUpdateFactory.newLatLng(position)
             map.animateCamera(update)
         }
+
+        binding.linearTrackView?.setCurrentMp(locationData.mp)
     }
 
     fun loadMapTrack() {
@@ -568,19 +570,21 @@ class ReviewFragment : Fragment() {
                 val boundsBuilder = LatLngBounds.Builder()
                 boundsBuilder.include(startPos)
                 boundsBuilder.include(endPos)
+                val trackStartLabel = if (locFirst.hasPoiLabel()) locFirst.poiLabel
+                    else if (track.startLabel.isNullOrEmpty()) "Start"
+                    else track.startLabel
                 map.addMarker(
                     MarkerOptions()
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                        .title(if (locFirst.hasPoiLabel()) locFirst.poiLabel
-                               else if (track.startLabel.isNullOrEmpty()) "Start"
-                               else track.startLabel)
+                        .title(trackStartLabel)
                         .position(startPos)
                 )
+                val trackEndLabel = if (locLast.hasPoiLabel()) locLast.poiLabel
+                    else if (track.endLabel.isNullOrEmpty()) "End"
+                    else track.endLabel
                 map.addMarker(
                     MarkerOptions()
-                        .title(if (locLast.hasPoiLabel()) locLast.poiLabel
-                               else if (track.endLabel.isNullOrEmpty()) "End"
-                               else track.endLabel)
+                        .title(trackEndLabel)
                         .position(endPos)
                 )
 
@@ -590,6 +594,20 @@ class ReviewFragment : Fragment() {
                 val update = CameraUpdateFactory.newLatLngBounds(bounds, padding)
                 logger.d(TAG, "@@ Camera bounds: $bounds")
                 map.moveCamera(update)
+
+                binding.linearTrackView?.setStations(locations
+                    .filterIndexed { index, loc ->
+                        index == 0 || index == locations.lastIndex || loc.hasPoiLabel()
+                    }
+                    .mapIndexed { index, loc ->
+                        val title =
+                            if (loc.hasPoiLabel()) loc.poiLabel
+                            else if (index == 0) trackStartLabel
+                            else if (index == locations.lastIndex) trackEndLabel
+                            else "--"
+                        Pair(loc.mp, title)
+                    }
+                )
             }
         } catch (e: Exception) {
             logger.d(TAG, "@@ loadMapTrack", e)

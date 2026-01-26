@@ -66,7 +66,7 @@
                 android:contentDescription="Zoom Out"
                 android:backgroundTint="@color/colorAccent"
                 android:layout_alignParentStart="true"
-                android:layout_alignParentBottom="true"
+                android:layout_above="@+id/linear_track_view"
                 />
 
         <ImageButton
@@ -77,6 +77,15 @@
                 android:src="@drawable/zoom_in"
                 android:contentDescription="Zoom In"
                 android:backgroundTint="@color/colorAccent"
+                android:layout_alignParentEnd="true"
+                android:layout_above="@+id/linear_track_view"
+                />
+
+        <com.alflabs.milepost.fragments.LinearTrackView
+                android:id="@+id/linear_track_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
                 />
