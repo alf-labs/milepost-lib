@@ -158,9 +158,6 @@ class PlaybackFragment : SensorsFragment() {
                                     else "--"
                                 Pair(loc.mp, title)
                             }
-                            // TODO we'll want more control on the DISPLAY direction as it
-                            // is likely to differ from the GPS acquisition direction.
-                             .sortedBy { it.first }
                         )
                     }
                 }
@@ -297,12 +294,14 @@ class PlaybackFragment : SensorsFragment() {
                     trackPolylineEnd?.color = lineColorPrev
                     markerTrackStart?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     markerTrackEnd?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                    playbackBinding.linearTrackView.setDirectionTowardsStart(true)
                 }
                 MpDirection.TO_END -> {
                     trackPolylineStart?.color = lineColorPrev
                     trackPolylineEnd?.color = lineColorFwd
                     markerTrackStart?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
                     markerTrackEnd?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                    playbackBinding.linearTrackView.setDirectionTowardsStart(false)
                 }
                 else -> { /* no-op */ }
             }
