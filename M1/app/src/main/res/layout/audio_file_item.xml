@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+
+    <TextView
+            android:id="@+id/file_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            tools:text="File Name" />
+
+    <TextView
+            android:id="@+id/user_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_below="@id/file_name"
+            tools:text="User Title" />
+
+    <TextView
+            android:id="@+id/last_access_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_below="@id/user_title"
+            tools:text="Last Access Time" />
+
+    <TextView
+            android:id="@+id/uri_valid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:layout_marginStart="16dp"
+            android:layout_below="@id/last_access_time"
+            tools:text="URI Valid / Invalid" />
+
+</RelativeLayout>

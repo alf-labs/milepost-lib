@@ -26,6 +26,13 @@
     </fragment>
 
     <fragment
+            android:id="@+id/nav_audio_file_list"
+            android:name="com.alflabs.milepost.fragments.audioFiles.AudioFilesFragment"
+            android:label="Audio Files"
+            tools:layout="@layout/audio_files_fragment">
+    </fragment>
+
+    <fragment
             android:id="@+id/nav_gps_track_list"
             android:name="com.alflabs.milepost.fragments.tracks.GpsTracksFragment"
             android:label="Tracks"
