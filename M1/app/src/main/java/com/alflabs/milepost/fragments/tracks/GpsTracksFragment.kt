@@ -108,7 +108,7 @@ class GpsTracksFragment : Fragment() {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.tracks_menu, menu)
+                menuInflater.inflate(R.menu.gps_tracks_menu, menu)
                 ApiHelper.Menu_setOptionalIconsVisible(menu, true)
             }
 
