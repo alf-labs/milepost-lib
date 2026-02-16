@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.databinding.ReviewFragmentBinding
+import com.alflabs.milepost.databinding.GpsReviewFragmentBinding
 import com.alflabs.milepost.fragments.tracks.toText
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
@@ -62,9 +62,9 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class ReviewFragment : Fragment() {
+class GpsReviewFragment : Fragment() {
     companion object {
-        private val TAG = ReviewFragment::class.java.simpleName
+        private val TAG = GpsReviewFragment::class.java.simpleName
         private const val KEY_SELECTED_POSITION = "selected-position"
     }
 
@@ -73,11 +73,11 @@ class ReviewFragment : Fragment() {
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var gpsTrackDao: GpsTrackDao
 
-    private var _binding: ReviewFragmentBinding? = null
+    private var _binding: GpsReviewFragmentBinding? = null
     private val binding get() = _binding!!
-    private val fragmentArgs: ReviewFragmentArgs by navArgs()
-    private val viewModel: ReviewViewModel by viewModels()
-    private var reviewLocationAdapter: ReviewLocationAdapter? = null
+    private val fragmentArgs: GpsReviewFragmentArgs by navArgs()
+    private val viewModel: GpsReviewViewModel by viewModels()
+    private var gpsReviewLocationAdapter: GpsReviewLocationAdapter? = null
     private var gpsTrackEntity: GpsTrackEntity? = null
     private var googleMap: GoogleMap? = null
     private var selectedLocationMarker: Marker? = null
@@ -85,13 +85,13 @@ class ReviewFragment : Fragment() {
     private var firstLoad = true
     private var mapZoomLevel = AppSettings.MAP_ZOOM_LEVEL_DEFAULT
 
-    private lateinit var reviewList: List<ReviewLocationData>
+    private lateinit var reviewList: List<GpsReviewLocationData>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = ReviewFragmentBinding.inflate(inflater, container, false)
+        _binding = GpsReviewFragmentBinding.inflate(inflater, container, false)
 
         return binding.root
     }
@@ -106,19 +106,19 @@ class ReviewFragment : Fragment() {
         lifecycleScope.launch {
             useImperialUnits = appSettings.useImperialUnits()
 
-            reviewLocationAdapter = ReviewLocationAdapter(
+            gpsReviewLocationAdapter = GpsReviewLocationAdapter(
                 useImperialUnits,
                 onMpClicked = ::showReviewMpDialog,
                 onSelection = ::onLocationClicked
             )
 
             val layoutManager = LinearLayoutManager(requireContext())
-            binding.locationsList.adapter = reviewLocationAdapter
+            binding.locationsList.adapter = gpsReviewLocationAdapter
             binding.locationsList.layoutManager = layoutManager
 
             savedInstanceState?.let {
                 val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
-                reviewLocationAdapter?.setSelectedPosition(selectedPosition)
+                gpsReviewLocationAdapter?.setSelectedPosition(selectedPosition)
             }
 
             val dividerItemDecoration = DividerItemDecoration(
@@ -140,7 +140,7 @@ class ReviewFragment : Fragment() {
                 gpsTrackEntity = track
                 reviewList = convert(track?.locationList)
                 updateInterpolatedMp(track, reviewList)
-                reviewLocationAdapter?.submitList(reviewList)
+                gpsReviewLocationAdapter?.submitList(reviewList)
                 updateTrackSummary(track)
                 logger.d(TAG, "@@ is first load: $firstLoad")
                 if (track != null && firstLoad) {
@@ -154,7 +154,7 @@ class ReviewFragment : Fragment() {
                 }
                 lifecycleScope.launch {
                     loadMapTrack()
-                    val pos = reviewLocationAdapter?.selectedPosition ?: RecyclerView.NO_POSITION
+                    val pos = gpsReviewLocationAdapter?.selectedPosition ?: RecyclerView.NO_POSITION
                     if (pos != RecyclerView.NO_POSITION) {
                         logger.d(TAG, "@@ RELOAD - Scroll to position: $pos")
                         binding.locationsList.scrollToPosition(pos)
@@ -202,7 +202,7 @@ class ReviewFragment : Fragment() {
     }
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        reviewLocationAdapter?.let { adapter ->
+        gpsReviewLocationAdapter?.let { adapter ->
             logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
             outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
@@ -273,7 +273,7 @@ class ReviewFragment : Fragment() {
         lifecycleScope.launch {
             logger.d(TAG, "@@ Set prefs Playback track: ${track.id}")
             appSettings.setPlaybackTrackId(track.id)
-            val action = ReviewFragmentDirections.actionReviewToPlay()
+            val action = GpsReviewFragmentDirections.actionReviewToPlay()
             findNavController().navigate(action)
         }
     }
@@ -301,7 +301,7 @@ class ReviewFragment : Fragment() {
     private fun showReviewTitleDialog(track: GpsTrackEntity?) {
         if (track == null) return
 
-        val dialogView = layoutInflater.inflate(R.layout.review_title_dialog, null)
+        val dialogView = layoutInflater.inflate(R.layout.gps_review_title_dialog, null)
         val trackLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.track_label_edittext)
         val startLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.start_label_edittext)
         val endLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.end_label_edittext)
@@ -416,14 +416,14 @@ class ReviewFragment : Fragment() {
             .show()
     }
 
-    private fun showReviewMpDialog(item: ReviewLocationData) {
+    private fun showReviewMpDialog(item: GpsReviewLocationData) {
         val index = item.locIdx
         val track = gpsTrackEntity
         if (index < 0 || item.data == null || track == null) return
         val ld: LocationData = item.data
 
         val layoutInflater = LayoutInflater.from(requireContext())
-        val dialogView = layoutInflater.inflate(R.layout.review_mp_dialog, null)
+        val dialogView = layoutInflater.inflate(R.layout.gps_review_mp_dialog, null)
         val poiLabelEditText = dialogView.findViewById<TextInputEditText>(R.id.poi_label_edittext)
         val clearPoiButton = dialogView.findViewById<ImageButton>(R.id.clear_poi_button)
         val mpValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_value_edittext)
@@ -498,7 +498,7 @@ class ReviewFragment : Fragment() {
             .show()
     }
 
-    private fun onLocationClicked(item: ReviewLocationData) {
+    private fun onLocationClicked(item: GpsReviewLocationData) {
         val locationData = item.data ?: return
         val map = googleMap ?: return
 
@@ -657,7 +657,7 @@ class ReviewFragment : Fragment() {
         }
     }
 
-    fun updateInterpolatedMp(track: GpsTrackEntity?, locList: List<ReviewLocationData>) {
+    fun updateInterpolatedMp(track: GpsTrackEntity?, locList: List<GpsReviewLocationData>) {
         logger.d(TAG, "@@ updateInterpolatedMp")
         if (track == null || track.locationList == null) return
 
@@ -813,11 +813,11 @@ internal fun computeTrackSummary(currentSummary: GpsTrackSummary, track: GpsTrac
     }
 }
 
-internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationData> {
-    val result = mutableListOf<ReviewLocationData>()
+internal fun convert(locationDataList: LocationDataList?): List<GpsReviewLocationData> {
+    val result = mutableListOf<GpsReviewLocationData>()
 
     // First row is a little dummy hack for headers
-    result.add(ReviewLocationData(
+    result.add(GpsReviewLocationData(
         locIdx = -1,
         data = null,
     ))
@@ -846,7 +846,7 @@ internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationDa
             distanceMeters += distResults[0]
         }
 
-        result.add(ReviewLocationData(
+        result.add(GpsReviewLocationData(
             locIdx = index,
             data = location,
             deltaTS = deltaTS,
@@ -859,7 +859,7 @@ internal fun convert(locationDataList: LocationDataList?): List<ReviewLocationDa
     return result
 }
 
-internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<ReviewLocationData>? {
+internal fun computeInterpolatedMp(locList: List<GpsReviewLocationData>) : List<GpsReviewLocationData>? {
     // Keep only the valid entries (not header, with actual data, not ignore)
     val mutLocList = locList.filter {
         it.locIdx >= 0
@@ -941,7 +941,7 @@ internal fun computeInterpolatedMp(locList: List<ReviewLocationData>) : List<Rev
     return if (changed) mutLocList else null
 }
 
-internal fun setInterpolatedMp(index: Int, list: MutableList<ReviewLocationData>, mp: Float): ReviewLocationData {
+internal fun setInterpolatedMp(index: Int, list: MutableList<GpsReviewLocationData>, mp: Float): GpsReviewLocationData {
     val data = list[index].data
     if (data != null) {
         list[index] = list[index].copy(data = data.copy {

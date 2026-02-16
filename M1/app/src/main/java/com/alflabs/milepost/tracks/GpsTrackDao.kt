@@ -18,7 +18,7 @@ interface GpsTrackDao {
     suspend fun update(track: GpsTrackEntity)
 
     @Query("SELECT id, createdDateISO, trackLabel, summary FROM gps_tracks ORDER BY id DESC")
-    fun getAllDisplayInfo(): Flow<List<TrackDisplayInfo>>
+    fun getAllDisplayInfo(): Flow<List<GpsTrackDisplayInfo>>
 
     @Query("SELECT * FROM gps_tracks WHERE id = :id")
     fun getById(id: Long): Flow<GpsTrackEntity?>

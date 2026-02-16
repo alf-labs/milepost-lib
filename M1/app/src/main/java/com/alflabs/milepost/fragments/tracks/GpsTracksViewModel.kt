@@ -3,7 +3,7 @@ package com.alflabs.milepost.fragments.tracks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.alflabs.milepost.tracks.TrackDisplayInfo
+import com.alflabs.milepost.tracks.GpsTrackDisplayInfo
 import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.GpsTrackDao
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class TracksViewModel @Inject constructor(
+class GpsTracksViewModel @Inject constructor(
     private val gpsTrackDao: GpsTrackDao
 ) : ViewModel() {
 
@@ -35,7 +35,7 @@ class TracksViewModel @Inject constructor(
         }
     }
 
-    fun delete(trackInfo: TrackDisplayInfo) {
+    fun delete(trackInfo: GpsTrackDisplayInfo) {
         viewModelScope.launch {
             gpsTrackDao.deleteById(trackInfo.id)
             println("@@ DB DELETE track = $trackInfo")

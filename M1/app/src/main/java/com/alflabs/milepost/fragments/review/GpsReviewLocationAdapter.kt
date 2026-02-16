@@ -11,16 +11,16 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
-import com.alflabs.milepost.databinding.ReviewLocationItemBinding
+import com.alflabs.milepost.databinding.GpsReviewLocationItemBinding
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.utils.Units
 
-class ReviewLocationAdapter(
+class GpsReviewLocationAdapter(
     private val useImperialUnits: Boolean,
-    private val onMpClicked: (ReviewLocationData) -> Unit,
-    private val onSelection: (ReviewLocationData) -> Unit
-) : ListAdapter<ReviewLocationData, ReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
+    private val onMpClicked: (GpsReviewLocationData) -> Unit,
+    private val onSelection: (GpsReviewLocationData) -> Unit
+) : ListAdapter<GpsReviewLocationData, GpsReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
 
     var selectedPosition = RecyclerView.NO_POSITION
         private set
@@ -37,7 +37,7 @@ class ReviewLocationAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
-        val binding = ReviewLocationItemBinding.inflate(
+        val binding = GpsReviewLocationItemBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -51,15 +51,15 @@ class ReviewLocationAdapter(
     }
 
     inner class ReviewViewHolder(
-        private val binding: ReviewLocationItemBinding,
+        private val binding: GpsReviewLocationItemBinding,
         private val useImperialUnits: Boolean,
-        private val onMpClicked: (ReviewLocationData) -> Unit,
-        private val onSelection: (ReviewLocationData) -> Unit
+        private val onMpClicked: (GpsReviewLocationData) -> Unit,
+        private val onSelection: (GpsReviewLocationData) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val italic = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
 
-        fun bind(item: ReviewLocationData, isSelected: Boolean) {
+        fun bind(item: GpsReviewLocationData, isSelected: Boolean) {
             val ld = item.data
             if (ld == null) {
                 binding.index.text = "Idx"
@@ -143,10 +143,10 @@ private fun TextView.strikeThrough(strike: Boolean) {
 }
 
 
-class LocationDiffCallback : DiffUtil.ItemCallback<ReviewLocationData>() {
+class LocationDiffCallback : DiffUtil.ItemCallback<GpsReviewLocationData>() {
     override fun areItemsTheSame(
-        oldItem: ReviewLocationData,
-        newItem: ReviewLocationData
+        oldItem: GpsReviewLocationData,
+        newItem: GpsReviewLocationData
     ): Boolean {
         val oldTS = oldItem.data?.latLong?.timestampMillis ?: -1
         val newTS = newItem.data?.latLong?.timestampMillis ?: -1
@@ -154,7 +154,7 @@ class LocationDiffCallback : DiffUtil.ItemCallback<ReviewLocationData>() {
     }
 
     override fun areContentsTheSame(
-        oldItem: ReviewLocationData,
-        newItem: ReviewLocationData
+        oldItem: GpsReviewLocationData,
+        newItem: GpsReviewLocationData
     ): Boolean = oldItem == newItem
 }

@@ -12,12 +12,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class ReviewViewModel @Inject constructor(
+class GpsReviewViewModel @Inject constructor(
     private val gpsTrackDao: GpsTrackDao
 ) : ViewModel() {
 
     companion object {
-        private val TAG = ReviewViewModel::class.java.simpleName
+        private val TAG = GpsReviewViewModel::class.java.simpleName
     }
 
     private val _trackId = MutableLiveData<Long>()

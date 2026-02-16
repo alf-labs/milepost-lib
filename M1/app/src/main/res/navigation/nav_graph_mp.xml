@@ -26,13 +26,13 @@
     </fragment>
 
     <fragment
-            android:id="@+id/nav_tracks"
-            android:name="com.alflabs.milepost.fragments.tracks.TracksFragment"
+            android:id="@+id/nav_gps_track_list"
+            android:name="com.alflabs.milepost.fragments.tracks.GpsTracksFragment"
             android:label="Tracks"
-            tools:layout="@layout/tracks_fragment">
+            tools:layout="@layout/gps_tracks_fragment">
         <action
                 android:id="@+id/action_list_to_review"
-                app:destination="@id/nav_review_track">
+                app:destination="@id/nav_gps_track_review">
             <argument
                     android:name="trackId"
                     app:argType="long" />
@@ -40,21 +40,21 @@
     </fragment>
 
     <fragment
-            android:id="@+id/nav_review_track"
-            android:name="com.alflabs.milepost.fragments.review.ReviewFragment"
+            android:id="@+id/nav_gps_track_review"
+            android:name="com.alflabs.milepost.fragments.review.GpsReviewFragment"
             android:label="Review Track"
-            tools:layout="@layout/review_fragment">
+            tools:layout="@layout/gps_review_fragment">
         <argument
                 android:name="trackId"
                 app:argType="long" />
         <action
                 android:id="@+id/action_review_to_play"
-                app:destination="@id/nav_play_track">
+                app:destination="@id/nav_gps_track_play">
         </action>
     </fragment>
 
     <fragment
-            android:id="@+id/nav_record_track"
+            android:id="@+id/nav_gps_track_record"
             android:name="com.alflabs.milepost.fragments.RecordFragment"
             android:label="Record Track"
             tools:layout="@layout/sensors_fragment">
@@ -68,7 +68,7 @@
         </action>
         <action
                 android:id="@+id/action_record_to_review"
-                app:destination="@id/nav_review_track">
+                app:destination="@id/nav_gps_track_review">
             <argument
                     android:name="trackId"
                     app:argType="long" />
@@ -76,7 +76,7 @@
     </fragment>
 
     <fragment
-            android:id="@+id/nav_play_track"
+            android:id="@+id/nav_gps_track_play"
             android:name="com.alflabs.milepost.fragments.playback.PlaybackFragment"
             android:label="Playback Track"
             tools:layout="@layout/sensors_fragment">
@@ -131,8 +131,7 @@
     <fragment
             android:id="@+id/nav_settings"
             android:name="com.alflabs.milepost.fragments.SettingsFragment"
-            android:label="Settings"
-            tools:layout="@layout/settings_fragment">
+            android:label="Settings" >
     </fragment>
 
 </navigation>

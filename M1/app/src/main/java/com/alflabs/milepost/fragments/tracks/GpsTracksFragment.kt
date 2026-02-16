@@ -21,9 +21,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
-import com.alflabs.milepost.databinding.TracksFragmentBinding
+import com.alflabs.milepost.databinding.GpsTracksFragmentBinding
 import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.tracks.TrackDisplayInfo
+import com.alflabs.milepost.tracks.GpsTrackDisplayInfo
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
@@ -33,19 +33,19 @@ import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TracksFragment : Fragment() {
+class GpsTracksFragment : Fragment() {
 
     companion object {
-        private val TAG = TracksFragment::class.java.simpleName
+        private val TAG = GpsTracksFragment::class.java.simpleName
     }
 
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var logger: ILogger
     @Inject lateinit var importerExporter: ImporterExporter
 
-    private var _binding: TracksFragmentBinding? = null
+    private var _binding: GpsTracksFragmentBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: TracksViewModel by viewModels()
+    private val viewModel: GpsTracksViewModel by viewModels()
     private var useImperialUnits = false
 
     private val selectJsonFileLauncher =
@@ -57,7 +57,7 @@ class TracksFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = TracksFragmentBinding.inflate(inflater, container, false)
+        _binding = GpsTracksFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -72,7 +72,7 @@ class TracksFragment : Fragment() {
             viewLifecycleOwner.lifecycleScope.launch {
                 val playbackTrackId = appSettings.playbackTrackId()
 
-                val adapter = TrackAdapter(
+                val adapter = GpsTrackAdapter(
                     onClick = { track ->
                         showEditDialog(track)
                     },
@@ -171,9 +171,9 @@ class TracksFragment : Fragment() {
         }
     }
 
-    private fun showEditDialog(track: TrackDisplayInfo) {
+    private fun showEditDialog(track: GpsTrackDisplayInfo) {
         findNavController().navigate(
-            TracksFragmentDirections.actionListToReview(track.id)
+            GpsTracksFragmentDirections.actionListToReview(track.id)
         )
     }
 
