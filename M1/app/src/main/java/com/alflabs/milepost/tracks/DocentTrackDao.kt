@@ -20,8 +20,8 @@ interface DocentTrackDao {
     @Query("SELECT id FROM docent_tracks WHERE uuid = :uuid")
     suspend fun getIdByUuid(uuid: String): Long?
 
-    @Query("SELECT * FROM docent_tracks ORDER BY last_used_time DESC")
-    suspend fun getAll(): List<DocentTrackEntity>
+    @Query("SELECT * FROM docent_tracks ORDER BY lastUsedTime DESC")
+    fun getAll(): Flow<List<DocentTrackEntity>>
 
     @Query("DELETE FROM docent_tracks WHERE id = :id")
     suspend fun deleteById(id: Long)

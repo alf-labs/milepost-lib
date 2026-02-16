@@ -16,7 +16,7 @@ data class AudioFileEntity(
     val fileName: String,
 
     @ColumnInfo
-    val lastAccessDate: String,
+    val lastAccessTime: String,
 
     @ColumnInfo
     val persistableUri: String,

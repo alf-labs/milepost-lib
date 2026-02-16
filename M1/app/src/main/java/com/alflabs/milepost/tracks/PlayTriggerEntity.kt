@@ -11,13 +11,13 @@ import androidx.room.PrimaryKey
         ForeignKey(
             entity = AudioFileEntity::class,
             parentColumns = ["id"],
-            childColumns = ["audio_file_id"],
+            childColumns = ["audioFileId"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = DocentTrackEntity::class,
             parentColumns = ["id"],
-            childColumns = ["docent_track_id"],
+            childColumns = ["docentTrackId"],
             onDelete = ForeignKey.CASCADE
         )
     ]
@@ -26,12 +26,12 @@ data class PlayTriggerEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
-    @ColumnInfo(name = "audio_file_id", index = true)
+    @ColumnInfo(index = true)
     val audioFileId: Long,
 
-    @ColumnInfo(name = "docent_track_id", index = true)
+    @ColumnInfo(index = true)
     val docentTrackId: Long,
 
-    @ColumnInfo(name = "playback_trigger")
+    @ColumnInfo
     val playbackTrigger: String
 )

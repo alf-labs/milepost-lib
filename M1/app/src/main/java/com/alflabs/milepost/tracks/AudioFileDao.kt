@@ -17,8 +17,8 @@ interface AudioFileDao {
     @Query("SELECT * FROM audio_files WHERE id = :id")
     fun getById(id: Long): Flow<AudioFileEntity?>
 
-    @Query("SELECT * FROM audio_files ORDER BY lastAccessDate DESC")
-    suspend fun getAll(): List<AudioFileEntity>
+    @Query("SELECT * FROM audio_files ORDER BY lastAccessTime DESC")
+    fun getAll(): Flow<List<AudioFileEntity>>
 
     @Query("DELETE FROM audio_files WHERE id = :id")
     suspend fun deleteById(id: Long)

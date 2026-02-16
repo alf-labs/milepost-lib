@@ -9,10 +9,10 @@ interface PlayTriggerDao {
     @Insert
     suspend fun insert(playTrigger: PlayTriggerEntity): Long
 
-    @Query("SELECT * FROM play_triggers WHERE audio_file_id = :audioFileId")
+    @Query("SELECT * FROM play_triggers WHERE audioFileId = :audioFileId")
     suspend fun getTriggersForAudioFile(audioFileId: Long): List<PlayTriggerEntity>
 
-    @Query("SELECT * FROM play_triggers WHERE docent_track_id = :docentTrackId")
+    @Query("SELECT * FROM play_triggers WHERE docentTrackId = :docentTrackId")
     suspend fun getTriggersForDocentTrack(docentTrackId: String): List<PlayTriggerEntity>
 
     @Query("DELETE FROM play_triggers WHERE id = :id")
