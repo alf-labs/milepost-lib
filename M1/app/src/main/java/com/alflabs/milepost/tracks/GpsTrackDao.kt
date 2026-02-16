@@ -8,13 +8,7 @@ import com.alflabs.milepost.location.LocationDataList
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface GpsTrackEntityDao {
-    @Query("SELECT id, createdDateISO, trackLabel, summary FROM gps_tracks ORDER BY id DESC")
-    fun getAllDisplayInfo(): Flow<List<TrackDisplayInfo>>
-
-    @Query("SELECT * FROM gps_tracks WHERE id = :id")
-    fun getById(id: Long): Flow<GpsTrackEntity?>
-
+interface GpsTrackDao {
     /** Insert a GpsTrackEntity. Set id to 0 to have it auto-generated. The new id is returned. */
     @Insert
     suspend fun insert(track: GpsTrackEntity): Long
@@ -22,6 +16,12 @@ interface GpsTrackEntityDao {
     /** Update a GpsTrackEntity with a matching id. */
     @Update
     suspend fun update(track: GpsTrackEntity)
+
+    @Query("SELECT id, createdDateISO, trackLabel, summary FROM gps_tracks ORDER BY id DESC")
+    fun getAllDisplayInfo(): Flow<List<TrackDisplayInfo>>
+
+    @Query("SELECT * FROM gps_tracks WHERE id = :id")
+    fun getById(id: Long): Flow<GpsTrackEntity?>
 
     @Query("SELECT id FROM gps_tracks WHERE uuid = :uuid")
     suspend fun getIdByUuid(uuid: String): Long?

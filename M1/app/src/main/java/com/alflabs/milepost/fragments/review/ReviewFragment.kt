@@ -38,7 +38,7 @@ import com.alflabs.milepost.location.copy
 import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.location.setFlag
 import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.GpsTrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackDao
 import com.alflabs.milepost.tracks.GpsTrackSummary
 import com.alflabs.milepost.tracks.copy
 import com.alflabs.milepost.tracks.gpsTrackSummary
@@ -71,7 +71,7 @@ class ReviewFragment : Fragment() {
     @Inject lateinit var logger: ILogger
     @Inject lateinit var importerExporter: ImporterExporter
     @Inject lateinit var appSettings: AppSettings
-    @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
+    @Inject lateinit var gpsTrackDao: GpsTrackDao
 
     private var _binding: ReviewFragmentBinding? = null
     private val binding get() = _binding!!
@@ -290,7 +290,7 @@ class ReviewFragment : Fragment() {
                         logger.d(TAG, "@@ Clear prefs Playback track: -1")
                         appSettings.setPlaybackTrackId(-1)
                     }
-                    gpsTrackEntityDao.deleteById(track.id)
+                    gpsTrackDao.deleteById(track.id)
                     findNavController().popBackStack()
                 }
             }
@@ -408,7 +408,7 @@ class ReviewFragment : Fragment() {
                 }
                 if (changed) {
                     lifecycleScope.launch {
-                        gpsTrackEntityDao.update(newGpsTrackEntity)
+                        gpsTrackDao.update(newGpsTrackEntity)
                     }
                 }
             }
@@ -490,7 +490,7 @@ class ReviewFragment : Fragment() {
                     listBuilder.setLocations(index, loc)
                     val newTrackEntity = track.copy(locationList = listBuilder.build())
                     lifecycleScope.launch {
-                        gpsTrackEntityDao.update(newTrackEntity)
+                        gpsTrackDao.update(newTrackEntity)
                     }
                 }
             }
@@ -652,7 +652,7 @@ class ReviewFragment : Fragment() {
                 logger.d(TAG, "@@ Summary Changed --> Update Summary from [${
                     currentSummary.toText(useImperialUnits)}] to [${
                     newSummary.toText(useImperialUnits)}]")
-                gpsTrackEntityDao.updateSummary(track.id, newSummary)
+                gpsTrackDao.updateSummary(track.id, newSummary)
             }
         }
     }
@@ -699,7 +699,7 @@ class ReviewFragment : Fragment() {
                 }
             )
             lifecycleScope.launch {
-                gpsTrackEntityDao.update(newTrackEntity)
+                gpsTrackDao.update(newTrackEntity)
             }
         }
     }

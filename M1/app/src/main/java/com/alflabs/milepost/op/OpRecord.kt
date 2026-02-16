@@ -6,7 +6,7 @@ import com.alflabs.milepost.location.LocationDistance
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.GpsTrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackDao
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Schedulers
 import com.alflabs.utils.IClock
@@ -24,7 +24,7 @@ class OpRecord @AssistedInject constructor(
     private val logger: ILogger,
     private val globalState: GlobalState,
     private val appSettings: AppSettings,
-    private val gpsTrackEntityDao: GpsTrackEntityDao,
+    private val gpsTrackDao: GpsTrackDao,
 ) : IOpActor {
 
     @AssistedFactory
@@ -148,7 +148,7 @@ class OpRecord @AssistedInject constructor(
         scope.launch {
             needsWrite = false
             logger.d(TAG, "Writing ${locationDataListBuilder.locationsCount} points from ${Thread.currentThread()}")
-            gpsTrackEntityDao.updateLocationList(recordId, locationDataListBuilder.build())
+            gpsTrackDao.updateLocationList(recordId, locationDataListBuilder.build())
             nextWriteTS = clock.elapsedRealtime() + WRITE_INTERVAL_MS
         }
     }

@@ -5,7 +5,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.op.OperatorMode
 import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.GpsTrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackDao
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -16,7 +16,7 @@ import javax.inject.Inject
 class RecordFragment : SensorsFragment() {
     override val operatorMode = OperatorMode.RECORD
 
-    @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
+    @Inject lateinit var gpsTrackDao: GpsTrackDao
 
     override fun actionToPermissionsDlg(): NavDirections =
         RecordFragmentDirections.actionRecordToPermissionsDlg()
@@ -29,7 +29,7 @@ class RecordFragment : SensorsFragment() {
                     trackLabel = "", // this triggers the title dialog in the review screen
                     createdDateISO = Date().toString(),
                 )
-            val recordId = gpsTrackEntityDao.insert(track)
+            val recordId = gpsTrackDao.insert(track)
             operator.startRecord(track.copy(id = recordId))
         }
     }

@@ -18,7 +18,7 @@ import java.io.IOException
 
 @RunWith(AndroidJUnit4::class)
 class GpsTrackEntityDaoTest {
-    private lateinit var dao: GpsTrackEntityDao
+    private lateinit var dao: GpsTrackDao
     private lateinit var db: AppDatabase
 
     @Before

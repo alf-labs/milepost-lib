@@ -1,0 +1,275 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "3861513478933768246e28ffbf7b03ab",
+    "entities": [
+      {
+        "tableName": "gps_tracks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `uuid` TEXT NOT NULL, `createdDateISO` TEXT NOT NULL, `updatedDateISO` TEXT, `trackLabel` TEXT, `startLabel` TEXT DEFAULT null, `endLabel` TEXT DEFAULT null, `summary` TEXT, `locationList` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uuid",
+            "columnName": "uuid",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdDateISO",
+            "columnName": "createdDateISO",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedDateISO",
+            "columnName": "updatedDateISO",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "trackLabel",
+            "columnName": "trackLabel",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "startLabel",
+            "columnName": "startLabel",
+            "affinity": "TEXT",
+            "defaultValue": "null"
+          },
+          {
+            "fieldPath": "endLabel",
+            "columnName": "endLabel",
+            "affinity": "TEXT",
+            "defaultValue": "null"
+          },
+          {
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locationList",
+            "columnName": "locationList",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "audio_files",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `userTitle` TEXT, `fileName` TEXT NOT NULL, `lastAccessDate` TEXT NOT NULL, `persistableUri` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userTitle",
+            "columnName": "userTitle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastAccessDate",
+            "columnName": "lastAccessDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "persistableUri",
+            "columnName": "persistableUri",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "play_triggers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `audio_file_id` INTEGER NOT NULL, `docent_track_id` INTEGER NOT NULL, `playback_trigger` TEXT NOT NULL, FOREIGN KEY(`audio_file_id`) REFERENCES `audio_files`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`docent_track_id`) REFERENCES `docent_tracks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "audioFileId",
+            "columnName": "audio_file_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "docentTrackId",
+            "columnName": "docent_track_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playbackTrigger",
+            "columnName": "playback_trigger",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_play_triggers_audio_file_id",
+            "unique": false,
+            "columnNames": [
+              "audio_file_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_play_triggers_audio_file_id` ON `${TABLE_NAME}` (`audio_file_id`)"
+          },
+          {
+            "name": "index_play_triggers_docent_track_id",
+            "unique": false,
+            "columnNames": [
+              "docent_track_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_play_triggers_docent_track_id` ON `${TABLE_NAME}` (`docent_track_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "audio_files",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "audio_file_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "docent_tracks",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "docent_track_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "docent_tracks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `uuid` TEXT NOT NULL, `user_title` TEXT, `creation_time` TEXT NOT NULL, `last_used_time` TEXT NOT NULL, `gps_track_id` INTEGER, FOREIGN KEY(`gps_track_id`) REFERENCES `gps_tracks`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uuid",
+            "columnName": "uuid",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userTitle",
+            "columnName": "user_title",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "creationTime",
+            "columnName": "creation_time",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUsedTime",
+            "columnName": "last_used_time",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gpsTrackId",
+            "columnName": "gps_track_id",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_docent_tracks_uuid",
+            "unique": true,
+            "columnNames": [
+              "uuid"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_docent_tracks_uuid` ON `${TABLE_NAME}` (`uuid`)"
+          },
+          {
+            "name": "index_docent_tracks_gps_track_id",
+            "unique": false,
+            "columnNames": [
+              "gps_track_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_docent_tracks_gps_track_id` ON `${TABLE_NAME}` (`gps_track_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "gps_tracks",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "gps_track_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3861513478933768246e28ffbf7b03ab')"
+    ]
+  }
+}

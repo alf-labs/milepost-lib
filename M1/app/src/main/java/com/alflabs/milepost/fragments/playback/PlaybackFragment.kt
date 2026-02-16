@@ -19,7 +19,7 @@ import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
-import com.alflabs.milepost.tracks.GpsTrackEntityDao
+import com.alflabs.milepost.tracks.GpsTrackDao
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdate
@@ -63,7 +63,7 @@ class PlaybackFragment : SensorsFragment() {
     override val zoomInButton get() = playbackBinding.zoomInBtn
     override val zoomOutButton get() = playbackBinding.zoomOutBtn
 
-    @Inject lateinit var gpsTrackEntityDao: GpsTrackEntityDao
+    @Inject lateinit var gpsTrackDao: GpsTrackDao
 
     private val viewModel: PlaybackViewModel by viewModels()
 
@@ -120,7 +120,7 @@ class PlaybackFragment : SensorsFragment() {
                     logger.d(TAG, "@@ Playback onResume: trackId = $trackId")
 
                     if (trackId != -1L) {
-                        viewModel.playbackTrack = gpsTrackEntityDao.getById(trackId).first()
+                        viewModel.playbackTrack = gpsTrackDao.getById(trackId).first()
                     }
                 }
             }
