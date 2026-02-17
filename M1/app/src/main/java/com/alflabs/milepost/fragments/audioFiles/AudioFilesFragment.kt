@@ -99,7 +99,7 @@ class AudioFilesFragment : Fragment() {
                 lastAccessTime = Instant.now().toString(),
                 persistableUri = ""
             )
-            viewModel.addAudioFile(newAudioFile)
+            viewModel.insert(newAudioFile)
     }
 
     private fun doRemoveEntry() {

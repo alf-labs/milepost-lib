@@ -13,7 +13,7 @@ import java.util.UUID
             entity = GpsTrackEntity::class,
             parentColumns = ["id"],
             childColumns = ["gpsTrackId"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.CASCADE
         )
     ]
 )
@@ -31,8 +31,8 @@ data class DocentTrackEntity(
     val creationTime: String,
 
     @ColumnInfo
-    val lastUsedTime: String,
+    val lastUsedTime: String?,
 
     @ColumnInfo(index = true)
-    val gpsTrackId: Long?
+    val gpsTrackId: Long
 )

@@ -20,6 +20,12 @@
                     android:id="@+id/nav_audio_file_list"
                     android:icon="@drawable/ic_art_track_24"
                     android:title="Audio Files" />
+
+            <item
+                    android:id="@+id/nav_docent_track_list"
+                    android:icon="@drawable/ic_art_track_24"
+                    android:title="Docent Tracks"  />
+
             <item
                     android:id="@+id/nav_docent_track_play"
                     android:icon="@drawable/ic_autoplay"
