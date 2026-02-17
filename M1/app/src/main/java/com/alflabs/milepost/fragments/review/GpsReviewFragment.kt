@@ -26,7 +26,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.GpsReviewFragmentBinding
-import com.alflabs.milepost.fragments.tracks.toText
+import com.alflabs.milepost.fragments.gpsTracks.toText
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationDataList

@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.tracks
+package com.alflabs.milepost.fragments.gpsTracks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData

@@ -34,7 +34,7 @@
 
     <fragment
             android:id="@+id/nav_gps_track_list"
-            android:name="com.alflabs.milepost.fragments.tracks.GpsTracksFragment"
+            android:name="com.alflabs.milepost.fragments.gpsTracks.GpsTracksFragment"
             android:label="Tracks"
             tools:layout="@layout/gps_tracks_fragment">
         <action

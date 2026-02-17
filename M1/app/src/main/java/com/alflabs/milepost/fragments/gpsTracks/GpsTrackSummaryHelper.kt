@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.tracks
+package com.alflabs.milepost.fragments.gpsTracks
 
 import com.alflabs.milepost.tracks.GpsTrackSummary
 import com.alflabs.milepost.utils.Units
