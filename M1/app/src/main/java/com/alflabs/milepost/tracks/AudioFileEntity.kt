@@ -10,9 +10,6 @@ data class AudioFileEntity(
     val id: Long = 0,
 
     @ColumnInfo
-    val userTitle: String? = null,
-
-    @ColumnInfo
     val fileName: String,
 
     @ColumnInfo

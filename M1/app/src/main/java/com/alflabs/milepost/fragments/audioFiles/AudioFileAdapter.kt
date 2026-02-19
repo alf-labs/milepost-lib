@@ -27,7 +27,6 @@ class AudioFileAdapter :
     class AudioFileViewHolder(val binding: AudioFileItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(audioFile: AudioFileEntity) {
-            binding.userTitle.text = audioFile.userTitle
             binding.fileName.text = audioFile.fileName
             binding.lastAccessTime.text = audioFile.lastAccessTime
             binding.uriValid.text = "TBD maybe?"

@@ -17,19 +17,11 @@
             tools:text="File Name" />
 
     <TextView
-            android:id="@+id/user_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_below="@id/file_name"
-            tools:text="User Title" />
-
-    <TextView
             android:id="@+id/last_access_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_below="@id/user_title"
+            android:layout_below="@id/file_name"
             tools:text="Last Access Time" />
 
     <TextView
