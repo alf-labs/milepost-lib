@@ -1,5 +1,6 @@
 package com.alflabs.milepost.fragments.audioFiles
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -7,6 +8,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -78,7 +80,7 @@ class AudioFilesFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_add -> {
-                        doAddFile()
+                        selectAudioFile()
                         true
                     }
                     R.id.action_delete -> {
@@ -91,15 +93,31 @@ class AudioFilesFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun doAddFile() {
-        // TBD TESTING ONLY
-            val newAudioFile = AudioFileEntity(
-                userTitle = "New Recording",
-                fileName = "recording_${System.currentTimeMillis()}.mp3",
-                lastAccessTime = Instant.now().toString(),
-                persistableUri = ""
-            )
-            viewModel.insert(newAudioFile)
+    private val selectAudioFileLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { addAudioFileUri(it) }
+        }
+
+    private fun selectAudioFile() {
+        // 1- Ask user to select an audio file using the Storage Access Framework (SAF).
+        selectAudioFileLauncher.launch("audio/*")
+    }
+
+    private fun addAudioFileUri(uri: Uri) {
+        // 2- Get a persistable uri for the selected file.
+        val persistableUri = "TODO"
+
+        // 3- Get the filename of the selected file.
+        val fileName = "TODO"
+
+        // 4- Add to database
+        val newAudioFile = AudioFileEntity(
+            userTitle = "New Recording",
+            fileName = fileName,
+            lastAccessTime = Instant.now().toString(),
+            persistableUri = persistableUri
+        )
+        viewModel.insert(newAudioFile)
     }
 
     private fun doRemoveEntry() {
