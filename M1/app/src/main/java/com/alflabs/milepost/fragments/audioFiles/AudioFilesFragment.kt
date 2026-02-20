@@ -12,29 +12,43 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFilesFragmentBinding
+import com.alflabs.milepost.fragments.gpsReview.GpsReviewFragment
 import com.alflabs.milepost.tracks.AudioFileEntity
 import com.alflabs.utils.ApiHelper
+import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
 import java.time.Instant
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AudioFilesFragment : Fragment() {
 
+    companion object {
+        private val TAG = AudioFilesFragment::class.java.simpleName
+        private const val KEY_SELECTED_POSITION = "selected-position"
+    }
+
+    @Inject lateinit var logger: ILogger
+
     private var _binding: AudioFilesFragmentBinding? = null
     private val binding get() = _binding!!
+    private var audioFileAdapter: AudioFileAdapter? = null
 
     private val viewModel: AudioFilesViewModel by viewModels()
 
@@ -62,11 +76,18 @@ class AudioFilesFragment : Fragment() {
         setupMenu()
 
         lifecycleScope.launch {
-            val adapter = AudioFileAdapter()
+            audioFileAdapter = AudioFileAdapter(
+                onSelection = {}
+            )
 
             val layoutManager = LinearLayoutManager(requireContext())
-            binding.audioFileList.adapter = adapter
+            binding.audioFileList.adapter = audioFileAdapter
             binding.audioFileList.layoutManager = layoutManager
+
+            savedInstanceState?.let {
+                val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
+                audioFileAdapter?.setSelectedPosition(selectedPosition)
+            }
 
             val dividerItemDecoration = DividerItemDecoration(
                 requireContext(),
@@ -78,9 +99,22 @@ class AudioFilesFragment : Fragment() {
             viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
                 binding.emptyMessage.visibility =
                     if (list.isEmpty()) View.VISIBLE else View.GONE
-                adapter.submitList(list)
+                audioFileAdapter?.submitList(list)
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        audioFileAdapter?.let { adapter ->
+            logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
+            outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun setupMenu() {
@@ -91,10 +125,18 @@ class AudioFilesFragment : Fragment() {
                 ApiHelper.Menu_setOptionalIconsVisible(menu, true)
             }
 
+            override fun onPrepareMenu(menu: Menu) {
+                super.onPrepareMenu(menu)
+                menu.findItem(R.id.action_delete)?.let { menuItem ->
+                    val pos = audioFileAdapter?.selectedPosition ?: RecyclerView.NO_POSITION
+                    menuItem.isEnabled = (pos != RecyclerView.NO_POSITION)
+                }
+            }
+
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_add -> {
-                        selectAudioFile()
+                        selectAudioDocument()
                         true
                     }
                     R.id.action_delete -> {
@@ -107,7 +149,7 @@ class AudioFilesFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun selectAudioFile() {
+    private fun selectAudioDocument() {
         // 1- Ask user to select an audio file using the Storage Access Framework (SAF).
         // Use a ActivityResultContracts call suitable to return a Persistable URI
         // that can be stored in the database to open the file much later.
@@ -120,18 +162,16 @@ class AudioFilesFragment : Fragment() {
 
         // 3- Get the filename of the selected file.
         val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
-        val fileName = cursor?.use {
+        var fileName = "Unknown"
+        cursor?.use {
+            // Implementation note: cursor.use{} auto-closes the cursor after the scope.
             if (it.moveToFirst()) {
                 val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                 if (displayNameIndex != -1) {
-                    it.getString(displayNameIndex)
-                } else {
-                    "Unknown"
+                    fileName = it.getString(displayNameIndex)
                 }
-            } else {
-                "Unknown"
             }
-        } ?: "Unknown"
+        }
 
         // 4- Add to database
         val newAudioFile = AudioFileEntity(
@@ -139,19 +179,25 @@ class AudioFilesFragment : Fragment() {
             lastAccessTime = Instant.now().toString(),
             persistableUri = persistableUri
         )
+        logger.d(TAG, "@@ addAudioFileUri: $newAudioFile")
         viewModel.insert(newAudioFile)
     }
 
     private fun doRemoveEntry() {
-        // TBD
-//        viewModel.deleteAudioFile(audioFile) // TBD
-        Snackbar.make(requireView(), "TBD Audio file deleted", Snackbar.LENGTH_LONG).show()
-    }
+        val selected = audioFileAdapter?.getSelected() ?: return
 
+        // TBD use DAO to check there are no PlayTriggerEntity referencing this file id.
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+        // Display an alert to confirm deletion.
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Audio File Reference")
+            .setMessage("Are you sure you want to delete the reference to file '${selected.fileName}'? This does not delete the actual file.")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.delete(selected)
+                Snackbar.make(requireView(), "Reference to file '${selected.fileName}' deleted", Snackbar.LENGTH_LONG).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     /**
