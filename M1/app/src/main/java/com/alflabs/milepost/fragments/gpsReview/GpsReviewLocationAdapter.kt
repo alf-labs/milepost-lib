@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.review
+package com.alflabs.milepost.fragments.gpsReview
 
 import android.graphics.Color
 import android.graphics.Paint

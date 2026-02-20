@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.review
+package com.alflabs.milepost.fragments.gpsReview
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.alflabs.milepost.location.LocationDataList

@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.review
+package com.alflabs.milepost.fragments.gpsReview
 
 import android.util.Log
 import androidx.lifecycle.LiveData
