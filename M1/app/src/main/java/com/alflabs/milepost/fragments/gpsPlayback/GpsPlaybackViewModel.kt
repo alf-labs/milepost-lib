@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.playback
+package com.alflabs.milepost.fragments.gpsPlayback
 
 import androidx.lifecycle.ViewModel
 import com.alflabs.milepost.location.LocationData
@@ -9,7 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class PlaybackViewModel @Inject constructor() : ViewModel() {
+class GpsPlaybackViewModel @Inject constructor() : ViewModel() {
     var playbackTrack: GpsTrackEntity? = null
     val filteredLocations = mutableListOf<LocationData>()
     var startLabel: String = "Startbound"

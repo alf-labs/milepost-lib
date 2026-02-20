@@ -7,7 +7,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="16dp"
-        tools:context=".fragments.playback.PlaybackFragment"
+        tools:context=".fragments.gpsPlayback.GpsPlaybackFragment"
         >
 
     <!-- Note: remember to sync with land/playback_fragment.xml -->

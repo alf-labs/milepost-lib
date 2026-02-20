@@ -91,7 +91,7 @@
 
     <fragment
             android:id="@+id/nav_gps_track_play"
-            android:name="com.alflabs.milepost.fragments.playback.PlaybackFragment"
+            android:name="com.alflabs.milepost.fragments.gpsPlayback.GpsPlaybackFragment"
             android:label="Playback Track"
             tools:layout="@layout/sensors_fragment">
         <action

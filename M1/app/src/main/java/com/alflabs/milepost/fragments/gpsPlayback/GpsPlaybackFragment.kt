@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.playback
+package com.alflabs.milepost.fragments.gpsPlayback
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,7 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
-import com.alflabs.milepost.databinding.PlaybackFragmentBinding
+import com.alflabs.milepost.databinding.GpsPlaybackFragmentBinding
 import com.alflabs.milepost.fragments.SensorsFragment
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
@@ -39,16 +39,16 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class PlaybackFragment : SensorsFragment() {
+class GpsPlaybackFragment : SensorsFragment() {
 
     companion object {
-        private val TAG = PlaybackFragment::class.java.simpleName
+        private val TAG = GpsPlaybackFragment::class.java.simpleName
     }
 
     override val operatorMode = OperatorMode.PLAYBACK
 
     // This property is only valid between onCreateView and onDestroyView.
-    private var _playbackBinding: PlaybackFragmentBinding? = null
+    private var _playbackBinding: GpsPlaybackFragmentBinding? = null
     private val playbackBinding get() = _playbackBinding!!
 
     override val hasBinding get() = _playbackBinding != null
@@ -65,7 +65,7 @@ class PlaybackFragment : SensorsFragment() {
 
     @Inject lateinit var gpsTrackDao: GpsTrackDao
 
-    private val viewModel: PlaybackViewModel by viewModels()
+    private val viewModel: GpsPlaybackViewModel by viewModels()
 
     private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
         ISubscriber<MpEstimate?> { _, event -> onMpEstimate(googleMap, event) }
@@ -80,7 +80,7 @@ class PlaybackFragment : SensorsFragment() {
 
 
     override fun actionToPermissionsDlg(): NavDirections =
-        PlaybackFragmentDirections.actionPlayToPermissionsDlg()
+        GpsPlaybackFragmentDirections.actionPlayToPermissionsDlg()
 
     override fun getLocationsList(): List<LocationData>? =
         operator.currentLocationsList ?: viewModel.filteredLocations
@@ -91,7 +91,7 @@ class PlaybackFragment : SensorsFragment() {
         savedInstanceState: Bundle?
     ): View {
         logger.d(TAG, "onCreateView")
-        _playbackBinding = PlaybackFragmentBinding.inflate(inflater, container, false)
+        _playbackBinding = GpsPlaybackFragmentBinding.inflate(inflater, container, false)
 
         lineColorFwd = requireContext().getColor(R.color.map_track)
         lineColorPrev = requireContext().getColor(R.color.map_track_prev)
