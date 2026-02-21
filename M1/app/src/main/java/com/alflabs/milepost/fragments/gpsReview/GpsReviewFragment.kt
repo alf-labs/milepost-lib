@@ -85,7 +85,7 @@ class GpsReviewFragment : Fragment() {
     private var firstLoad = true
     private var mapZoomLevel = AppSettings.MAP_ZOOM_LEVEL_DEFAULT
 
-    private lateinit var reviewList: List<GpsReviewLocationData>
+    private lateinit var reviewList: List<GpsReviewLocationItem>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -416,7 +416,7 @@ class GpsReviewFragment : Fragment() {
             .show()
     }
 
-    private fun showReviewMpDialog(item: GpsReviewLocationData) {
+    private fun showReviewMpDialog(item: GpsReviewLocationItem) {
         val index = item.locIdx
         val track = gpsTrackEntity
         if (index < 0 || item.data == null || track == null) return
@@ -498,7 +498,7 @@ class GpsReviewFragment : Fragment() {
             .show()
     }
 
-    private fun onLocationClicked(item: GpsReviewLocationData) {
+    private fun onLocationClicked(item: GpsReviewLocationItem) {
         val locationData = item.data ?: return
         val map = googleMap ?: return
 
@@ -657,7 +657,7 @@ class GpsReviewFragment : Fragment() {
         }
     }
 
-    fun updateInterpolatedMp(track: GpsTrackEntity?, locList: List<GpsReviewLocationData>) {
+    fun updateInterpolatedMp(track: GpsTrackEntity?, locList: List<GpsReviewLocationItem>) {
         logger.d(TAG, "@@ updateInterpolatedMp")
         if (track == null || track.locationList == null) return
 
@@ -813,11 +813,11 @@ internal fun computeTrackSummary(currentSummary: GpsTrackSummary, track: GpsTrac
     }
 }
 
-internal fun convert(locationDataList: LocationDataList?): List<GpsReviewLocationData> {
-    val result = mutableListOf<GpsReviewLocationData>()
+internal fun convert(locationDataList: LocationDataList?): List<GpsReviewLocationItem> {
+    val result = mutableListOf<GpsReviewLocationItem>()
 
     // First row is a little dummy hack for headers
-    result.add(GpsReviewLocationData(
+    result.add(GpsReviewLocationItem(
         locIdx = -1,
         data = null,
     ))
@@ -846,7 +846,7 @@ internal fun convert(locationDataList: LocationDataList?): List<GpsReviewLocatio
             distanceMeters += distResults[0]
         }
 
-        result.add(GpsReviewLocationData(
+        result.add(GpsReviewLocationItem(
             locIdx = index,
             data = location,
             deltaTS = deltaTS,
@@ -859,7 +859,7 @@ internal fun convert(locationDataList: LocationDataList?): List<GpsReviewLocatio
     return result
 }
 
-internal fun computeInterpolatedMp(locList: List<GpsReviewLocationData>) : List<GpsReviewLocationData>? {
+internal fun computeInterpolatedMp(locList: List<GpsReviewLocationItem>) : List<GpsReviewLocationItem>? {
     // Keep only the valid entries (not header, with actual data, not ignore)
     val mutLocList = locList.filter {
         it.locIdx >= 0
@@ -941,7 +941,7 @@ internal fun computeInterpolatedMp(locList: List<GpsReviewLocationData>) : List<
     return if (changed) mutLocList else null
 }
 
-internal fun setInterpolatedMp(index: Int, list: MutableList<GpsReviewLocationData>, mp: Float): GpsReviewLocationData {
+internal fun setInterpolatedMp(index: Int, list: MutableList<GpsReviewLocationItem>, mp: Float): GpsReviewLocationItem {
     val data = list[index].data
     if (data != null) {
         list[index] = list[index].copy(data = data.copy {

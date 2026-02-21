@@ -86,10 +86,3 @@ data class TrackEntityPojo @JsonCreator constructor(
     )
 }
 
-// A minimal version of GpsTrackEntity for displaying in the GpsTracksFragment.
-data class GpsTrackDisplayInfo(
-    val id: Long = 0,
-    val createdDateISO: String,
-    val trackLabel: String? = null,
-    val summary: GpsTrackSummary? = null,
-)

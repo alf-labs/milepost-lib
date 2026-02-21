@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import com.alflabs.milepost.fragments.gpsTracks.GpsTrackDisplayItem
 import com.alflabs.milepost.location.LocationDataList
 import kotlinx.coroutines.flow.Flow
 
@@ -18,7 +19,7 @@ interface GpsTrackDao {
     suspend fun update(track: GpsTrackEntity)
 
     @Query("SELECT id, createdDateISO, trackLabel, summary FROM gps_tracks ORDER BY id DESC")
-    fun getAllDisplayInfo(): Flow<List<GpsTrackDisplayInfo>>
+    fun getAllDisplayItems(): Flow<List<GpsTrackDisplayItem>>
 
     @Query("SELECT * FROM gps_tracks WHERE id = :id")
     fun getById(id: Long): Flow<GpsTrackEntity?>

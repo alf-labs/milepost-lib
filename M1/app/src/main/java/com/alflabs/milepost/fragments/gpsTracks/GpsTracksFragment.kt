@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.GpsTracksFragmentBinding
 import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.tracks.GpsTrackDisplayInfo
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
@@ -73,14 +72,14 @@ class GpsTracksFragment : Fragment() {
                 val playbackTrackId = appSettings.playbackTrackId()
 
                 val adapter = GpsTrackAdapter(
-                    onClick = { track ->
-                        showEditDialog(track)
+                    onClick = { displayItem ->
+                        showEditDialog(displayItem)
                     },
-                    onEdit = { track ->
-                        showEditDialog(track)
+                    onEdit = { displayItem ->
+                        showEditDialog(displayItem)
                     },
-                    onDelete = { track ->
-                        viewModel.delete(track)
+                    onDelete = { displayItem ->
+                        viewModel.delete(displayItem)
                     },
                     useImperialUnits,
                     playbackTrackId,
@@ -171,9 +170,9 @@ class GpsTracksFragment : Fragment() {
         }
     }
 
-    private fun showEditDialog(track: GpsTrackDisplayInfo) {
+    private fun showEditDialog(displayItem: GpsTrackDisplayItem) {
         findNavController().navigate(
-            GpsTracksFragmentDirections.actionListToReview(track.id)
+            GpsTracksFragmentDirections.actionListToReview(displayItem.id)
         )
     }
 

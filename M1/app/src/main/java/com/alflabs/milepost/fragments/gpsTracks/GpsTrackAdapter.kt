@@ -7,15 +7,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.databinding.GpsTrackItemBinding
-import com.alflabs.milepost.tracks.GpsTrackDisplayInfo
 
 class GpsTrackAdapter(
-    private val onClick: (GpsTrackDisplayInfo) -> Unit,
-    private val onEdit: (GpsTrackDisplayInfo) -> Unit,
-    private val onDelete: (GpsTrackDisplayInfo) -> Unit,
+    private val onClick: (GpsTrackDisplayItem) -> Unit,
+    private val onEdit: (GpsTrackDisplayItem) -> Unit,
+    private val onDelete: (GpsTrackDisplayItem) -> Unit,
     private val useImperialUnits: Boolean,
     private val playbackTrackId: Long,
-) : ListAdapter<GpsTrackDisplayInfo, GpsTrackAdapter.GpsTrackViewHolder>(GpsTrackDiffCallback()) {
+) : ListAdapter<GpsTrackDisplayItem, GpsTrackAdapter.GpsTrackViewHolder>(GpsTrackDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GpsTrackViewHolder {
         val binding = GpsTrackItemBinding.inflate(
@@ -33,13 +32,13 @@ class GpsTrackAdapter(
 
     class GpsTrackViewHolder(
         private val binding: GpsTrackItemBinding,
-        private val onClick: (GpsTrackDisplayInfo) -> Unit,
-        private val onEdit: (GpsTrackDisplayInfo) -> Unit,
-        private val onDelete: (GpsTrackDisplayInfo) -> Unit,
+        private val onClick: (GpsTrackDisplayItem) -> Unit,
+        private val onEdit: (GpsTrackDisplayItem) -> Unit,
+        private val onDelete: (GpsTrackDisplayItem) -> Unit,
         private val useImperialUnits: Boolean,
         private val playbackTrackId: Long,
     ) : RecyclerView.ViewHolder(binding.root) {
-        private var currentTrack: GpsTrackDisplayInfo? = null
+        private var currentTrack: GpsTrackDisplayItem? = null
 
         init {
             binding.root.setOnClickListener {
@@ -62,7 +61,7 @@ class GpsTrackAdapter(
             }
         }
 
-        fun bind(track: GpsTrackDisplayInfo) {
+        fun bind(track: GpsTrackDisplayItem) {
             currentTrack = track
             val isPlayback = if (track.id == playbackTrackId) " ★" else ""
             binding.trackName.text = "[${track.id}] ${track.trackLabel?.ifBlank { "(No Title)" }}$isPlayback"
@@ -72,13 +71,13 @@ class GpsTrackAdapter(
     }
 }
 
-class GpsTrackDiffCallback : DiffUtil.ItemCallback<GpsTrackDisplayInfo>() {
-    override fun areItemsTheSame(oldItem: GpsTrackDisplayInfo, newItem: GpsTrackDisplayInfo):
+class GpsTrackDiffCallback : DiffUtil.ItemCallback<GpsTrackDisplayItem>() {
+    override fun areItemsTheSame(oldItem: GpsTrackDisplayItem, newItem: GpsTrackDisplayItem):
         Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: GpsTrackDisplayInfo, newItem: GpsTrackDisplayInfo):
+    override fun areContentsTheSame(oldItem: GpsTrackDisplayItem, newItem: GpsTrackDisplayItem):
         Boolean {
         return oldItem == newItem
     }

@@ -3,7 +3,6 @@ package com.alflabs.milepost.fragments.gpsTracks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.alflabs.milepost.tracks.GpsTrackDisplayInfo
 import com.alflabs.milepost.tracks.GpsTrackEntity
 import com.alflabs.milepost.tracks.GpsTrackDao
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +14,7 @@ class GpsTracksViewModel @Inject constructor(
     private val gpsTrackDao: GpsTrackDao
 ) : ViewModel() {
 
-    val tracks = gpsTrackDao.getAllDisplayInfo().asLiveData()
+    val tracks = gpsTrackDao.getAllDisplayItems().asLiveData()
 
     suspend fun getIdByUuid(uuid: String): Long? {
         return gpsTrackDao.getIdByUuid(uuid)
@@ -35,10 +34,10 @@ class GpsTracksViewModel @Inject constructor(
         }
     }
 
-    fun delete(trackInfo: GpsTrackDisplayInfo) {
+    fun delete(trackItem: GpsTrackDisplayItem) {
         viewModelScope.launch {
-            gpsTrackDao.deleteById(trackInfo.id)
-            println("@@ DB DELETE track = $trackInfo")
+            gpsTrackDao.deleteById(trackItem.id)
+            println("@@ DB DELETE track = $trackItem")
         }
     }
 }

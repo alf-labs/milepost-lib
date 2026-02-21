@@ -18,9 +18,9 @@ import com.alflabs.milepost.utils.Units
 
 class GpsReviewLocationAdapter(
     private val useImperialUnits: Boolean,
-    private val onMpClicked: (GpsReviewLocationData) -> Unit,
-    private val onSelection: (GpsReviewLocationData) -> Unit
-) : ListAdapter<GpsReviewLocationData, GpsReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
+    private val onMpClicked: (GpsReviewLocationItem) -> Unit,
+    private val onSelection: (GpsReviewLocationItem) -> Unit
+) : ListAdapter<GpsReviewLocationItem, GpsReviewLocationAdapter.ReviewViewHolder>(LocationDiffCallback()) {
 
     var selectedPosition = RecyclerView.NO_POSITION
         private set
@@ -53,13 +53,13 @@ class GpsReviewLocationAdapter(
     inner class ReviewViewHolder(
         private val binding: GpsReviewLocationItemBinding,
         private val useImperialUnits: Boolean,
-        private val onMpClicked: (GpsReviewLocationData) -> Unit,
-        private val onSelection: (GpsReviewLocationData) -> Unit
+        private val onMpClicked: (GpsReviewLocationItem) -> Unit,
+        private val onSelection: (GpsReviewLocationItem) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val italic = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
 
-        fun bind(item: GpsReviewLocationData, isSelected: Boolean) {
+        fun bind(item: GpsReviewLocationItem, isSelected: Boolean) {
             val ld = item.data
             if (ld == null) {
                 binding.index.text = "Idx"
@@ -143,10 +143,10 @@ private fun TextView.strikeThrough(strike: Boolean) {
 }
 
 
-class LocationDiffCallback : DiffUtil.ItemCallback<GpsReviewLocationData>() {
+class LocationDiffCallback : DiffUtil.ItemCallback<GpsReviewLocationItem>() {
     override fun areItemsTheSame(
-        oldItem: GpsReviewLocationData,
-        newItem: GpsReviewLocationData
+        oldItem: GpsReviewLocationItem,
+        newItem: GpsReviewLocationItem
     ): Boolean {
         val oldTS = oldItem.data?.latLong?.timestampMillis ?: -1
         val newTS = newItem.data?.latLong?.timestampMillis ?: -1
@@ -154,7 +154,7 @@ class LocationDiffCallback : DiffUtil.ItemCallback<GpsReviewLocationData>() {
     }
 
     override fun areContentsTheSame(
-        oldItem: GpsReviewLocationData,
-        newItem: GpsReviewLocationData
+        oldItem: GpsReviewLocationItem,
+        newItem: GpsReviewLocationItem
     ): Boolean = oldItem == newItem
 }
