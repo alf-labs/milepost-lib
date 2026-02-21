@@ -72,13 +72,17 @@ class GpsTrackAdapter(
 }
 
 class GpsTrackDiffCallback : DiffUtil.ItemCallback<GpsTrackDisplayItem>() {
-    override fun areItemsTheSame(oldItem: GpsTrackDisplayItem, newItem: GpsTrackDisplayItem):
-        Boolean {
+    override fun areItemsTheSame(
+        oldItem: GpsTrackDisplayItem,
+        newItem: GpsTrackDisplayItem
+    ) : Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: GpsTrackDisplayItem, newItem: GpsTrackDisplayItem):
-        Boolean {
+    override fun areContentsTheSame(
+        oldItem: GpsTrackDisplayItem,
+        newItem: GpsTrackDisplayItem
+    ) : Boolean {
         return oldItem == newItem
     }
 }

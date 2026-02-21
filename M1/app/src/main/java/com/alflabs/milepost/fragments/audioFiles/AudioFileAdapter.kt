@@ -85,13 +85,17 @@ class AudioFileAdapter : ListAdapter<AudioFileItem, AudioFileAdapter.AudioFileVi
 }
 
 class AudioFileDiffCallback : DiffUtil.ItemCallback<AudioFileItem>() {
-    override fun areItemsTheSame(oldItem: AudioFileItem, newItem: AudioFileItem):
-    Boolean {
+    override fun areItemsTheSame(
+        oldItem: AudioFileItem,
+        newItem: AudioFileItem
+    ) : Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: AudioFileItem, newItem: AudioFileItem):
-    Boolean {
+    override fun areContentsTheSame(
+        oldItem: AudioFileItem,
+        newItem: AudioFileItem
+    ) : Boolean {
         return oldItem == newItem
     }
 }

@@ -147,7 +147,7 @@ class LocationDiffCallback : DiffUtil.ItemCallback<GpsReviewLocationItem>() {
     override fun areItemsTheSame(
         oldItem: GpsReviewLocationItem,
         newItem: GpsReviewLocationItem
-    ): Boolean {
+    ) : Boolean {
         val oldTS = oldItem.data?.latLong?.timestampMillis ?: -1
         val newTS = newItem.data?.latLong?.timestampMillis ?: -1
         return oldTS == newTS
@@ -156,5 +156,5 @@ class LocationDiffCallback : DiffUtil.ItemCallback<GpsReviewLocationItem>() {
     override fun areContentsTheSame(
         oldItem: GpsReviewLocationItem,
         newItem: GpsReviewLocationItem
-    ): Boolean = oldItem == newItem
+    ) : Boolean = oldItem == newItem
 }

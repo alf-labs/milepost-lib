@@ -74,13 +74,17 @@ class DocentTrackAdapter(
 }
 
 class DocentTrackDiffCallback : DiffUtil.ItemCallback<DocentTrackEntity>() {
-    override fun areItemsTheSame(oldItem: DocentTrackEntity, newItem: DocentTrackEntity):
-        Boolean {
+    override fun areItemsTheSame(
+        oldItem: DocentTrackEntity,
+        newItem: DocentTrackEntity
+    ) : Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: DocentTrackEntity, newItem: DocentTrackEntity):
-        Boolean {
+    override fun areContentsTheSame(
+        oldItem: DocentTrackEntity,
+        newItem: DocentTrackEntity
+    ) : Boolean {
         return oldItem == newItem
     }
 }
