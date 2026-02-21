@@ -14,7 +14,7 @@ class AudioFilesViewModel @Inject constructor(
     private val audioFileDao: AudioFileDao
 ) : ViewModel() {
 
-    val audioFiles = audioFileDao.getAll().asLiveData()
+    val items = audioFileDao.getItems().asLiveData()
 
     fun insert(audioFile: AudioFileEntity) {
         viewModelScope.launch {
@@ -22,9 +22,9 @@ class AudioFilesViewModel @Inject constructor(
         }
     }
 
-    fun delete(audioFile: AudioFileEntity) {
+    fun delete(item: AudioFileItem) {
         viewModelScope.launch {
-            audioFileDao.deleteById(audioFile.id)
+            audioFileDao.deleteById(item.id)
         }
     }
 }

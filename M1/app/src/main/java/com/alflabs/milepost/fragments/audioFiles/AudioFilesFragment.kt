@@ -19,13 +19,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFilesFragmentBinding
-import com.alflabs.milepost.fragments.gpsReview.GpsReviewFragment
 import com.alflabs.milepost.tracks.AudioFileEntity
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
@@ -35,6 +33,7 @@ import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
 import java.time.Instant
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class AudioFilesFragment : Fragment() {
@@ -76,9 +75,7 @@ class AudioFilesFragment : Fragment() {
         setupMenu()
 
         lifecycleScope.launch {
-            audioFileAdapter = AudioFileAdapter(
-                onSelection = {}
-            )
+            audioFileAdapter = AudioFileAdapter()
 
             val layoutManager = LinearLayoutManager(requireContext())
             binding.audioFileList.adapter = audioFileAdapter
@@ -95,11 +92,20 @@ class AudioFilesFragment : Fragment() {
             )
             binding.audioFileList.addItemDecoration(dividerItemDecoration)
 
-
-            viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
+            viewModel.items.observe(viewLifecycleOwner) { list ->
                 binding.emptyMessage.visibility =
                     if (list.isEmpty()) View.VISIBLE else View.GONE
+                logger.d(TAG, "@@ AudioFiles observe new list: ${list.size} items")
                 audioFileAdapter?.submitList(list)
+
+                // Start a coroutine to update the validity of each audio file URI.
+                // This is done in a background thread to avoid blocking the UI.
+                lifecycleScope.launch {
+                    list.forEach {
+                        // The updateAudioFileItem may trigger a UI update.
+                        updateAudioFileItem(it)
+                    }
+                }
             }
         }
     }
@@ -200,6 +206,15 @@ class AudioFilesFragment : Fragment() {
             .show()
     }
 
+    private fun updateAudioFileItem(item: AudioFileItem) {
+        if (item.uriValid == null) {
+            item.uriValid = isPersistableUriValid(requireContext(), item.persistableUri.toUri())
+            val position = audioFileAdapter?.currentList?.indexOf(item) ?: RecyclerView.NO_POSITION
+            logger.d(TAG, "@@ updateAudioFileItem: $position @ ${item.fileName} -> ${item.uriValid}")
+            audioFileAdapter?.notifyItemChanged(position)
+        }
+    }
+
     /**
      * Checks if a persistable URI is still valid and readable.
      *
@@ -207,7 +222,7 @@ class AudioFilesFragment : Fragment() {
      * @param uri The persistable URI to check.
      * @return `true` if the URI is valid and readable, `false` otherwise.
      */
-    fun isPersistableUriValid(context: Context, uri: Uri): Boolean {
+    private fun isPersistableUriValid(context: Context, uri: Uri): Boolean {
         val contentResolver = context.contentResolver
 
         // 1. Check if the app has persisted read permission for this URI.
