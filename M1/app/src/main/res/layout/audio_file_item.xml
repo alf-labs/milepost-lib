@@ -33,4 +33,24 @@
             android:layout_below="@id/last_access_time"
             tools:text="URI Valid / Invalid" />
 
+    <Button
+            android:id="@+id/update_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Update"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/last_access_time"
+        />
+
+    <ImageButton
+            android:id="@+id/play_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_play_circle_24"
+            android:layout_marginStart="16dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="Play audio sample"
+            />
+
 </RelativeLayout>

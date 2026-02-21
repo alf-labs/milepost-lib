@@ -48,6 +48,7 @@ class AudioFilesFragment : Fragment() {
     private var _binding: AudioFilesFragmentBinding? = null
     private val binding get() = _binding!!
     private var audioFileAdapter: AudioFileAdapter? = null
+    private var currentPlaying: AudioFileItem? = null
 
     private val viewModel: AudioFilesViewModel by viewModels()
 
@@ -75,7 +76,10 @@ class AudioFilesFragment : Fragment() {
         setupMenu()
 
         lifecycleScope.launch {
-            audioFileAdapter = AudioFileAdapter()
+            audioFileAdapter = AudioFileAdapter(
+                onPlay = ::onPlayStopItem,
+                onUpdate = ::onUpdateUriForItem,
+            )
 
             val layoutManager = LinearLayoutManager(requireContext())
             binding.audioFileList.adapter = audioFileAdapter
@@ -155,7 +159,52 @@ class AudioFilesFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
+    private fun onPlayStopItem(item: AudioFileItem) {
+        // This toggles play/stop. Only one item can play at a time.
+        currentPlaying?.let { current ->
+            val isSame = current.id == item.id
+            stopCurrentPlaying()
+            if (isSame) {
+                // We stopped the same item, nothing else to do.
+                return
+            }
+        }
+        // Start playing the new item
+        item.isPlaying = true
+        currentPlaying = item
+        val position = notifyItemChanged(item)
+        logger.d(TAG, "@@ onPlayItem: $position")
+    }
+
+    private fun stopCurrentPlaying() {
+        currentPlaying?.let { current ->
+            currentPlaying = null
+            current.isPlaying = false
+            val position = notifyItemChanged(current)
+            logger.d(TAG, "@@ stopCurrentPlaying: $position")
+        }
+    }
+
+    private fun notifyItemChanged(item: AudioFileItem) : Int {
+        val list = audioFileAdapter?.currentList
+        val first = list?.indexOfFirst { it.id == item.id }
+        first?.let {
+            if (first >= 0) {
+                audioFileAdapter?.notifyItemChanged(first)
+                return@notifyItemChanged first
+            }
+        }
+        return RecyclerView.NO_POSITION
+    }
+
+    private fun onUpdateUriForItem(item: AudioFileItem) {
+        logger.d(TAG, "@@ onUpdateUriForItem: $item")
+        stopCurrentPlaying()
+    }
+
     private fun selectAudioDocument() {
+        stopCurrentPlaying()
+
         // 1- Ask user to select an audio file using the Storage Access Framework (SAF).
         // Use a ActivityResultContracts call suitable to return a Persistable URI
         // that can be stored in the database to open the file much later.
@@ -190,6 +239,7 @@ class AudioFilesFragment : Fragment() {
     }
 
     private fun doRemoveEntry() {
+        stopCurrentPlaying()
         val selected = audioFileAdapter?.getSelected() ?: return
 
         // TBD use DAO to check there are no PlayTriggerEntity referencing this file id.
@@ -209,9 +259,8 @@ class AudioFilesFragment : Fragment() {
     private fun updateAudioFileItem(item: AudioFileItem) {
         if (item.uriValid == null) {
             item.uriValid = isPersistableUriValid(requireContext(), item.persistableUri.toUri())
-            val position = audioFileAdapter?.currentList?.indexOf(item) ?: RecyclerView.NO_POSITION
+            val position = notifyItemChanged(item)
             logger.d(TAG, "@@ updateAudioFileItem: $position @ ${item.fileName} -> ${item.uriValid}")
-            audioFileAdapter?.notifyItemChanged(position)
         }
     }
 

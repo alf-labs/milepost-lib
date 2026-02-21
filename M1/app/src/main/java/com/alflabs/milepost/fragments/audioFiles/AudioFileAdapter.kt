@@ -1,7 +1,6 @@
 package com.alflabs.milepost.fragments.audioFiles
 
 import android.graphics.Color
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -10,7 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFileItemBinding
 
-class AudioFileAdapter : ListAdapter<AudioFileItem, AudioFileAdapter.AudioFileViewHolder>(AudioFileDiffCallback()) {
+class AudioFileAdapter(
+    private val onPlay: (AudioFileItem) -> Unit,
+    private val onUpdate: (AudioFileItem) -> Unit,
+) : ListAdapter<AudioFileItem, AudioFileAdapter.AudioFileViewHolder>(AudioFileDiffCallback()) {
 
     companion object {
         private val TAG = AudioFileAdapter::class.java.simpleName
@@ -61,6 +63,25 @@ class AudioFileAdapter : ListAdapter<AudioFileItem, AudioFileAdapter.AudioFileVi
                 null -> "Pending"
                 true -> "Valid"
                 else -> "Invalid"
+            }
+
+            binding.playBtn.setOnClickListener {
+                onPlay(item)
+            }
+
+            binding.playBtn.setImageResource(
+                if (item.isPlaying) R.drawable.ic_pause_circle_24
+                else R.drawable.ic_play_circle_24
+            )
+            binding.playBtn.isEnabled = item.uriValid == true || item.isPlaying
+
+            binding.updateBtn.setOnClickListener {
+                onUpdate(item)
+            }
+            binding.updateBtn.visibility = if (item.uriValid == false) {
+                android.view.View.VISIBLE
+            } else {
+                android.view.View.GONE
             }
 
             binding.root.setOnClickListener {
