@@ -51,6 +51,7 @@ class AudioFilesFragment : Fragment() {
     private var audioFileAdapter: AudioFileAdapter? = null
     private var itemPlaying: AudioFileItem? = null
     private var mediaPlayer: MediaPlayer? = null
+    private var selectAudioFilePendingId: Long = -1L
 
     private val viewModel: AudioFilesViewModel by viewModels()
 
@@ -74,13 +75,14 @@ class AudioFilesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        logger.d(TAG, "@@ onViewCreated")
 
         setupMenu()
 
         lifecycleScope.launch {
             audioFileAdapter = AudioFileAdapter(
                 onPlay = ::onPlayStopItem,
-                onUpdate = ::onUpdateUriForItem,
+                onUpdate = ::onUpdateAudioDocumentUri,
             )
 
             val layoutManager = LinearLayoutManager(requireContext())
@@ -102,15 +104,21 @@ class AudioFilesFragment : Fragment() {
                 binding.emptyMessage.visibility =
                     if (list.isEmpty()) View.VISIBLE else View.GONE
                 logger.d(TAG, "@@ AudioFiles observe new list: ${list.size} items")
+                validateAllPersistableUris(list)
                 audioFileAdapter?.submitList(list)
+            }
+        }
+    }
 
-                // Start a coroutine to update the validity of each audio file URI.
-                // This is done in a background thread to avoid blocking the UI.
-                lifecycleScope.launch {
-                    list.forEach {
-                        // The updateAudioFileItem may trigger a UI update.
-                        updateAudioFileItem(it)
-                    }
+    override fun onResume() {
+        super.onResume()
+        logger.d(TAG, "@@ onResume")
+        lifecycleScope.launch {
+            audioFileAdapter?.currentList?.let { list ->
+                val copy = list.toList()
+                val changed = validateAllPersistableUris(copy)
+                if (changed) {
+                    audioFileAdapter?.submitList(copy)
                 }
             }
         }
@@ -126,11 +134,13 @@ class AudioFilesFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
+        logger.d(TAG, "@@ onPause")
         stopCurrentPlaying()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        logger.d(TAG, "@@ onDestroyView")
         stopCurrentPlaying()
         _binding = null
     }
@@ -154,7 +164,7 @@ class AudioFilesFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_add -> {
-                        selectAudioDocument()
+                        selectNewAudioDocument()
                         true
                     }
                     R.id.action_delete -> {
@@ -222,17 +232,22 @@ class AudioFilesFragment : Fragment() {
         return RecyclerView.NO_POSITION
     }
 
-    private fun onUpdateUriForItem(item: AudioFileItem) {
-        logger.d(TAG, "@@ onUpdateUriForItem: $item")
+    private fun onUpdateAudioDocumentUri(item: AudioFileItem) {
+        logger.d(TAG, "@@ onUpdateUriForItem: ${item.id}")
         stopCurrentPlaying()
+
+        // select an audio file and update the URI for this specific item.id
+        selectAudioFilePendingId = item.id
+        selectAudioFileLauncher.launch(arrayOf("audio/*"))
     }
 
-    private fun selectAudioDocument() {
+    private fun selectNewAudioDocument() {
         stopCurrentPlaying()
 
         // 1- Ask user to select an audio file using the Storage Access Framework (SAF).
         // Use a ActivityResultContracts call suitable to return a Persistable URI
         // that can be stored in the database to open the file much later.
+        selectAudioFilePendingId = -1L
         selectAudioFileLauncher.launch(arrayOf("audio/*"))
     }
 
@@ -253,14 +268,23 @@ class AudioFilesFragment : Fragment() {
             }
         }
 
-        // 4- Add to database
-        val newAudioFile = AudioFileEntity(
-            fileName = fileName,
-            lastAccessTime = Instant.now().toString(),
-            persistableUri = persistableUri
-        )
-        logger.d(TAG, "@@ addAudioFileUri: $newAudioFile")
-        viewModel.insert(newAudioFile)
+        // 4- Add to database or Update
+        if (selectAudioFilePendingId >= 0) {
+            viewModel.updatePersistableUri(
+                selectAudioFilePendingId,
+                fileName,
+                persistableUri)
+            logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioFilePendingId -> $persistableUri")
+            selectAudioFilePendingId = -1L
+        } else {
+            val newAudioFile = AudioFileEntity(
+                fileName = fileName,
+                lastAccessTime = Instant.now().toString(),
+                persistableUri = persistableUri
+            )
+            viewModel.insert(newAudioFile)
+            logger.d(TAG, "@@ addAudioFileUri: added $newAudioFile")
+        }
     }
 
     private fun doRemoveEntry() {
@@ -281,12 +305,16 @@ class AudioFilesFragment : Fragment() {
             .show()
     }
 
-    private fun updateAudioFileItem(item: AudioFileItem) {
-        if (item.uriValid == null) {
+    /** Check all persistable Uri. Updates the list in-place, returns whether it has changed. */
+    private fun validateAllPersistableUris(list: List<AudioFileItem>) : Boolean {
+        var changed = false
+        for (item in list) {
+            val oldValid = item.uriValid
             item.uriValid = isPersistableUriValid(requireContext(), item.persistableUri.toUri())
-            val position = notifyItemChanged(item)
-            logger.d(TAG, "@@ updateAudioFileItem: $position @ ${item.fileName} -> ${item.uriValid}")
+            changed = changed || (item.uriValid != oldValid)
         }
+        logger.d(TAG, "@@ validateAllPersistableUris: ${list.size} items --> changed $changed")
+        return changed
     }
 
     /**

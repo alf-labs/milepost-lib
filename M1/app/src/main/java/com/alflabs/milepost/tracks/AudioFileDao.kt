@@ -15,6 +15,9 @@ interface AudioFileDao {
     @Update
     suspend fun update(audioFile: AudioFileEntity)
 
+    @Query("UPDATE audio_files SET fileName = :fileName, persistableUri = :persistableUri WHERE id = :id")
+    suspend fun updatePersistableUri(id: Long, fileName: String, persistableUri: String)
+
     @Query("SELECT * FROM audio_files WHERE id = :id")
     fun getById(id: Long): Flow<AudioFileEntity?>
 

@@ -22,6 +22,12 @@ class AudioFilesViewModel @Inject constructor(
         }
     }
 
+    fun updatePersistableUri(id: Long, fileName: String, persistableUri: String) {
+        viewModelScope.launch {
+            audioFileDao.updatePersistableUri(id, fileName, persistableUri)
+        }
+    }
+
     fun delete(item: AudioFileItem) {
         viewModelScope.launch {
             audioFileDao.deleteById(item.id)
