@@ -7,4 +7,7 @@
 
     <color name="list_highlight">#5255A6</color>
 
+    <color name="item_play_btn_background">@null</color>
+    <color name="item_play_btn_tint">@android:color/holo_blue_dark</color>
+
 </resources>

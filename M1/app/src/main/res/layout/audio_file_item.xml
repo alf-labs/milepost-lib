@@ -47,10 +47,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_play_circle_24"
-            android:layout_marginStart="16dp"
+            android:padding="8dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:contentDescription="Play audio sample"
-            />
+            android:background="@color/item_play_btn_background"
+            android:contentDescription="Play audio sample" />
 
 </RelativeLayout>

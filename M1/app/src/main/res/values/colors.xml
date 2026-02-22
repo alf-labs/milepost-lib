@@ -19,4 +19,7 @@
 
     <color name="list_highlight">#AFB1D8</color>
 
+    <color name="item_play_btn_background">@android:color/background_light</color>
+    <color name="item_play_btn_tint">@android:color/holo_blue_dark</color>
+
 </resources>

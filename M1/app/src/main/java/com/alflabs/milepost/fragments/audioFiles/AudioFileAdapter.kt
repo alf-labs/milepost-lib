@@ -1,8 +1,10 @@
 package com.alflabs.milepost.fragments.audioFiles
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -74,6 +76,15 @@ class AudioFileAdapter(
                 else R.drawable.ic_play_circle_24
             )
             binding.playBtn.isEnabled = item.uriValid == true || item.isPlaying
+
+            if (item.isPlaying) {
+                val tintColor = ContextCompat.getColor(
+                    binding.root.context,
+                    R.color.item_play_btn_tint)
+                binding.playBtn.imageTintList = ColorStateList.valueOf(tintColor)
+            } else {
+                binding.playBtn.imageTintList = null
+            }
 
             binding.updateBtn.setOnClickListener {
                 onUpdate(item)
