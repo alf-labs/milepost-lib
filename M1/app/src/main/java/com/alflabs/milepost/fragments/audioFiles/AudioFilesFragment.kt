@@ -2,6 +2,7 @@ package com.alflabs.milepost.fragments.audioFiles
 
 import android.content.Context
 import android.content.Intent
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -13,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -33,7 +35,6 @@ import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
 import java.time.Instant
 import javax.inject.Inject
-import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class AudioFilesFragment : Fragment() {
@@ -48,7 +49,8 @@ class AudioFilesFragment : Fragment() {
     private var _binding: AudioFilesFragmentBinding? = null
     private val binding get() = _binding!!
     private var audioFileAdapter: AudioFileAdapter? = null
-    private var currentPlaying: AudioFileItem? = null
+    private var itemPlaying: AudioFileItem? = null
+    private var mediaPlayer: MediaPlayer? = null
 
     private val viewModel: AudioFilesViewModel by viewModels()
 
@@ -122,8 +124,14 @@ class AudioFilesFragment : Fragment() {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        stopCurrentPlaying()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        stopCurrentPlaying()
         _binding = null
     }
 
@@ -161,7 +169,7 @@ class AudioFilesFragment : Fragment() {
 
     private fun onPlayStopItem(item: AudioFileItem) {
         // This toggles play/stop. Only one item can play at a time.
-        currentPlaying?.let { current ->
+        itemPlaying?.let { current ->
             val isSame = current.id == item.id
             stopCurrentPlaying()
             if (isSame) {
@@ -171,16 +179,33 @@ class AudioFilesFragment : Fragment() {
         }
         // Start playing the new item
         item.isPlaying = true
-        currentPlaying = item
+        itemPlaying = item
         val position = notifyItemChanged(item)
         logger.d(TAG, "@@ onPlayItem: $position")
+
+        try {
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(requireContext(), item.persistableUri.toUri())
+                prepare()
+                start()
+                setOnCompletionListener {
+                    stopCurrentPlaying()
+                }
+            }
+        } catch (e: Exception) {
+            logger.d(TAG, "Error playing audio", e)
+            Snackbar.make(requireView(), "Error playing audio file", Snackbar.LENGTH_LONG).show()
+            stopCurrentPlaying()
+        }
     }
 
     private fun stopCurrentPlaying() {
-        currentPlaying?.let { current ->
-            currentPlaying = null
-            current.isPlaying = false
-            val position = notifyItemChanged(current)
+        mediaPlayer?.release()
+        mediaPlayer = null
+        itemPlaying?.let { item ->
+            itemPlaying = null
+            item.isPlaying = false
+            val position = notifyItemChanged(item)
             logger.d(TAG, "@@ stopCurrentPlaying: $position")
         }
     }
