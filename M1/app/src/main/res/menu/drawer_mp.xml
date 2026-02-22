@@ -10,7 +10,7 @@
     <group> <!-- android:checkableBehavior="single" -->
         <item
                 android:id="@+id/nav_about"
-                android:icon="@drawable/ic_info_light"
+                android:icon="@drawable/ic_nav_menu_about"
                 android:title="About" />
     </group>
 
@@ -18,17 +18,17 @@
         <menu>
             <item
                     android:id="@+id/nav_audio_file_list"
-                    android:icon="@drawable/ic_art_track_24"
+                    android:icon="@drawable/ic_nav_menu_list"
                     android:title="Audio Files" />
 
             <item
                     android:id="@+id/nav_docent_track_list"
-                    android:icon="@drawable/ic_art_track_24"
+                    android:icon="@drawable/ic_nav_menu_list"
                     android:title="Docent Tracks"  />
 
             <item
                     android:id="@+id/nav_docent_track_play"
-                    android:icon="@drawable/ic_autoplay"
+                    android:icon="@drawable/ic_nav_menu_play"
                     android:title="Playback Docent Track"  />
         </menu>
     </item>
@@ -37,15 +37,15 @@
         <menu>
             <item
                     android:id="@+id/nav_gps_track_list"
-                    android:icon="@drawable/ic_art_track_24"
+                    android:icon="@drawable/ic_nav_menu_list"
                     android:title="Milepost GPS Tracks" />
             <item
                     android:id="@+id/nav_gps_track_record"
-                    android:icon="@drawable/ic_manual_record"
+                    android:icon="@drawable/ic_nav_menu_record"
                     android:title="Record GPS Track" />
             <item
                     android:id="@+id/nav_gps_track_play"
-                    android:icon="@drawable/ic_autoplay"
+                    android:icon="@drawable/ic_nav_menu_play"
                     android:title="Playback GPS Track"  />
         </menu>
     </item>
@@ -54,15 +54,15 @@
         <menu>
             <item
                     android:id="@+id/nav_sensors"
-                    android:icon="@drawable/ic_explore_light"
+                    android:icon="@drawable/ic_nav_menu_sensors"
                     android:title="Test Sensors" />
             <item
                     android:id="@+id/nav_permissions"
-                    android:icon="@drawable/ic_report_problem_light"
+                    android:icon="@drawable/ic_nav_menu_permissions"
                     android:title="Permissions" />
             <item
                     android:id="@+id/nav_settings"
-                    android:icon="@drawable/ic_settings_light"
+                    android:icon="@drawable/ic_nav_menu_settings"
                     android:title="Settings" />
         </menu>
     </item>

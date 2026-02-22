@@ -72,8 +72,8 @@ class AudioFileAdapter(
             }
 
             binding.playBtn.setImageResource(
-                if (item.isPlaying) R.drawable.ic_pause_circle_24
-                else R.drawable.ic_play_circle_24
+                if (item.isPlaying) R.drawable.ic_btn_pause
+                else R.drawable.ic_btn_play
             )
             binding.playBtn.isEnabled = item.uriValid == true || item.isPlaying
 
