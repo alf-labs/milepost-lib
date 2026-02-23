@@ -2,6 +2,7 @@ package com.alflabs.milepost.fragments.audioFiles
 
 import android.content.Context
 import android.content.Intent
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
@@ -268,7 +269,36 @@ class AudioFilesFragment : Fragment() {
             }
         }
 
-        // 4- Add to database or Update
+        // 4- Check this is a playable audio file and get its duration.
+        var durationMs: Long
+        try {
+            // If we can successfully retrieve the MediaMetaData duration, it's likely
+            // good enough to play with the MediaPlayer.
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(requireContext(), uri)
+
+            // If the file is not a valid media file, the following call might return null or throw
+            val durationStr =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            durationMs = durationStr?.toLong() ?: 0L
+
+            retriever.release()
+
+            if (durationMs <= 0) {
+                throw Exception("Invalid audio duration")
+            }
+        } catch (e: Exception) {
+            logger.d(TAG, "@@ addAudioFileUri: '$fileName' is not a valid audio file", e)
+            Snackbar.make(
+                requireView(),
+                "Selected file '$fileName' is not a supported audio format",
+                Snackbar.LENGTH_LONG
+            ).show()
+            selectAudioFilePendingId = -1L
+            return // Exit early so we don't save an invalid URI
+        }
+
+        // 5- Add to database or Update
         if (selectAudioFilePendingId >= 0) {
             viewModel.updatePersistableUri(
                 selectAudioFilePendingId,
