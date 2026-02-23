@@ -2,41 +2,72 @@ package com.alflabs.milepost.db
 
 import androidx.room.TypeConverter
 import com.alflabs.milepost.location.LocationDataList
+import com.google.protobuf.AbstractMessageLite
+import com.google.protobuf.GeneratedMessageLite
+import com.google.protobuf.InvalidProtocolBufferException
+import com.google.protobuf.Parser
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 @OptIn(ExperimentalEncodingApi::class)
 class Converters {
     @TypeConverter
-    fun fromLocationDataList(value: LocationDataList?): String? {
-        return value?.let {
-            Base64.encode(it.toByteArray())
-        }
-    }
+    fun fromLocationDataList(value: LocationDataList?): String? = fromProto(value)
 
     @TypeConverter
-    fun toLocationDataList(value: String?): LocationDataList? {
-        return value?.let {
-            val decoded = Base64.decode(it)
-            // Note: Protobuf Lite does not have DiscardUnknownFieldsParser. Unknown fields (e.g.
-            // deleted/reserved fields) are still accumulated as "unknown" fields when
-            // deserializing.
-            LocationDataList.parseFrom(decoded)
-        }
-    }
+    fun toLocationDataList(value: String?): LocationDataList? = toProto<LocationDataList>(value)
 
     @TypeConverter
-    fun fromTrackSummary(value: GpsTrackSummary?): String? {
-        return value?.let {
-            Base64.encode(it.toByteArray())
-        }
-    }
+    fun fromGpsTrackSummary(value: GpsTrackSummary?): String? = fromProto(value)
 
     @TypeConverter
-    fun toTrackSummary(value: String?): GpsTrackSummary? {
-        return value?.let {
-            val decoded = Base64.decode(it)
-            GpsTrackSummary.parseFrom(decoded)
+    fun toGpsTrackSummary(value: String?): GpsTrackSummary?  = toProto<GpsTrackSummary>(value)
+
+    @TypeConverter
+    fun fromAudioFileMetadata(value: AudioFileMetadata?): String? = fromProto(value)
+
+    @TypeConverter
+    fun toAudioFileMetadata(value: String?): AudioFileMetadata?  = toProto<AudioFileMetadata>(value)
+
+    companion object {
+        /** Serializes a generic Protobuf lite to a Base64 string. */
+        private inline fun
+                <reified T : AbstractMessageLite<T, *>>
+                fromProto(value: T?): String? {
+            return value?.let {
+                Base64.encode(it.toByteArray())
+            }
+        }
+
+        /**
+         * Deserializes a Base64 string into a generic Protobuf lite.
+         *
+         * This relies on the fact that each generated [GeneratedMessageLite] contains a Parser()
+         * method returning the deserializer for that protobuf message.
+         *
+         * When used a Room Column, the proto should always be used as an optional with a null
+         * default value as we cannot guarantee that the base64 encoded string in the database
+         * actually represents a valid proto. However, we do not hide proto parser exceptions here.
+         * A failure to parse a proto will be reflected in the Room DAO implementation.
+         *
+         * The Base64 decoder throws IllegalArgumentException on failure.
+         * The parser throws InvalidProtocolBufferException on failure.
+         * A null input string returns a null output.
+         * An empty non-null string should parse to an empty (all defaults) proto.
+         */
+        @Throws(
+            IllegalArgumentException::class,
+            InvalidProtocolBufferException::class)
+        private inline fun
+                <reified T : GeneratedMessageLite<T, *>>
+                toProto(value: String?): T? {
+            return value?.let {
+                val decoded = Base64.decode(it)
+                // Reified type allows accessing T's static methods like GeneratedMessageLite::parser()
+                @Suppress("UNCHECKED_CAST")
+                val parser = T::class.java.getMethod("parser").invoke(null) as Parser<T>
+                parser.parseFrom(decoded)
+            }
         }
     }
 }

@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFilesFragmentBinding
 import com.alflabs.milepost.db.AudioFileEntity
+import com.alflabs.milepost.db.audioFileMetadata
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
@@ -311,7 +312,10 @@ class AudioFilesFragment : Fragment() {
             val newAudioFile = AudioFileEntity(
                 fileName = fileName,
                 lastAccessTime = Instant.now().toString(),
-                persistableUri = persistableUri
+                persistableUri = persistableUri,
+                metadata = audioFileMetadata {
+                    this.durationMs = durationMs
+                }
             )
             viewModel.insert(newAudioFile)
             logger.d(TAG, "@@ addAudioFileUri: added $newAudioFile")

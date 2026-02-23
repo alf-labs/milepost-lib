@@ -17,5 +17,8 @@ data class AudioFileEntity(
 
     @ColumnInfo
     val persistableUri: String,
+
+    @ColumnInfo
+    val metadata: AudioFileMetadata? = null,
 )
 

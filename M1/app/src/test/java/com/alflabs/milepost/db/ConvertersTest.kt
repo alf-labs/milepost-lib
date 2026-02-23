@@ -73,10 +73,10 @@ class ConvertersTest {
             durationS = 4.0f
         }
 
-        val serialized = converters.fromTrackSummary(originalSummary)
+        val serialized = converters.fromGpsTrackSummary(originalSummary)
         assertThat(serialized).isEqualTo("DQAAgD8VAAAAQB0AAEBAJQAAgEA=")
 
-        val deserialized = converters.toTrackSummary(serialized)
+        val deserialized = converters.toGpsTrackSummary(serialized)
         assertThat(deserialized).isEqualTo(originalSummary)
     }
 
@@ -89,10 +89,45 @@ class ConvertersTest {
             mpMax = 2.0f
         }
 
-        val serialized = converters.fromTrackSummary(originalSummary)
+        val serialized = converters.fromGpsTrackSummary(originalSummary)
         assertThat(serialized).isEqualTo("DQAAgD8VAAAAQA==")
 
-        val deserialized = converters.toTrackSummary(serialized)
+        val deserialized = converters.toGpsTrackSummary(serialized)
         assertThat(deserialized).isEqualTo(originalSummary)
+    }
+
+    @Test
+    fun testAudioFileMetadataConverter() {
+        val converters = Converters()
+
+        val originalMetadata = audioFileMetadata {
+            durationMs = 1234L
+        }
+
+        val serialized = converters.fromAudioFileMetadata(originalMetadata)
+        assertThat(serialized).isEqualTo("CNIJ")
+
+        val deserialized = converters.toAudioFileMetadata(serialized)
+        assertThat(deserialized).isEqualTo(originalMetadata)
+    }
+
+    @Test
+    fun testAudioFileMetadataConverter_nullAndEmpty() {
+        val converters = Converters()
+
+        assertThat(converters.fromAudioFileMetadata(null)).isNull()
+        assertThat(converters.toAudioFileMetadata(null)).isNull()
+
+        // Empty metadata (all default values)
+        val emptyMetadata = audioFileMetadata { }
+        val serializedEmpty = converters.fromAudioFileMetadata(emptyMetadata)
+        // Protobuf empty message is empty string or base64 empty string ""
+        assertThat(serializedEmpty).isEqualTo("")
+        val deserializedEmpty = converters.toAudioFileMetadata(serializedEmpty)
+        assertThat(deserializedEmpty).isEqualTo(emptyMetadata)
+
+        // Empty string input to toAudioFileMetadata should also return empty message
+        val deserializedFromEmptyString = converters.toAudioFileMetadata("")
+        assertThat(deserializedFromEmptyString).isEqualTo(emptyMetadata)
     }
 }

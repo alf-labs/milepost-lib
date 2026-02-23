@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package com.alflabs.milepost.db;
+
+option java_multiple_files = true;
+
+message AudioFileMetadata {
+  int64 duration_ms = 1;
+}

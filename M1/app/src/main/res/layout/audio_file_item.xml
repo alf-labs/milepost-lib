@@ -25,20 +25,19 @@
             tools:text="Last Access Time" />
 
     <TextView
-            android:id="@+id/uri_valid"
+            android:id="@+id/metadata"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
             android:layout_marginStart="16dp"
             android:layout_below="@id/last_access_time"
-            tools:text="URI Valid / Invalid" />
+            tools:text="Metadata" />
 
     <Button
             android:id="@+id/update_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Update"
-            android:layout_centerHorizontal="true"
+            android:text="Reselect File"
+            android:layout_toStartOf="@+id/play_btn"
             android:layout_below="@id/last_access_time"
         />
 

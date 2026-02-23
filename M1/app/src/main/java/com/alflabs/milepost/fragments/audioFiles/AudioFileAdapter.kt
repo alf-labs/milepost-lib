@@ -1,7 +1,9 @@
 package com.alflabs.milepost.fragments.audioFiles
 
+import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -10,6 +12,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFileItemBinding
+import java.util.concurrent.TimeUnit
 
 class AudioFileAdapter(
     private val onPlay: (AudioFileItem) -> Unit,
@@ -59,12 +62,21 @@ class AudioFileAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: AudioFileItem, isSelected: Boolean) {
+
+            val metadata = item.metadata?.let { data ->
+                "Duration: ${formatMillis(data.durationMs)}"
+            } ?: ""
+
             binding.fileName.text = item.fileName
             binding.lastAccessTime.text = item.lastAccessTime
-            binding.uriValid.text = when (item.uriValid) {
-                null -> "Pending"
-                true -> "Valid"
-                else -> "Invalid"
+            binding.metadata.text = when (item.uriValid) {
+                false -> "File not found"
+                else -> metadata
+            }
+            binding.metadata.typeface = if (item.uriValid == false) {
+                Typeface.DEFAULT_BOLD
+            } else {
+                Typeface.DEFAULT
             }
 
             binding.playBtn.setOnClickListener {
@@ -114,6 +126,21 @@ class AudioFileAdapter(
             })
         }
     }
+
+    @SuppressLint("DefaultLocale")
+    private fun formatMillis(ms: Long): String {
+        val hours = TimeUnit.MILLISECONDS.toHours(ms)
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(ms) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
+
+        return if (hours > 0) {
+            String.format("%02dh %02dm %02ds", hours, minutes, seconds)
+        } else {
+            String.format("%02dm %02ds", minutes, seconds)
+        }
+    }
+
+
 }
 
 class AudioFileDiffCallback : DiffUtil.ItemCallback<AudioFileItem>() {
