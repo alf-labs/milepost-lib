@@ -37,11 +37,11 @@ import com.alflabs.milepost.location.clearFlag
 import com.alflabs.milepost.location.copy
 import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.location.setFlag
-import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.GpsTrackDao
-import com.alflabs.milepost.tracks.GpsTrackSummary
-import com.alflabs.milepost.tracks.copy
-import com.alflabs.milepost.tracks.gpsTrackSummary
+import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.GpsTrackSummary
+import com.alflabs.milepost.db.copy
+import com.alflabs.milepost.db.gpsTrackSummary
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units

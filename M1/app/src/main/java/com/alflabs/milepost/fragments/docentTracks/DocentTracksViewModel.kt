@@ -3,8 +3,8 @@ package com.alflabs.milepost.fragments.docentTracks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.alflabs.milepost.tracks.DocentTrackEntity
-import com.alflabs.milepost.tracks.DocentTrackDao
+import com.alflabs.milepost.db.DocentTrackEntity
+import com.alflabs.milepost.db.DocentTrackDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

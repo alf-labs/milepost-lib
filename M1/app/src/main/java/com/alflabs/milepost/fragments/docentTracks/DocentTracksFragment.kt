@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.DocentTracksFragmentBinding
-import com.alflabs.milepost.tracks.DocentTrackEntity
+import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar

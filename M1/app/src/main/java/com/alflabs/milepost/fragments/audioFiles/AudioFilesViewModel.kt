@@ -3,8 +3,8 @@ package com.alflabs.milepost.fragments.audioFiles
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.alflabs.milepost.tracks.AudioFileDao
-import com.alflabs.milepost.tracks.AudioFileEntity
+import com.alflabs.milepost.db.AudioFileDao
+import com.alflabs.milepost.db.AudioFileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

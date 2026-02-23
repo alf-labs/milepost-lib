@@ -1,4 +1,4 @@
-package com.alflabs.milepost.tracks
+package com.alflabs.milepost.db
 
 import androidx.room.Dao
 import androidx.room.Insert

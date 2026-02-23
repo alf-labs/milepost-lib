@@ -3,7 +3,7 @@ package com.alflabs.milepost.fragments.audioFiles
 import androidx.room.Ignore
 
 /**
- * A derivative of [com.alflabs.milepost.tracks.AudioFileEntity] suitable for the AudioFileFragment recycler view.
+ * A derivative of [com.alflabs.milepost.db.AudioFileEntity] suitable for the AudioFileFragment recycler view.
  */
 data class AudioFileItem(
     val id: Long,

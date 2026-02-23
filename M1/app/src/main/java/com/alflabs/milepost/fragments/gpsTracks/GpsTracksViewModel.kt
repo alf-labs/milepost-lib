@@ -3,8 +3,8 @@ package com.alflabs.milepost.fragments.gpsTracks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.GpsTrackDao
+import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.db.GpsTrackDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

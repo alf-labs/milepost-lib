@@ -1,6 +1,6 @@
 package com.alflabs.milepost.fragments.gpsTracks
 
-import com.alflabs.milepost.tracks.GpsTrackSummary
+import com.alflabs.milepost.db.GpsTrackSummary
 import com.alflabs.milepost.utils.Units
 
 fun GpsTrackSummary?.toText(useImperialUnits: Boolean): CharSequence {

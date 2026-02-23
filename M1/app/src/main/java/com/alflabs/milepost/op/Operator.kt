@@ -2,7 +2,7 @@ package com.alflabs.milepost.op
 
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
-import com.alflabs.milepost.tracks.GpsTrackEntity
+import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger

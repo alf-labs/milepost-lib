@@ -1,9 +1,9 @@
 package com.alflabs.milepost.fragments.gpsTracks
 
-import com.alflabs.milepost.tracks.GpsTrackSummary
+import com.alflabs.milepost.db.GpsTrackSummary
 
 /**
- * A subset of [com.alflabs.milepost.tracks.GpsTrackEntity] for displaying in the
+ * A subset of [com.alflabs.milepost.db.GpsTrackEntity] for displaying in the
  * [GpsTracksFragment] recycler view. This allows the DAO to only load the columns
  * we need to display in the recycler view.
  */

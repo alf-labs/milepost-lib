@@ -1,4 +1,4 @@
-package com.alflabs.milepost.tracks
+package com.alflabs.milepost.db
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

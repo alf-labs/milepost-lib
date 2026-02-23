@@ -5,8 +5,8 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.fragments.SensorsFragment
 import com.alflabs.milepost.op.OperatorMode
-import com.alflabs.milepost.tracks.GpsTrackDao
-import com.alflabs.milepost.tracks.GpsTrackEntity
+import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.GpsTrackEntity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Date

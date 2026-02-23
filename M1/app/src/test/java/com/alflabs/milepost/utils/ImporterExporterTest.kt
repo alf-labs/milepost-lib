@@ -9,8 +9,8 @@ import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.locationDataList
 import com.alflabs.milepost.location.speedData
-import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.gpsTrackSummary
+import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.db.gpsTrackSummary
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat

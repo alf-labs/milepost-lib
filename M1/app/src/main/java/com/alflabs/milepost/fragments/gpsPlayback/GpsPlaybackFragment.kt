@@ -19,7 +19,7 @@ import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
-import com.alflabs.milepost.tracks.GpsTrackDao
+import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdate

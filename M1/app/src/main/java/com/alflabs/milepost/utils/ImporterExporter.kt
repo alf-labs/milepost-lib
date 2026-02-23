@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
-import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.TrackEntityPojo
+import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.db.TrackEntityPojo
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.annotation.JsonInclude

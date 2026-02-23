@@ -4,7 +4,7 @@ import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.hasFlag
-import com.alflabs.milepost.tracks.GpsTrackEntity
+import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Publishers

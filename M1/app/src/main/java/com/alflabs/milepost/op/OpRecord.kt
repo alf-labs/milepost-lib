@@ -5,8 +5,8 @@ import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.LocationDistance
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
-import com.alflabs.milepost.tracks.GpsTrackEntity
-import com.alflabs.milepost.tracks.GpsTrackDao
+import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Schedulers
 import com.alflabs.utils.IClock

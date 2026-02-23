@@ -1,4 +1,4 @@
-package com.alflabs.milepost.tracks
+package com.alflabs.milepost.db
 
 import androidx.room.TypeConverter
 import com.alflabs.milepost.location.LocationDataList

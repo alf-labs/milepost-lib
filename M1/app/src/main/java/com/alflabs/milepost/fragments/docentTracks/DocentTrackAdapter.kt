@@ -7,8 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.databinding.DocentTrackItemBinding
-import com.alflabs.milepost.fragments.gpsTracks.toText
-import com.alflabs.milepost.tracks.DocentTrackEntity
+import com.alflabs.milepost.db.DocentTrackEntity
 
 class DocentTrackAdapter(
     private val onClick: (DocentTrackEntity) -> Unit,

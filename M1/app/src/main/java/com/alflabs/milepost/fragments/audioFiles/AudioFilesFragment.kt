@@ -27,7 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFilesFragmentBinding
-import com.alflabs.milepost.tracks.AudioFileEntity
+import com.alflabs.milepost.db.AudioFileEntity
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
@@ -281,6 +281,7 @@ class AudioFilesFragment : Fragment() {
             val durationStr =
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
             durationMs = durationStr?.toLong() ?: 0L
+            logger.d(TAG, "@@ addAudioFileUri: '$fileName' has duration $durationMs ms")
 
             retriever.release()
 

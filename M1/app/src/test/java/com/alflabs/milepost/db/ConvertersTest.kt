@@ -1,4 +1,4 @@
-package com.alflabs.milepost.tracks
+package com.alflabs.milepost.db
 
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData

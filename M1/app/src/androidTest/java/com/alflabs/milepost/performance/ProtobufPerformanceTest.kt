@@ -8,7 +8,7 @@ import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.speedData
-import com.alflabs.milepost.tracks.Converters
+import com.alflabs.milepost.db.Converters
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
