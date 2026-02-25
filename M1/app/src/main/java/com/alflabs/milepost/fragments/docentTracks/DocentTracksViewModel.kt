@@ -14,7 +14,7 @@ class DocentTracksViewModel @Inject constructor(
     private val docentTrackDao: DocentTrackDao
 ) : ViewModel() {
 
-    val tracks = docentTrackDao.getAll().asLiveData()
+    val tracks = docentTrackDao.getItems().asLiveData()
 
     suspend fun getIdByUuid(uuid: String): Long? {
         return docentTrackDao.getIdByUuid(uuid)
@@ -27,17 +27,10 @@ class DocentTracksViewModel @Inject constructor(
         }
     }
 
-    /** Update a DocentTrackEntity with a matching id. */
-    fun update(track: DocentTrackEntity) {
+    fun deleteById(id: Long) {
         viewModelScope.launch {
-            docentTrackDao.update(track)
-        }
-    }
-
-    fun delete(trackInfo: DocentTrackEntity) {
-        viewModelScope.launch {
-            docentTrackDao.deleteById(trackInfo.id)
-            println("@@ DB DELETE track = $trackInfo")
+            docentTrackDao.deleteById(id)
+            println("@@ DB DELETE track = $id")
         }
     }
 }

@@ -7,15 +7,17 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.databinding.DocentTrackItemBinding
-import com.alflabs.milepost.db.DocentTrackEntity
 
 class DocentTrackAdapter(
-    private val onClick: (DocentTrackEntity) -> Unit,
-    private val onEdit: (DocentTrackEntity) -> Unit,
-    private val onDelete: (DocentTrackEntity) -> Unit,
-    private val useImperialUnits: Boolean,
-    private val playbackTrackId: Long,
-) : ListAdapter<DocentTrackEntity, DocentTrackAdapter.DocentTrackViewHolder>(DocentTrackDiffCallback()) {
+    private val onClick: (DocentTrackItem) -> Unit,
+    private val onEdit: (DocentTrackItem) -> Unit,
+    private val onDelete: (DocentTrackItem) -> Unit,
+    private val docentPlaybackTrackId: Long,
+) : ListAdapter<DocentTrackItem, DocentTrackAdapter.DocentTrackViewHolder>(DocentTrackDiffCallback()) {
+
+    companion object {
+        private val TAG = DocentTrackAdapter::class.java.simpleName
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentTrackViewHolder {
         val binding = DocentTrackItemBinding.inflate(
@@ -23,7 +25,7 @@ class DocentTrackAdapter(
             parent,
             false
         )
-        return DocentTrackViewHolder(binding, onClick, onEdit, onDelete, useImperialUnits, playbackTrackId)
+        return DocentTrackViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: DocentTrackViewHolder, position: Int) {
@@ -31,58 +33,48 @@ class DocentTrackAdapter(
         holder.bind(track)
     }
 
-    class DocentTrackViewHolder(
+    inner class DocentTrackViewHolder(
         private val binding: DocentTrackItemBinding,
-        private val onClick: (DocentTrackEntity) -> Unit,
-        private val onEdit: (DocentTrackEntity) -> Unit,
-        private val onDelete: (DocentTrackEntity) -> Unit,
-        private val useImperialUnits: Boolean,
-        private val playbackTrackId: Long,
     ) : RecyclerView.ViewHolder(binding.root) {
-        private var currentTrack: DocentTrackEntity? = null
 
-        init {
+        fun bind(item: DocentTrackItem) {
             binding.root.setOnClickListener {
-                currentTrack?.let(onClick)
+                onClick(item)
             }
             binding.root.setOnLongClickListener {
-                currentTrack?.let { track ->
-                    val menu = PopupMenu(itemView.context, itemView)
-                    menu.menu.add("Edit").setOnMenuItemClickListener {
-                        onEdit(track)
-                        true
-                    }
-                    menu.menu.add("Delete").setOnMenuItemClickListener {
-                        onDelete(track)
-                        true
-                    }
-                    menu.show()
+                val menu = PopupMenu(itemView.context, itemView)
+                menu.menu.add("Edit").setOnMenuItemClickListener {
+                    onEdit(item)
+                    true
                 }
+                menu.menu.add("Delete").setOnMenuItemClickListener {
+                    onDelete(item)
+                    true
+                }
+                menu.show()
                 true
             }
-        }
 
-        fun bind(track: DocentTrackEntity) {
-            currentTrack = track
-            val isPlayback = if (track.id == playbackTrackId) " ★" else ""
-            binding.userTitle.text = "[${track.id}] ${track.userTitle?.ifBlank { "(No Title)" }}$isPlayback"
-            binding.creationTime.text = track.creationTime
-            binding.lastUsedTime.text = track.lastUsedTime ?: "new"
+            val isPlayback = if (item.id == docentPlaybackTrackId) " ★" else ""
+            binding.userTitle.text = "[${item.id}] ${item.userTitle?.ifBlank { "(No Title)" }}$isPlayback"
+            binding.creationTime.text = item.creationTime
+            binding.gpsTrackLabel.text = item.gpsTrackLabel ?:
+                "GPS Track #${item.gpsTrackId}"
         }
     }
 }
 
-class DocentTrackDiffCallback : DiffUtil.ItemCallback<DocentTrackEntity>() {
+class DocentTrackDiffCallback : DiffUtil.ItemCallback<DocentTrackItem>() {
     override fun areItemsTheSame(
-        oldItem: DocentTrackEntity,
-        newItem: DocentTrackEntity
+        oldItem: DocentTrackItem,
+        newItem: DocentTrackItem
     ) : Boolean {
         return oldItem.id == newItem.id
     }
 
     override fun areContentsTheSame(
-        oldItem: DocentTrackEntity,
-        newItem: DocentTrackEntity
+        oldItem: DocentTrackItem,
+        newItem: DocentTrackItem
     ) : Boolean {
         return oldItem == newItem
     }

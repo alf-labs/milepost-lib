@@ -4,7 +4,8 @@ import androidx.room.Ignore
 import com.alflabs.milepost.db.AudioFileMetadata
 
 /**
- * A derivative of [com.alflabs.milepost.db.AudioFileEntity] suitable for the AudioFileFragment recycler view.
+ * A derivative of [com.alflabs.milepost.db.AudioFileEntity]
+ * suitable for the [AudioFilesFragment] recycler view.
  */
 data class AudioFileItem(
     val id: Long,

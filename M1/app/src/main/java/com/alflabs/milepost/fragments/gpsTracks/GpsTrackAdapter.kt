@@ -38,31 +38,25 @@ class GpsTrackAdapter(
         private val useImperialUnits: Boolean,
         private val playbackTrackId: Long,
     ) : RecyclerView.ViewHolder(binding.root) {
-        private var currentTrack: GpsTrackDisplayItem? = null
-
-        init {
-            binding.root.setOnClickListener {
-                currentTrack?.let(onClick)
-            }
-            binding.root.setOnLongClickListener {
-                currentTrack?.let { track ->
-                    val menu = PopupMenu(itemView.context, itemView)
-                    menu.menu.add("Edit").setOnMenuItemClickListener {
-                        onEdit(track)
-                        true
-                    }
-                    menu.menu.add("Delete").setOnMenuItemClickListener {
-                        onDelete(track)
-                        true
-                    }
-                    menu.show()
-                }
-                true
-            }
-        }
 
         fun bind(track: GpsTrackDisplayItem) {
-            currentTrack = track
+            binding.root.setOnClickListener {
+                onClick(track)
+            }
+            binding.root.setOnLongClickListener {
+                val menu = PopupMenu(itemView.context, itemView)
+                menu.menu.add("Edit").setOnMenuItemClickListener {
+                    onEdit(track)
+                    true
+                }
+                menu.menu.add("Delete").setOnMenuItemClickListener {
+                    onDelete(track)
+                    true
+                }
+                menu.show()
+                true
+            }
+
             val isPlayback = if (track.id == playbackTrackId) " ★" else ""
             binding.trackName.text = "[${track.id}] ${track.trackLabel?.ifBlank { "(No Title)" }}$isPlayback"
             binding.trackDate.text = track.createdDateISO

@@ -28,9 +28,9 @@ class AudioFilesViewModel @Inject constructor(
         }
     }
 
-    fun delete(item: AudioFileItem) {
+    fun deleteById(id: Long) {
         viewModelScope.launch {
-            audioFileDao.deleteById(item.id)
+            audioFileDao.deleteById(id)
         }
     }
 }

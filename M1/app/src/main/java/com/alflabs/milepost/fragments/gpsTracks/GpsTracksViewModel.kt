@@ -34,10 +34,9 @@ class GpsTracksViewModel @Inject constructor(
         }
     }
 
-    fun delete(trackItem: GpsTrackDisplayItem) {
+    fun deleteById(id: Long) {
         viewModelScope.launch {
-            gpsTrackDao.deleteById(trackItem.id)
-            println("@@ DB DELETE track = $trackItem")
+            gpsTrackDao.deleteById(id)
         }
     }
 }

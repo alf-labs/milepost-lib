@@ -333,7 +333,7 @@ class AudioFilesFragment : Fragment() {
             .setTitle("Delete Audio File Reference")
             .setMessage("Are you sure you want to delete the reference to file '${selected.fileName}'? This does not delete the actual file.")
             .setPositiveButton("Delete") { _, _ ->
-                viewModel.delete(selected)
+                viewModel.deleteById(selected.id)
                 Snackbar.make(requireView(), "Reference to file '${selected.fileName}' deleted", Snackbar.LENGTH_LONG).show()
             }
             .setNegativeButton("Cancel", null)

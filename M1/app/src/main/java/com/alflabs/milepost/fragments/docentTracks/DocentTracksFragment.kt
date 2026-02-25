@@ -7,6 +7,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -39,7 +40,8 @@ class DocentTracksFragment : Fragment() {
 
     private var _binding: DocentTracksFragmentBinding? = null
     private val binding get() = _binding!!
-    private var gpsPlaybackTrackId: Long = -1
+    private var docentTrackAdapter: DocentTrackAdapter? = null
+    private var docentPlaybackTrackId: Long = -1
 
     private val viewModel: DocentTracksViewModel by viewModels()
 
@@ -53,28 +55,22 @@ class DocentTracksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        logger.d(TAG, "@@ onViewCreated")
 
         setupMenu()
 
         lifecycleScope.launch {
-            gpsPlaybackTrackId = appSettings.playbackTrackId()
+            // TODO docentPlaybackTrackId = appSettings.docentPlaybackTrackId()
 
-            val adapter = DocentTrackAdapter(
-                onClick = { track ->
-                    // TBD
-                },
-                onEdit = { track ->
-                    // TBD
-                },
-                onDelete = { track ->
-                    // TBD
-                },
-                useImperialUnits = false,
-                gpsPlaybackTrackId,
+            docentTrackAdapter = DocentTrackAdapter(
+                onClick = ::showEditDialog,
+                onEdit = ::showEditDialog,
+                onDelete = ::showDeleteDialog,
+                docentPlaybackTrackId,
             )
 
             val layoutManager = LinearLayoutManager(requireContext())
-            binding.tracksList.adapter = adapter
+            binding.tracksList.adapter = docentTrackAdapter
             binding.tracksList.layoutManager = layoutManager
 
             val dividerItemDecoration = DividerItemDecoration(
@@ -87,7 +83,7 @@ class DocentTracksFragment : Fragment() {
             viewModel.tracks.observe(viewLifecycleOwner) { list ->
                 binding.emptyMessage.visibility =
                     if (list.isEmpty()) View.VISIBLE else View.GONE
-                adapter.submitList(list)
+                docentTrackAdapter?.submitList(list)
             }
         }
     }
@@ -106,10 +102,6 @@ class DocentTracksFragment : Fragment() {
                         doAddFile()
                         true
                     }
-                    R.id.action_delete -> {
-                        doRemoveEntry()
-                        true
-                    }
                     else -> false
                 }
             }
@@ -122,15 +114,27 @@ class DocentTracksFragment : Fragment() {
                 userTitle = "New Docent Track",
                 creationTime = Instant.now().toString(),
                 lastUsedTime = Instant.now().toString(),
-                gpsTrackId = gpsPlaybackTrackId,
+                gpsTrackId = 3,
             )
             viewModel.insert(trackEntity)
+        Snackbar.make(requireView(), "TBD Docent track add", Snackbar.LENGTH_LONG).show()
     }
 
-    private fun doRemoveEntry() {
-        // TBD
-//        viewModel.delete(audioFile) // TBD
-        Snackbar.make(requireView(), "TBD Docent track deleted", Snackbar.LENGTH_LONG).show()
+    private fun showEditDialog(item: DocentTrackItem) {
+        Snackbar.make(requireView(), "TBD Docent track edit ${item.userTitle}", Snackbar.LENGTH_LONG).show()
+    }
+
+    private fun showDeleteDialog(item: DocentTrackItem) {
+        // Display an alert to confirm deletion.
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Docent Track")
+            .setMessage("Are you sure you want to delete docent track '${item.userTitle}'? This cannot be reversed.")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.deleteById(item.id)
+                Snackbar.make(requireView(), "Docent track '${item.userTitle}' deleted", Snackbar.LENGTH_LONG).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {

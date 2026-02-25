@@ -15,19 +15,19 @@
             tools:text="User Title" />
 
     <TextView
+            android:id="@+id/gps_track_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:layout_marginStart="16dp"
+            tools:text="GPS Track Label" />
+
+    <TextView
             android:id="@+id/creation_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceBody2"
             android:layout_marginStart="16dp"
             tools:text="Creation time" />
-
-    <TextView
-            android:id="@+id/last_used_time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody2"
-            android:layout_marginStart="16dp"
-            tools:text="Last used time" />
 
 </LinearLayout>

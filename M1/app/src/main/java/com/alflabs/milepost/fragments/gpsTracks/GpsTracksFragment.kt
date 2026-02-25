@@ -23,9 +23,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.GpsTracksFragmentBinding
 import com.alflabs.milepost.app.AppSettings
+import com.alflabs.milepost.fragments.docentTracks.DocentTrackItem
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -72,15 +74,9 @@ class GpsTracksFragment : Fragment() {
                 val playbackTrackId = appSettings.playbackTrackId()
 
                 val adapter = GpsTrackAdapter(
-                    onClick = { displayItem ->
-                        showEditDialog(displayItem)
-                    },
-                    onEdit = { displayItem ->
-                        showEditDialog(displayItem)
-                    },
-                    onDelete = { displayItem ->
-                        viewModel.delete(displayItem)
-                    },
+                    onClick = ::showEditDialog,
+                    onEdit = ::showEditDialog,
+                    onDelete = ::showDeleteDialog,
                     useImperialUnits,
                     playbackTrackId,
                 )
@@ -174,6 +170,19 @@ class GpsTracksFragment : Fragment() {
         findNavController().navigate(
             GpsTracksFragmentDirections.actionListToReview(displayItem.id)
         )
+    }
+
+    private fun showDeleteDialog(displayItem: GpsTrackDisplayItem) {
+        // Display an alert to confirm deletion.
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Docent Track")
+            .setMessage("Are you sure you want to delete GPS track '${displayItem.trackLabel}'? This cannot be reversed.")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.deleteById(displayItem.id)
+                Snackbar.make(requireView(), "GPS track '${displayItem.trackLabel}' deleted", Snackbar.LENGTH_LONG).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onDestroyView() {
