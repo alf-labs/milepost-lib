@@ -29,6 +29,12 @@ class Converters {
     @TypeConverter
     fun toAudioFileMetadata(value: String?): AudioFileMetadata?  = toProto<AudioFileMetadata>(value)
 
+    @TypeConverter
+    fun fromPlaybackTriggerMetadata(value: PlaybackTriggerMetadata?): String? = fromProto(value)
+
+    @TypeConverter
+    fun toPlaybackTriggerMetadata(value: String?): PlaybackTriggerMetadata?  = toProto<PlaybackTriggerMetadata>(value)
+
     companion object {
         /** Serializes a generic Protobuf lite to a Base64 string. */
         private inline fun

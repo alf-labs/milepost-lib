@@ -33,5 +33,5 @@ data class PlayTriggerEntity(
     val docentTrackId: Long,
 
     @ColumnInfo
-    val playbackTrigger: String
+    val playbackTrigger: PlaybackTriggerMetadata? = null
 )
