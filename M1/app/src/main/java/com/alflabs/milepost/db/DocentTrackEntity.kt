@@ -31,7 +31,7 @@ data class DocentTrackEntity(
     val creationTime: String,
 
     @ColumnInfo
-    val lastUsedTime: String?,
+    val lastUsedTime: String? = null,
 
     @ColumnInfo(index = true)
     val gpsTrackId: Long

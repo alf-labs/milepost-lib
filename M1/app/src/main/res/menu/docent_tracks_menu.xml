@@ -4,16 +4,8 @@
     <group android:id="@+id/group_track_add">
         <item
                 android:id="@+id/action_add"
-                android:title="Add Track"
+                android:title="Add Docent Track"
                 android:icon="@drawable/ic_menu_file_add"
                 app:showAsAction="never" />
     </group>
-<!-- TBD cleanup -->
-<!--    <group android:id="@+id/group_track_delete">-->
-<!--        <item-->
-<!--                android:id="@+id/action_delete"-->
-<!--                android:title="Delete Track"-->
-<!--                android:icon="@drawable/ic_menu_delete"-->
-<!--                app:showAsAction="never" />-->
-<!--    </group>-->
 </menu>

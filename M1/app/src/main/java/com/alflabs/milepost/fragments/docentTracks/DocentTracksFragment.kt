@@ -117,6 +117,7 @@ class DocentTracksFragment : Fragment() {
                 gpsTrackId = 3,
             )
             viewModel.insert(trackEntity)
+        // TODO remove this entirely
         Snackbar.make(requireView(), "TBD Docent track add", Snackbar.LENGTH_LONG).show()
     }
 

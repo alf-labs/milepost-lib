@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DocentTrackDao {
+    /** Insert a DocentTrackEntity. Set id to 0 to have it auto-generated. The new id is returned. */
     @Insert
-    suspend fun insert(docentTrack: DocentTrackEntity)
+    suspend fun insert(docentTrack: DocentTrackEntity): Long
 
     @Update
     suspend fun update(docentTrack: DocentTrackEntity)

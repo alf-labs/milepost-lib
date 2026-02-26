@@ -1,0 +1,97 @@
+package com.alflabs.milepost.fragments.docentEdit
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.alflabs.milepost.databinding.DocentEditFragmentBinding
+import com.alflabs.milepost.fragments.audioFiles.AudioFilesFragment
+import com.alflabs.utils.ILogger
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class DocentEditFragment : Fragment() {
+
+    companion object {
+        private val TAG = DocentEditFragment::class.java.simpleName
+        private const val KEY_SELECTED_POSITION = "selected-position"
+        private const val ARG_DOCENT_TRACK_ID = "docentTrackId"
+    }
+
+    @Inject lateinit var logger: ILogger
+
+    private var _binding: DocentEditFragmentBinding? = null
+    private val binding get() = _binding!!
+    private var docentTrackId: Long = -1
+    private var docentEditAdapter: DocentEditAdapter? = null
+    private val viewModel: DocentEditViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = DocentEditFragmentBinding.inflate(inflater, container, false)
+
+
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        logger.d(TAG, "@@ onViewCreated")
+
+        docentTrackId = requireArguments().getLong(ARG_DOCENT_TRACK_ID)
+
+        lifecycleScope.launch {
+            docentEditAdapter = DocentEditAdapter(
+//                onPlay = ::onPlayStopItem,
+//                onUpdate = ::onUpdateAudioDocumentUri,
+            )
+
+            val layoutManager = LinearLayoutManager(requireContext())
+            binding.playTriggerList.adapter = docentEditAdapter
+            binding.playTriggerList.layoutManager = layoutManager
+
+            savedInstanceState?.let {
+                val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
+                docentEditAdapter?.setSelectedPosition(selectedPosition)
+            }
+
+            val dividerItemDecoration = DividerItemDecoration(
+                requireContext(),
+                layoutManager.orientation
+            )
+            binding.playTriggerList.addItemDecoration(dividerItemDecoration)
+
+            viewModel.getItems(docentTrackId).observe(viewLifecycleOwner) { list ->
+                binding.emptyMessage.visibility =
+                    if (list.isEmpty()) View.VISIBLE else View.GONE
+                logger.d(TAG, "@@ DocentEdit observe new list: ${list.size} items")
+//                validateAllPersistableUris(list)
+                docentEditAdapter?.submitList(list)
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        docentEditAdapter?.let { adapter ->
+            logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
+            outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

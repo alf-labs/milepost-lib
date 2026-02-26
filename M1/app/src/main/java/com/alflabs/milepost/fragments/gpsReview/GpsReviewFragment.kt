@@ -26,6 +26,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.GpsReviewFragmentBinding
+import com.alflabs.milepost.db.DocentTrackDao
+import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.fragments.gpsTracks.toText
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
@@ -58,6 +60,7 @@ import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.time.Instant
 import javax.inject.Inject
 
 
@@ -72,6 +75,8 @@ class GpsReviewFragment : Fragment() {
     @Inject lateinit var importerExporter: ImporterExporter
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var gpsTrackDao: GpsTrackDao
+    @Inject lateinit var docentTrackDao: DocentTrackDao
+
 
     private var _binding: GpsReviewFragmentBinding? = null
     private val binding get() = _binding!!
@@ -219,6 +224,7 @@ class GpsReviewFragment : Fragment() {
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
                 logger.d(TAG, "@@ onPrepareMenu -- track entity enabled = ${gpsTrackEntity != null}")
+                menu.findItem(R.id.action_create).isEnabled = (gpsTrackEntity != null)
                 menu.findItem(R.id.action_playback).isEnabled = (gpsTrackEntity != null)
                 menu.findItem(R.id.action_export_csv).isEnabled = (gpsTrackEntity != null)
                 menu.findItem(R.id.action_export_json).isEnabled = (gpsTrackEntity != null)
@@ -228,6 +234,11 @@ class GpsReviewFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 logger.d(TAG, "@@ onMenuItemSelected: ${menuItem.itemId}")
                 return when (menuItem.itemId) {
+                    R.id.action_create -> {
+                        createNewDocentTrack(gpsTrackEntity)
+                        true
+                    }
+
                     R.id.action_playback -> {
                         playbackTrack(gpsTrackEntity)
                         true
@@ -266,6 +277,23 @@ class GpsReviewFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun createNewDocentTrack(track: GpsTrackEntity?) {
+        if (track == null) return
+        lifecycleScope.launch {
+            logger.d(TAG, "@@ Set prefs Playback track: ${track.id}")
+            val trackEntity = DocentTrackEntity(
+                userTitle = "", // this signals the DocentEdit fragment to ask for the title
+                creationTime = Instant.now().toString(),
+                gpsTrackId = track.id,
+            )
+            val docentId = docentTrackDao.insert(trackEntity)
+
+            TODO("Navigate to DocentEdit")
+            // TODO val action = GpsReviewFragmentDirections.actionReviewToPlay()
+            // TODO findNavController().navigate(action)
+        }
     }
 
     private fun playbackTrack(track: GpsTrackEntity?) {
@@ -323,7 +351,7 @@ class GpsReviewFragment : Fragment() {
         )
 
         trackLengthText.text = String.format("%.2f mi", Units.m_to_miles(computeTrackLengthMeters(track)))
-        trackLabelEditText.setText(track.trackLabel)
+        trackLabelEditText.setText(if (track.trackLabel.isNullOrBlank()) "GPS Track #$track.id" else track.trackLabel)
         startLabelEditText.setText(startHint)
         endLabelEditText.setText(endHint)
 
