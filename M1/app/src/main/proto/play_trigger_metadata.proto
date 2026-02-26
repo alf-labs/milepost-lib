@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package com.alflabs.milepost.db;
+
+option java_multiple_files = true;
+
+message PlayTriggerMetadata {
+  bool include_in_cold_start = 1;
+
+  float mp_min = 2;
+  float mp_max = 3;
+  PlayTriggerDirection mp_direction = 4;
+  reserved 5; // for a future optional "enter_mp_range" boolean
+}
+
+enum PlayTriggerDirection {
+  DIRECTION_UNSPECIFIED = 0;
+  DIRECTION_TO_START = 1;
+  DIRECTION_TO_END = 2;
+}
