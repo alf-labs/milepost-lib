@@ -44,6 +44,7 @@ import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.milepost.db.GpsTrackSummary
 import com.alflabs.milepost.db.copy
 import com.alflabs.milepost.db.gpsTrackSummary
+import com.alflabs.milepost.fragments.docentTracks.DocentTracksFragmentDirections
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
@@ -170,7 +171,7 @@ class GpsReviewFragment : Fragment() {
                 }
             }
 
-            viewModel.loadTrack(fragmentArgs.trackId)
+            viewModel.loadTrack(fragmentArgs.gpsTrackId)
         }
 
         binding.label.setOnClickListener {
@@ -282,17 +283,18 @@ class GpsReviewFragment : Fragment() {
     private fun createNewDocentTrack(track: GpsTrackEntity?) {
         if (track == null) return
         lifecycleScope.launch {
-            logger.d(TAG, "@@ Set prefs Playback track: ${track.id}")
+            logger.d(TAG, "@@ createNewDocentTrack for gps track id ${track.id}")
             val trackEntity = DocentTrackEntity(
                 userTitle = "", // this signals the DocentEdit fragment to ask for the title
                 creationTime = Instant.now().toString(),
                 gpsTrackId = track.id,
             )
             val docentId = docentTrackDao.insert(trackEntity)
+            logger.d(TAG, "@@ createNewDocentTrack new docent track id $docentId")
 
-            TODO("Navigate to DocentEdit")
-            // TODO val action = GpsReviewFragmentDirections.actionReviewToPlay()
-            // TODO findNavController().navigate(action)
+            findNavController().navigate(
+                GpsReviewFragmentDirections.actionNewDocentTrack(docentId)
+            )
         }
     }
 

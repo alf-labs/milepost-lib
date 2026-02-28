@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
@@ -122,7 +123,9 @@ class DocentTracksFragment : Fragment() {
     }
 
     private fun showEditDialog(item: DocentTrackItem) {
-        Snackbar.make(requireView(), "TBD Docent track edit ${item.userTitle}", Snackbar.LENGTH_LONG).show()
+        findNavController().navigate(
+            DocentTracksFragmentDirections.actionEditDocentTrack(item.id)
+        )
     }
 
     private fun showDeleteDialog(item: DocentTrackItem) {

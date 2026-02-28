@@ -7,15 +7,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.databinding.DocentEditFragmentBinding
-import com.alflabs.milepost.fragments.audioFiles.AudioFilesFragment
 import com.alflabs.utils.ILogger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.getValue
 
 @AndroidEntryPoint
 class DocentEditFragment : Fragment() {
@@ -30,7 +31,7 @@ class DocentEditFragment : Fragment() {
 
     private var _binding: DocentEditFragmentBinding? = null
     private val binding get() = _binding!!
-    private var docentTrackId: Long = -1
+    private val fragmentArgs: DocentEditFragmentArgs by navArgs()
     private var docentEditAdapter: DocentEditAdapter? = null
     private val viewModel: DocentEditViewModel by viewModels()
 
@@ -48,8 +49,6 @@ class DocentEditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         logger.d(TAG, "@@ onViewCreated")
-
-        docentTrackId = requireArguments().getLong(ARG_DOCENT_TRACK_ID)
 
         lifecycleScope.launch {
             docentEditAdapter = DocentEditAdapter(
@@ -72,13 +71,24 @@ class DocentEditFragment : Fragment() {
             )
             binding.playTriggerList.addItemDecoration(dividerItemDecoration)
 
-            viewModel.getItems(docentTrackId).observe(viewLifecycleOwner) { list ->
+            viewModel.track.observe(viewLifecycleOwner) { track ->
+                if (track == null) {
+                    binding.label.text = "No track found"
+                } else {
+                    binding.label.text = track.userTitle?.ifBlank { "(Tap to Add Title)" }
+                }
+            }
+
+            viewModel.items.observe(viewLifecycleOwner) { list ->
+
                 binding.emptyMessage.visibility =
-                    if (list.isEmpty()) View.VISIBLE else View.GONE
-                logger.d(TAG, "@@ DocentEdit observe new list: ${list.size} items")
+                    if (list?.isEmpty() ?: false) View.VISIBLE else View.GONE
+                logger.d(TAG, "@@ DocentEdit observe new list: ${list?.size ?: -1} items")
 //                validateAllPersistableUris(list)
                 docentEditAdapter?.submitList(list)
             }
+
+            viewModel.loadTrack(fragmentArgs.docentTrackId)
         }
     }
 

@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.GpsTracksFragmentBinding
 import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.fragments.docentTracks.DocentTrackItem
 import com.alflabs.milepost.utils.ImporterExporter
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger

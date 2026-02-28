@@ -37,6 +37,27 @@
             android:name="com.alflabs.milepost.fragments.docentTracks.DocentTracksFragment"
             android:label="Docent Tracks"
             tools:layout="@layout/docent_tracks_fragment">
+        <action
+                android:id="@+id/action_edit_docent_track"
+                app:destination="@id/nav_docent_track_edit">
+            <argument
+                    android:name="docentTrackId"
+                    app:argType="long" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_docent_track_edit"
+            android:name="com.alflabs.milepost.fragments.docentEdit.DocentEditFragment"
+            android:label="Edit Docent Track"
+            tools:layout="@layout/docent_edit_fragment">
+        <argument
+                android:name="docentTrackId"
+                app:argType="long" />
+        <!-- TBD action
+                android:id="@+id/action_review_to_play"
+                app:destination="@id/nav_docent_track_play">
+        </action -->
     </fragment>
 
     <fragment
@@ -48,7 +69,7 @@
                 android:id="@+id/action_list_to_review"
                 app:destination="@id/nav_gps_track_review">
             <argument
-                    android:name="trackId"
+                    android:name="gpsTrackId"
                     app:argType="long" />
         </action>
     </fragment>
@@ -59,11 +80,18 @@
             android:label="Review GPS Track"
             tools:layout="@layout/gps_review_fragment">
         <argument
-                android:name="trackId"
+                android:name="gpsTrackId"
                 app:argType="long" />
         <action
                 android:id="@+id/action_review_to_play"
                 app:destination="@id/nav_gps_track_play">
+        </action>
+        <action
+                android:id="@+id/action_new_docent_track"
+                app:destination="@id/nav_docent_track_edit">
+            <argument
+                    android:name="docentTrackId"
+                    app:argType="long" />
         </action>
     </fragment>
 
@@ -84,7 +112,7 @@
                 android:id="@+id/action_record_to_review"
                 app:destination="@id/nav_gps_track_review">
             <argument
-                    android:name="trackId"
+                    android:name="gpsTrackId"
                     app:argType="long" />
         </action>
     </fragment>
