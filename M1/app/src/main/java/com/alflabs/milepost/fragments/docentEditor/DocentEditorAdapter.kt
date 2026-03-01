@@ -9,11 +9,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentEditorItemBinding
 
-class DocentEditAdapter() :
-    ListAdapter<DocentEditorItem, DocentEditAdapter.DocentEditViewHolder>(DocentEditDiffCallback()) {
+class DocentEditorAdapter() :
+    ListAdapter<DocentEditorItem, DocentEditorAdapter.DocentEditorViewHolder>(DocentEditorDiffCallback()) {
 
     companion object {
-        private val TAG = DocentEditAdapter::class.java.simpleName
+        private val TAG = DocentEditorAdapter::class.java.simpleName
     }
 
     var selectedPosition = RecyclerView.NO_POSITION
@@ -38,19 +38,19 @@ class DocentEditAdapter() :
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentEditViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentEditorViewHolder {
         val binding = DocentEditorItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return DocentEditViewHolder(binding)
+        return DocentEditorViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: DocentEditViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: DocentEditorViewHolder, position: Int) {
         val item = getItem(position)
         holder.bind(item, position == selectedPosition)
     }
 
-    inner class DocentEditViewHolder(
+    inner class DocentEditorViewHolder(
         private val binding: DocentEditorItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
@@ -82,7 +82,7 @@ class DocentEditAdapter() :
     }
 }
 
-class DocentEditDiffCallback : DiffUtil.ItemCallback<DocentEditorItem>() {
+class DocentEditorDiffCallback : DiffUtil.ItemCallback<DocentEditorItem>() {
     override fun areItemsTheSame(oldItem: DocentEditorItem, newItem: DocentEditorItem): Boolean {
         return oldItem.id == newItem.id
     }

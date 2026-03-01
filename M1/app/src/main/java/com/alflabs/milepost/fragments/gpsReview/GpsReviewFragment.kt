@@ -353,7 +353,7 @@ class GpsReviewFragment : Fragment() {
         )
 
         trackLengthText.text = String.format("%.2f mi", Units.m_to_miles(computeTrackLengthMeters(track)))
-        trackLabelEditText.setText(if (track.trackLabel.isNullOrBlank()) "GPS Track #$track.id" else track.trackLabel)
+        trackLabelEditText.setText(if (track.trackLabel.isNullOrBlank()) "GPS Track #${track.id}" else track.trackLabel)
         startLabelEditText.setText(startHint)
         endLabelEditText.setText(endHint)
 
