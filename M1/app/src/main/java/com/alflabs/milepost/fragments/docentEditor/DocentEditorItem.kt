@@ -1,13 +1,13 @@
-package com.alflabs.milepost.fragments.docentEdit
+package com.alflabs.milepost.fragments.docentEditor
 
 import androidx.room.Ignore
 import com.alflabs.milepost.db.PlaybackTriggerMetadata
 
 /**
  * A derivative of [com.alflabs.milepost.db.PlayTriggerEntity]
- * suitable for the [DocentEditFragment] recycler view.
+ * suitable for the [DocentEditorFragment] recycler view.
  */
-data class DocentEditItem(
+data class DocentEditorItem(
     val id: Long,
     val audioFileId: Long,
     val docentTrackId: Long,

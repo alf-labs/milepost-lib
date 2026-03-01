@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.docentEdit
+package com.alflabs.milepost.fragments.docentEditor
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -7,10 +7,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
-import com.alflabs.milepost.databinding.DocentEditItemBinding
+import com.alflabs.milepost.databinding.DocentEditorItemBinding
 
 class DocentEditAdapter() :
-    ListAdapter<DocentEditItem, DocentEditAdapter.DocentEditViewHolder>(DocentEditDiffCallback()) {
+    ListAdapter<DocentEditorItem, DocentEditAdapter.DocentEditViewHolder>(DocentEditDiffCallback()) {
 
     companion object {
         private val TAG = DocentEditAdapter::class.java.simpleName
@@ -30,7 +30,7 @@ class DocentEditAdapter() :
         }
     }
 
-    fun getSelected(): DocentEditItem? {
+    fun getSelected(): DocentEditorItem? {
         return if (selectedPosition != RecyclerView.NO_POSITION) {
             getItem(selectedPosition)
         } else {
@@ -39,7 +39,7 @@ class DocentEditAdapter() :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentEditViewHolder {
-        val binding = DocentEditItemBinding.inflate(
+        val binding = DocentEditorItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
         return DocentEditViewHolder(binding)
@@ -51,10 +51,10 @@ class DocentEditAdapter() :
     }
 
     inner class DocentEditViewHolder(
-        private val binding: DocentEditItemBinding,
+        private val binding: DocentEditorItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: DocentEditItem, isSelected: Boolean) {
+        fun bind(item: DocentEditorItem, isSelected: Boolean) {
 
             binding.triggerTitle.text = "some trigger title"
             binding.triggerInfo.text = "some trigger info"
@@ -82,12 +82,12 @@ class DocentEditAdapter() :
     }
 }
 
-class DocentEditDiffCallback : DiffUtil.ItemCallback<DocentEditItem>() {
-    override fun areItemsTheSame(oldItem: DocentEditItem, newItem: DocentEditItem): Boolean {
+class DocentEditDiffCallback : DiffUtil.ItemCallback<DocentEditorItem>() {
+    override fun areItemsTheSame(oldItem: DocentEditorItem, newItem: DocentEditorItem): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: DocentEditItem, newItem: DocentEditItem): Boolean {
+    override fun areContentsTheSame(oldItem: DocentEditorItem, newItem: DocentEditorItem): Boolean {
         return oldItem == newItem
     }
 }

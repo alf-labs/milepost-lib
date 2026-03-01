@@ -3,7 +3,7 @@ package com.alflabs.milepost.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import com.alflabs.milepost.fragments.docentEdit.DocentEditItem
+import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,7 +15,7 @@ interface PlayTriggerDao {
     fun getTriggersForAudioFile(audioFileId: Long): Flow<List<PlayTriggerEntity>>
 
     @Query("SELECT id, audioFileId, docentTrackId, playbackTrigger FROM play_triggers WHERE docentTrackId = :docentTrackId")
-    fun getTriggersForDocentTrack(docentTrackId: Long): Flow<List<DocentEditItem>>
+    fun getTriggersForDocentTrack(docentTrackId: Long): Flow<List<DocentEditorItem>>
 
     @Query("DELETE FROM play_triggers WHERE id = :id")
     suspend fun deleteById(id: Long)

@@ -39,7 +39,7 @@
             tools:layout="@layout/docent_tracks_fragment">
         <action
                 android:id="@+id/action_edit_docent_track"
-                app:destination="@id/nav_docent_track_edit">
+                app:destination="@id/nav_docent_track_editor">
             <argument
                     android:name="docentTrackId"
                     app:argType="long" />
@@ -47,10 +47,10 @@
     </fragment>
 
     <fragment
-            android:id="@+id/nav_docent_track_edit"
-            android:name="com.alflabs.milepost.fragments.docentEdit.DocentEditFragment"
+            android:id="@+id/nav_docent_track_editor"
+            android:name="com.alflabs.milepost.fragments.docentEditor.DocentEditorFragment"
             android:label="Edit Docent Track"
-            tools:layout="@layout/docent_edit_fragment">
+            tools:layout="@layout/docent_editor_fragment">
         <argument
                 android:name="docentTrackId"
                 app:argType="long" />
@@ -88,7 +88,7 @@
         </action>
         <action
                 android:id="@+id/action_new_docent_track"
-                app:destination="@id/nav_docent_track_edit">
+                app:destination="@id/nav_docent_track_editor">
             <argument
                     android:name="docentTrackId"
                     app:argType="long" />

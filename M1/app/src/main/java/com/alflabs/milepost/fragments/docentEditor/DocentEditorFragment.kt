@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.docentEdit
+package com.alflabs.milepost.fragments.docentEditor
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.alflabs.milepost.databinding.DocentEditFragmentBinding
+import com.alflabs.milepost.databinding.DocentEditorFragmentBinding
 import com.alflabs.utils.ILogger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -19,28 +19,28 @@ import javax.inject.Inject
 import kotlin.getValue
 
 @AndroidEntryPoint
-class DocentEditFragment : Fragment() {
+class DocentEditorFragment : Fragment() {
 
     companion object {
-        private val TAG = DocentEditFragment::class.java.simpleName
+        private val TAG = DocentEditorFragment::class.java.simpleName
         private const val KEY_SELECTED_POSITION = "selected-position"
         private const val ARG_DOCENT_TRACK_ID = "docentTrackId"
     }
 
     @Inject lateinit var logger: ILogger
 
-    private var _binding: DocentEditFragmentBinding? = null
+    private var _binding: DocentEditorFragmentBinding? = null
     private val binding get() = _binding!!
-    private val fragmentArgs: DocentEditFragmentArgs by navArgs()
+    private val fragmentArgs: DocentEditorFragmentArgs by navArgs()
     private var docentEditAdapter: DocentEditAdapter? = null
-    private val viewModel: DocentEditViewModel by viewModels()
+    private val viewModel: DocentEditorViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DocentEditFragmentBinding.inflate(inflater, container, false)
+        _binding = DocentEditorFragmentBinding.inflate(inflater, container, false)
 
 
         return binding.root
