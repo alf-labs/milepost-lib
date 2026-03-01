@@ -16,6 +16,7 @@ import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentEditorFragmentBinding
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
+import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.utils.ILogger
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,10 +30,10 @@ class DocentEditorFragment : Fragment() {
     companion object {
         private val TAG = DocentEditorFragment::class.java.simpleName
         private const val KEY_SELECTED_POSITION = "selected-position"
-        private const val ARG_DOCENT_TRACK_ID = "docentTrackId"
     }
 
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var gpsTrackDao: GpsTrackDao
     @Inject lateinit var docentTrackDao: DocentTrackDao
 
     private var _binding: DocentEditorFragmentBinding? = null
@@ -79,26 +80,32 @@ class DocentEditorFragment : Fragment() {
             )
             binding.playTriggerList.addItemDecoration(dividerItemDecoration)
 
-            viewModel.track.observe(viewLifecycleOwner) { track ->
-                logger.d(TAG, "@@ DocentEdit observe new track: ${track?.userTitle}")
-                docentTrackEntity = track
+            viewModel.docentTrack.observe(viewLifecycleOwner) { docentTrack ->
+                logger.d(TAG, "@@ DocentEdit observe new DOCENT docentTrack: ${docentTrack?.userTitle}")
+                docentTrackEntity = docentTrack
 
-                if (track == null) {
-                    binding.label.text = "No track found"
+                if (docentTrack == null) {
+                    binding.userTitle.text = "No docent track found"
                 } else {
-                    binding.label.text = track.userTitle?.ifBlank { "(Tap to Add Title)" }
+                    binding.userTitle.text = docentTrack.userTitle?.ifBlank { "(Tap to Add Title)" }
                 }
 
                 logger.d(TAG, "@@ is first load: $firstLoad")
-                if (track != null && firstLoad) {
+                if (docentTrack != null && firstLoad) {
                     firstLoad = false
-                    if (track.userTitle.isNullOrEmpty()) {
-                        showReviewTitleDialog(track)
+                    if (docentTrack.userTitle.isNullOrEmpty()) {
+                        showReviewTitleDialog(docentTrack)
                     }
                 }
             }
 
-            viewModel.items.observe(viewLifecycleOwner) { list ->
+            viewModel.gpsTrack.observe(viewLifecycleOwner) { gpsTrack ->
+                logger.d(TAG, "@@ DocentEdit observe new GPS track: ${gpsTrack?.trackLabel}")
+                val label = gpsTrack?.displayTrackLabel()
+                binding.gpsTrackLabel.text = if (label != null) "GPS Track: $label" else "GPS Track not found"
+            }
+
+            viewModel.triggers.observe(viewLifecycleOwner) { list ->
                 logger.d(TAG, "@@ DocentEdit observe new list: ${list?.size ?: -1} items")
 
                 binding.emptyMessage.visibility =
@@ -108,7 +115,7 @@ class DocentEditorFragment : Fragment() {
                 docentEditorAdapter?.submitList(list)
             }
 
-            binding.label.setOnClickListener {
+            binding.userTitle.setOnClickListener {
                 showReviewTitleDialog(docentTrackEntity)
             }
 
@@ -136,7 +143,7 @@ class DocentEditorFragment : Fragment() {
         val dialogView = layoutInflater.inflate(R.layout.docent_editor_title_dialog, null)
         val trackTitleEditText = dialogView.findViewById<TextInputEditText>(R.id.track_title_edittext)
 
-        trackTitleEditText.setText(if (track.userTitle.isNullOrBlank()) "Docent Track #${track.id}" else track.userTitle)
+        trackTitleEditText.setText(track.displayUserTitle())
 
         AlertDialog.Builder(requireContext())
             .setTitle("Review Options")

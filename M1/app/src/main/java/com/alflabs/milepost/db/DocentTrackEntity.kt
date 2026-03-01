@@ -35,4 +35,12 @@ data class DocentTrackEntity(
 
     @ColumnInfo(index = true)
     val gpsTrackId: Long
-)
+) {
+    /** A version of [userTitle] for display that is never null or empty. */
+    fun displayUserTitle(): String {
+        if (userTitle.isNullOrBlank()) {
+            return "Docent Track #$id"
+        }
+        return userTitle
+    }
+}

@@ -50,6 +50,14 @@ data class GpsTrackEntity(
     @ColumnInfo
     val locationList: LocationDataList? = null,
 ) {
+    /** A version of [trackLabel] for display that is never null or empty. */
+    fun displayTrackLabel(): String {
+        if (trackLabel.isNullOrBlank()) {
+            return "GPS Track #$id"
+        }
+        return trackLabel
+    }
+
     fun toPojo() = TrackEntityPojo(
         uuid = uuid,
         createdDateISO = createdDateISO,

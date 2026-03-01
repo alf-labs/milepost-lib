@@ -19,6 +19,13 @@ interface DocentTrackDao {
     @Query("SELECT * FROM docent_tracks WHERE id = :id")
     fun getById(id: Long): Flow<DocentTrackEntity?>
 
+    @Query("""
+        SELECT G.* FROM gps_tracks AS G
+        INNER JOIN docent_tracks AS D ON G.id = D.gpsTrackId
+        WHERE D.id = :docentId
+        """)
+    fun getGpsTrackForDocentTrackId(docentId: Long): Flow<GpsTrackEntity?>
+
     @Query("SELECT id FROM docent_tracks WHERE uuid = :uuid")
     suspend fun getIdByUuid(uuid: String): Long?
 

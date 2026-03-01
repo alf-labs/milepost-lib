@@ -9,6 +9,8 @@ import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
+import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.db.PlayTriggerEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,13 +29,18 @@ class DocentEditorViewModel @Inject constructor(
 
     private val _docentTrackId = MutableLiveData<Long>()
 
-    val track: LiveData<DocentTrackEntity?> = _docentTrackId.switchMap { id ->
+    val docentTrack: LiveData<DocentTrackEntity?> = _docentTrackId.switchMap { id ->
         docentTrackDao.getById(id).asLiveData()
     }
 
-    val items: LiveData<List<DocentEditorItem>?> = _docentTrackId.switchMap { id ->
+    val triggers: LiveData<List<DocentEditorItem>?> = _docentTrackId.switchMap { id ->
         playTriggerDao.getTriggersForDocentTrack(id).asLiveData()
     }
+
+    val gpsTrack: LiveData<GpsTrackEntity?> = _docentTrackId.switchMap { id ->
+        docentTrackDao.getGpsTrackForDocentTrackId(id).asLiveData()
+    }
+
 
     fun loadTrack(docentTrackId: Long) {
         Log.d(TAG, "Edit load track by id #$docentTrackId")
