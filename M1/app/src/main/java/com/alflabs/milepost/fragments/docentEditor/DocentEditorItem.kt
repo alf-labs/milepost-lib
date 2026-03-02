@@ -1,11 +1,15 @@
 package com.alflabs.milepost.fragments.docentEditor
 
 import androidx.room.Ignore
+import com.alflabs.milepost.db.PlayTriggerEntity
 import com.alflabs.milepost.db.PlaybackTriggerMetadata
 
 /**
  * A derivative of [com.alflabs.milepost.db.PlayTriggerEntity]
  * suitable for the [DocentEditorFragment] recycler view.
+ *
+ * Implementation Note: There is currently no difference with a PlayTriggerEntity.
+ * I was expecting there would be some later, so let's keep this for now.
  */
 data class DocentEditorItem(
     val id: Long,
@@ -15,4 +19,14 @@ data class DocentEditorItem(
 ) {
     // These fields are internal and not populated by the DAO in getItems().
     @Ignore var internalStuff: String? = null
+
+
+    fun toEntity() : PlayTriggerEntity {
+        return PlayTriggerEntity(
+            id = id,
+            audioFileId = audioFileId,
+            docentTrackId = docentTrackId,
+            playbackTrigger = playbackTrigger
+        )
+    }
 }

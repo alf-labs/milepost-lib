@@ -3,6 +3,7 @@ package com.alflabs.milepost.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
 import kotlinx.coroutines.flow.Flow
 
@@ -10,6 +11,9 @@ import kotlinx.coroutines.flow.Flow
 interface PlayTriggerDao {
     @Insert
     suspend fun insert(playTrigger: PlayTriggerEntity): Long
+
+    @Update
+    suspend fun update(playTrigger: PlayTriggerEntity)
 
     @Query("SELECT * FROM play_triggers WHERE audioFileId = :audioFileId")
     fun getTriggersForAudioFile(audioFileId: Long): Flow<List<PlayTriggerEntity>>

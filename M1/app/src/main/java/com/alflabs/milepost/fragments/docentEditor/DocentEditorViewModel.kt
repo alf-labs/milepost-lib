@@ -7,9 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import com.alflabs.milepost.db.AudioFileDao
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
-import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.db.PlayTriggerEntity
@@ -21,6 +21,7 @@ import javax.inject.Inject
 class DocentEditorViewModel @Inject constructor(
     private val docentTrackDao: DocentTrackDao,
     private val playTriggerDao: PlayTriggerDao,
+    private val audioFileDao: AudioFileDao,
 ) : ViewModel() {
 
     companion object {
@@ -41,21 +42,34 @@ class DocentEditorViewModel @Inject constructor(
         docentTrackDao.getGpsTrackForDocentTrackId(id).asLiveData()
     }
 
+    val audioFiles = audioFileDao.getItems().asLiveData()
 
-    fun loadTrack(docentTrackId: Long) {
+    fun loadDocentTrack(docentTrackId: Long) {
         Log.d(TAG, "Edit load track by id #$docentTrackId")
         _docentTrackId.value = docentTrackId
     }
 
-    fun insert(playTrigger: PlayTriggerEntity) {
+    fun insertPlayTrigger(playTrigger: PlayTriggerEntity) {
         viewModelScope.launch {
             playTriggerDao.insert(playTrigger)
         }
     }
 
-    fun deleteById(id: Long) {
+    fun deletePlayTriggerById(id: Long) {
         viewModelScope.launch {
             playTriggerDao.deleteById(id)
+        }
+    }
+
+    fun updatePlayTrigger(playTrigger: PlayTriggerEntity) {
+        viewModelScope.launch {
+            playTriggerDao.update(playTrigger)
+        }
+    }
+
+    fun updateDocentTrack(docentTrack: DocentTrackEntity) {
+        viewModelScope.launch {
+            docentTrackDao.update(docentTrack)
         }
     }
 }

@@ -258,6 +258,9 @@ class AudioFilesFragment : Fragment() {
         val persistableUri = uri.toString()
 
         // 3- Get the filename of the selected file.
+        // TBD we should really have filenames be unique to visually differentiate entries
+        // without having to resort to the db id. This can be done here by adding an index to
+        // already existing duplicated filenames.
         val cursor = requireContext().contentResolver.query(uri, null, null, null, null)
         var fileName = "Unknown"
         cursor?.use {

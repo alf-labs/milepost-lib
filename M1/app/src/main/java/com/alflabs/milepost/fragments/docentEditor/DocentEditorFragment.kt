@@ -1,9 +1,15 @@
 package com.alflabs.milepost.fragments.docentEditor
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.CheckBox
+import android.widget.ImageButton
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -14,15 +20,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentEditorFragmentBinding
-import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
-import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.PlayTriggerEntity
+import com.alflabs.milepost.db.PlaybackTriggerDirection
+import com.alflabs.milepost.db.PlaybackTriggerMetadata
+import com.alflabs.milepost.fragments.audioFiles.AudioFileItem
 import com.alflabs.utils.ILogger
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.getValue
+import kotlin.math.max
+import kotlin.toString
 
 @AndroidEntryPoint
 class DocentEditorFragment : Fragment() {
@@ -33,8 +42,6 @@ class DocentEditorFragment : Fragment() {
     }
 
     @Inject lateinit var logger: ILogger
-    @Inject lateinit var gpsTrackDao: GpsTrackDao
-    @Inject lateinit var docentTrackDao: DocentTrackDao
 
     private var _binding: DocentEditorFragmentBinding? = null
     private val binding get() = _binding!!
@@ -42,6 +49,7 @@ class DocentEditorFragment : Fragment() {
     private var docentEditorAdapter: DocentEditorAdapter? = null
     private val viewModel: DocentEditorViewModel by viewModels()
     private var docentTrackEntity: DocentTrackEntity? = null
+    private var audioFiles: List<AudioFileItem>? = null
     private var firstLoad = true
 
     override fun onCreateView(
@@ -61,8 +69,7 @@ class DocentEditorFragment : Fragment() {
 
         lifecycleScope.launch {
             docentEditorAdapter = DocentEditorAdapter(
-//                onPlay = ::onPlayStopItem,
-//                onUpdate = ::onUpdateAudioDocumentUri,
+                onUpdate = ::showAddOrEditTriggerDialog,
             )
 
             val layoutManager = LinearLayoutManager(requireContext())
@@ -115,11 +122,20 @@ class DocentEditorFragment : Fragment() {
                 docentEditorAdapter?.submitList(list)
             }
 
+            viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
+                audioFiles = list
+                logger.d(TAG, "@@ DocentEdit observe new audio files: ${list?.size ?: -1} items")
+            }
+
             binding.userTitle.setOnClickListener {
                 showReviewTitleDialog(docentTrackEntity)
             }
 
-            viewModel.loadTrack(fragmentArgs.docentTrackId)
+            binding.addTriggerFab.setOnClickListener {
+                showAddOrEditTriggerDialog(null)
+            }
+
+            viewModel.loadDocentTrack(fragmentArgs.docentTrackId)
         }
     }
 
@@ -136,17 +152,164 @@ class DocentEditorFragment : Fragment() {
         _binding = null
     }
 
+    private fun showAddOrEditTriggerDialog(item: DocentEditorItem?) {
+        val isAdd = item == null
+        val docentTrack = docentTrackEntity ?: return
+        val currentAudioFiles = audioFiles ?: emptyList()
+        val currTrigger = item?.playbackTrigger
 
-    private fun showReviewTitleDialog(track: DocentTrackEntity?) {
-        if (track == null) return
+        val dialogView = layoutInflater.inflate(R.layout.docent_editor_trigger_dialog, null)
+        val audioFileDropdown =
+            dialogView.findViewById<AutoCompleteTextView>(R.id.audio_file_dropdown)
+        val audioPlayButton = dialogView.findViewById<ImageButton>(R.id.audio_play_btn)
+        val mpMinEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_min_edittext)
+        val mpMaxEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_max_edittext)
+        val mpDirectionDropdown =
+            dialogView.findViewById<AutoCompleteTextView>(R.id.mp_direction_dropdown)
+        val inColdStartCheckbox = dialogView.findViewById<CheckBox>(R.id.in_cold_start_checkbox)
+
+        val mpDirItems = listOf("Both", "Towards MP Start", "Towards MP End")
+        val mpDirAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, mpDirItems)
+        mpDirectionDropdown.setAdapter(mpDirAdapter)
+        val currMpDirIndex = currTrigger?.mpDirection?.ordinal ?: -1
+        val initialMpDirText = mpDirItems.getOrElse(currMpDirIndex) { mpDirItems[0] }
+        mpDirectionDropdown.setText(initialMpDirText, /*filter=*/false)
+
+        // Note: this is going to fail if various files have the same filename.
+        val audioFileNames = currentAudioFiles.map { it.fileName }.toList()
+        val audioFileAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioFileNames)
+        audioFileDropdown.setAdapter(audioFileAdapter)
+        val currAudioFileIndex = currentAudioFiles.indexOfFirst { it.id == (item?.audioFileId ?: -1) }
+        if (currAudioFileIndex >= 0) {
+            audioFileDropdown.setText(audioFileNames[currAudioFileIndex], /*filter=*/false)
+        }
+        logger.d(TAG, "@@ audio files:: #$currAudioFileIndex in ... $audioFileNames")
+
+        audioPlayButton.setOnClickListener {
+            logger.d(TAG, "TBD On play button click")
+        }
+
+        val currMpMin = currTrigger?.mpMin
+        val currMpMax = currTrigger?.mpMax
+        mpMinEditText.setText(currMpMin?.toString())
+        mpMaxEditText.setText(currMpMax?.toString())
+
+        val currInColdStart = currTrigger?.includeInColdStart
+        inColdStartCheckbox.isChecked = currInColdStart ?: true // default is true
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(if (isAdd) "Add Trigger" else "Edit Trigger")
+            .setView(dialogView)
+            .setPositiveButton(if (isAdd) "Add" else "Update") { _, _ ->
+                // Since we have a validator, we know the values here are valid strings
+                // or valid floats.
+                val newAudio = audioFileDropdown.text.toString().trim()
+                val newMpDir = mpDirectionDropdown.text.toString().trim()
+                val newMpMin = mpMinEditText.text.toString().toFloat()
+                val newMpMax = mpMaxEditText.text.toString().toFloat()
+                val newInColdStart = inColdStartCheckbox.isChecked
+
+                logger.d(TAG, "@@Apply TRIGGER clicked:")
+                logger.d(TAG, "@@  Audio File: $newAudio")
+                logger.d(TAG, "@@  MP Direction: $newMpDir")
+                logger.d(TAG, "@@  MP Min: $newMpMin")
+                logger.d(TAG, "@@  MP Max: $newMpMax")
+                logger.d(TAG, "@@  In Cold Start: $newInColdStart")
+
+                var changed = isAdd
+                val newTrigger = currTrigger?.toBuilder() ?: PlaybackTriggerMetadata.newBuilder()
+                var newEntity = item?.toEntity() ?: PlayTriggerEntity(
+                    audioFileId = 0,
+                    docentTrackId = docentTrack.id,
+                )
+
+                if (newInColdStart != currInColdStart) {
+                    changed = true
+                    newTrigger.setIncludeInColdStart(newInColdStart)
+                }
+
+                if (newMpMin != currMpMin) {
+                    changed = true
+                    newTrigger.setMpMin(newMpMin)
+                }
+
+                if (newMpMax != currMpMax) {
+                    changed = true
+                    newTrigger.setMpMax(newMpMax)
+                }
+
+                val newMpDirIndex = mpDirItems.indexOf(newMpDir)
+                if (newMpDirIndex >= 0 && newMpDirIndex != currMpDirIndex) {
+                    changed = true
+                    newTrigger.setMpDirection(PlaybackTriggerDirection.forNumber(newMpDirIndex))
+                }
+
+                val newAudioFileIndex = currentAudioFiles.indexOfFirst { it.fileName == newAudio }
+                if (newAudioFileIndex >= 0 && newAudioFileIndex != currAudioFileIndex) {
+                    changed = true
+                    newEntity = newEntity.copy(audioFileId = currentAudioFiles[newAudioFileIndex].id)
+                }
+
+                newEntity = newEntity.copy(playbackTrigger = newTrigger.build())
+
+                if (changed) {
+                    lifecycleScope.launch {
+                        if (isAdd) {
+                            logger.d(TAG, "@@ ADD new trigger: $newEntity")
+                            viewModel.insertPlayTrigger(newEntity)
+                        } else {
+                            logger.d(TAG, "@@ UPDATE trigger: $newEntity")
+                            viewModel.updatePlayTrigger(newEntity)
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
+
+        val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        positiveButton.isEnabled = false
+
+        val validationFunction = {
+            val hasAudio = audioFileDropdown.text.isNotBlank()
+            val hasMpDir = mpDirectionDropdown.text.isNotBlank()
+            val hasMpMin = mpMinEditText.text.toString().toFloatOrNull() != null
+            val hasMpMax = mpMaxEditText.text.toString().toFloatOrNull() != null
+
+            positiveButton.isEnabled = hasAudio && hasMpDir && hasMpMin && hasMpMax
+        }
+
+        audioFileDropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }
+        mpDirectionDropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }
+
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                validationFunction()
+            }
+        }
+
+        mpMinEditText.addTextChangedListener(textWatcher)
+        mpMaxEditText.addTextChangedListener(textWatcher)
+
+        validationFunction()
+    }
+
+    private fun showReviewTitleDialog(docentTrack: DocentTrackEntity?) {
+        if (docentTrack == null) return
 
         val dialogView = layoutInflater.inflate(R.layout.docent_editor_title_dialog, null)
         val trackTitleEditText = dialogView.findViewById<TextInputEditText>(R.id.track_title_edittext)
 
-        trackTitleEditText.setText(track.displayUserTitle())
+        trackTitleEditText.setText(docentTrack.displayUserTitle())
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Review Options")
+            .setTitle("Docent Track Title")
             .setView(dialogView)
             .setPositiveButton("Apply") { _, _ ->
                 val newTitle = trackTitleEditText.text.toString().trim()
@@ -155,10 +318,10 @@ class DocentEditorFragment : Fragment() {
                 logger.d(TAG, "@@  Title: $newTitle")
 
 
-                if (newTitle != track.userTitle) {
-                    val newGpsTrackEntity = track.copy(userTitle = newTitle)
+                if (newTitle != docentTrack.userTitle) {
+                    val newDocentTrackEntity = docentTrack.copy(userTitle = newTitle)
                     lifecycleScope.launch {
-                        docentTrackDao.update(newGpsTrackEntity)
+                        viewModel.updateDocentTrack(newDocentTrackEntity)
                     }
                 }
             }

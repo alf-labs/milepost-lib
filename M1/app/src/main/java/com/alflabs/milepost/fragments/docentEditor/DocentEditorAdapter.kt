@@ -9,27 +9,33 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentEditorItemBinding
 
-class DocentEditorAdapter() :
+class DocentEditorAdapter(
+    private val onUpdate: (DocentEditorItem) -> Unit,
+) :
     ListAdapter<DocentEditorItem, DocentEditorAdapter.DocentEditorViewHolder>(DocentEditorDiffCallback()) {
 
     companion object {
         private val TAG = DocentEditorAdapter::class.java.simpleName
     }
 
+    @Deprecated("may not want to use this, remove later")
     var selectedPosition = RecyclerView.NO_POSITION
         private set
 
+    @Deprecated("may not want to use this, remove later")
     fun setSelectedPosition(position: Int) {
-        val previousPosition = selectedPosition
-        selectedPosition = position
-        if (previousPosition != RecyclerView.NO_POSITION) {
-            notifyItemChanged(previousPosition)
-        }
-        if (selectedPosition != RecyclerView.NO_POSITION) {
-            notifyItemChanged(selectedPosition)
-        }
+        // TBD remove if not used
+//        val previousPosition = selectedPosition
+//        selectedPosition = position
+//        if (previousPosition != RecyclerView.NO_POSITION) {
+//            notifyItemChanged(previousPosition)
+//        }
+//        if (selectedPosition != RecyclerView.NO_POSITION) {
+//            notifyItemChanged(selectedPosition)
+//        }
     }
 
+    @Deprecated("may not want to use this, remove later")
     fun getSelected(): DocentEditorItem? {
         return if (selectedPosition != RecyclerView.NO_POSITION) {
             getItem(selectedPosition)
@@ -60,15 +66,18 @@ class DocentEditorAdapter() :
             binding.triggerInfo.text = "some trigger info"
 
             binding.root.setOnClickListener {
-                // Highlight the selected item in the recycler view
-                val currentPosition = bindingAdapterPosition
-                if (currentPosition != RecyclerView.NO_POSITION) {
-                    if (currentPosition != selectedPosition) {
-                        setSelectedPosition(currentPosition)
-                    } else {
-                        setSelectedPosition(RecyclerView.NO_POSITION)
-                    }
-                }
+                onUpdate(item)
+
+                // TBD remove if not used
+//                // Highlight the selected item in the recycler view
+//                val currentPosition = bindingAdapterPosition
+//                if (currentPosition != RecyclerView.NO_POSITION) {
+//                    if (currentPosition != selectedPosition) {
+//                        setSelectedPosition(currentPosition)
+//                    } else {
+//                        setSelectedPosition(RecyclerView.NO_POSITION)
+//                    }
+//                }
             }
 
             itemView.setBackgroundColor(
