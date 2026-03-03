@@ -117,14 +117,13 @@ class DocentEditorFragment : Fragment() {
                 binding.emptyMessage.visibility =
                     if (list?.isEmpty() ?: false) View.VISIBLE else View.GONE
 
-                docentEditorAdapter?.submitList(list)
-                updateTriggersAudioFileNames()
+                submitUpdatedTriggerList(list)
             }
 
             viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
                 audioFiles = list
                 logger.d(TAG, "@@ DocentEdit observe new audio files: ${list?.size ?: -1} items")
-                updateTriggersAudioFileNames()
+                submitUpdatedTriggerList(docentEditorAdapter?.currentList)
             }
 
             binding.userTitle.setOnClickListener {
@@ -274,6 +273,7 @@ class DocentEditorFragment : Fragment() {
                         } else {
                             logger.d(TAG, "@@ UPDATE trigger: $newEntity")
                             viewModel.updatePlayTrigger(newEntity)
+                            notifyItemIdChanged(newEntity.id)
                         }
                     }
                 }
@@ -345,21 +345,27 @@ class DocentEditorFragment : Fragment() {
             .show()
     }
 
-    private fun updateTriggersAudioFileNames() {
-        val currentList = docentEditorAdapter?.currentList ?: return
-        logger.d(TAG, "@@ updateTriggersAudioFileNames --> currrent list: $currentList")
-        val newList = currentList.toList()
-        var changed = false
-        newList.forEach { item ->
-            val audioFileName = audioFiles?.find { it.id == item.audioFileId }?.fileName
-            changed = changed || (audioFileName != item.audioFileName)
-            item.audioFileName = audioFileName
+    private fun notifyItemIdChanged(id: Long) : Int {
+        docentEditorAdapter?.let { adapter ->
+            val list = adapter.currentList
+            val first = list.indexOfFirst { it.id == id }
+            if (first >= 0) {
+                adapter.notifyItemChanged(first)
+                return@notifyItemIdChanged first
+            }
         }
-        logger.d(TAG, "@@ updateTriggersAudioFileNames --> changed $changed")
-        if (changed) {
-            logger.d(TAG, "@@ updateTriggersAudioFileNames --> list changed: $newList")
+        return RecyclerView.NO_POSITION
+    }
+
+    private fun submitUpdatedTriggerList(currentList: List<DocentEditorItem>?) {
+        currentList?.let {
+            val newList = currentList.toList()
+            newList.forEach { item ->
+                val audioFileName = audioFiles?.find { it.id == item.audioFileId }?.fileName
+                item.audioFileName = audioFileName
+            }
+            logger.d(TAG, "@@ updateTriggersAudioFileNames --> list submit: ${newList.size} items")
             docentEditorAdapter?.submitList(newList)
         }
     }
-
 }

@@ -196,7 +196,7 @@ class AudioFilesFragment : Fragment() {
         // Start playing the new item
         item.isPlaying = true
         itemPlaying = item
-        val position = notifyItemChanged(item)
+        val position = notifyItemIdChanged(item.id)
         logger.d(TAG, "@@ onPlayItem: $position")
 
         try {
@@ -221,18 +221,18 @@ class AudioFilesFragment : Fragment() {
         itemPlaying?.let { item ->
             itemPlaying = null
             item.isPlaying = false
-            val position = notifyItemChanged(item)
+            val position = notifyItemIdChanged(item.id)
             logger.d(TAG, "@@ stopCurrentPlaying: $position")
         }
     }
 
-    private fun notifyItemChanged(item: AudioFileItem) : Int {
-        val list = audioFileAdapter?.currentList
-        val first = list?.indexOfFirst { it.id == item.id }
-        first?.let {
+    private fun notifyItemIdChanged(id: Long) : Int {
+        audioFileAdapter?.let { adapter ->
+            val list = adapter.currentList
+            val first = list.indexOfFirst { it.id == id }
             if (first >= 0) {
-                audioFileAdapter?.notifyItemChanged(first)
-                return@notifyItemChanged first
+                adapter.notifyItemChanged(first)
+                return@notifyItemIdChanged first
             }
         }
         return RecyclerView.NO_POSITION
@@ -314,6 +314,7 @@ class AudioFilesFragment : Fragment() {
                 fileName,
                 persistableUri)
             logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioFilePendingId -> $persistableUri")
+            notifyItemIdChanged(selectAudioFilePendingId)
             selectAudioFilePendingId = -1L
         } else {
             val newAudioFile = AudioFileEntity(
