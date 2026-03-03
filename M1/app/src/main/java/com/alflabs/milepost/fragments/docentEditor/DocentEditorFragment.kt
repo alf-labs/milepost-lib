@@ -168,7 +168,7 @@ class DocentEditorFragment : Fragment() {
             dialogView.findViewById<AutoCompleteTextView>(R.id.mp_direction_dropdown)
         val inColdStartCheckbox = dialogView.findViewById<CheckBox>(R.id.in_cold_start_checkbox)
 
-        val mpDirItems = listOf("Both", "Towards MP Start", "Towards MP End")
+        val mpDirItems = listOf("Both", "Towards Lower MP", "Towards Higher MP")
         val mpDirAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, mpDirItems)
         mpDirectionDropdown.setAdapter(mpDirAdapter)
@@ -191,8 +191,13 @@ class DocentEditorFragment : Fragment() {
             logger.d(TAG, "TBD On play button click")
         }
 
-        val currMpMin = currTrigger?.mpMin
-        val currMpMax = currTrigger?.mpMax
+        var currMpMin = currTrigger?.mpMin
+        var currMpMax = currTrigger?.mpMax
+        if (currMpMin != null && currMpMax != null && currMpMin > currMpMax) {
+            val tmp = currMpMin
+            currMpMin = currMpMax
+            currMpMax = tmp
+        }
         mpMinEditText.setText(currMpMin?.toString())
         mpMaxEditText.setText(currMpMax?.toString())
 
@@ -207,9 +212,15 @@ class DocentEditorFragment : Fragment() {
                 // or valid floats.
                 val newAudio = audioFileDropdown.text.toString().trim()
                 val newMpDir = mpDirectionDropdown.text.toString().trim()
-                val newMpMin = mpMinEditText.text.toString().toFloat()
-                val newMpMax = mpMaxEditText.text.toString().toFloat()
+                var newMpMin = mpMinEditText.text.toString().toFloat()
+                var newMpMax = mpMaxEditText.text.toString().toFloat()
                 val newInColdStart = inColdStartCheckbox.isChecked
+
+                if (newMpMin > newMpMax) {
+                    val tmp = newMpMin
+                    newMpMin = newMpMax
+                    newMpMax = tmp
+                }
 
                 logger.d(TAG, "@@Apply TRIGGER clicked:")
                 logger.d(TAG, "@@  Audio File: $newAudio")
@@ -277,10 +288,14 @@ class DocentEditorFragment : Fragment() {
         val validationFunction = {
             val hasAudio = audioFileDropdown.text.isNotBlank()
             val hasMpDir = mpDirectionDropdown.text.isNotBlank()
-            val hasMpMin = mpMinEditText.text.toString().toFloatOrNull() != null
-            val hasMpMax = mpMaxEditText.text.toString().toFloatOrNull() != null
+            val newMpMin = mpMinEditText.text.toString().toFloatOrNull()
+            val hasMpMin = newMpMin != null
+            val newMpMax = mpMaxEditText.text.toString().toFloatOrNull()
+            val hasMpMax = newMpMax != null
 
-            positiveButton.isEnabled = hasAudio && hasMpDir && hasMpMin && hasMpMax
+            positiveButton.isEnabled = hasAudio && hasMpDir
+                    && hasMpMin && hasMpMax
+                    && newMpMin != newMpMax
         }
 
         audioFileDropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }

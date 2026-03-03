@@ -15,6 +15,6 @@ message PlaybackTriggerMetadata {
 
 enum PlaybackTriggerDirection {
   DIRECTION_UNSPECIFIED = 0;
-  DIRECTION_TO_START = 1;
-  DIRECTION_TO_END = 2;
+  DIRECTION_TO_LOWER_MP = 1;
+  DIRECTION_TO_HIGHER_MP = 2;
 }
