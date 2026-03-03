@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentEditorItemBinding
+import com.alflabs.milepost.db.PlaybackTriggerDirection
 
 class DocentEditorAdapter(
     private val onUpdate: (DocentEditorItem) -> Unit,
@@ -61,9 +62,25 @@ class DocentEditorAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: DocentEditorItem, isSelected: Boolean) {
+            val trigger = item.playbackTrigger
+            binding.triggerTitle.text = "${item.id} - ${item.audioFileName ?: "Unknown Audio"}"
+            if (trigger != null) {
+                binding.triggerInfo.text =
+                    if (trigger.includeInColdStart) "Include in Cold Start"
+                    else "Exclude from Cold Start"
+                val mpMin = String.format("%.2f", trigger.mpMin)
+                val mpMax = String.format("%.2f", trigger.mpMax)
+                val mpDir = when (trigger.mpDirection) {
+                    PlaybackTriggerDirection.DIRECTION_TO_LOWER_MP -> "<⟞"       // < 27DE
+                    PlaybackTriggerDirection.DIRECTION_TO_HIGHER_MP -> "⟝>"      // 27DD >
+                    else -> "<⟛>" // < 27DB >
+                }
 
-            binding.triggerTitle.text = "some trigger title"
-            binding.triggerInfo.text = "some trigger info"
+                binding.triggerRange.text = "MP Range: $mpMin $mpDir $mpMax"
+            } else {
+                binding.triggerRange.text = "--"
+                binding.triggerInfo.text = "--"
+            }
 
             binding.root.setOnClickListener {
                 onUpdate(item)

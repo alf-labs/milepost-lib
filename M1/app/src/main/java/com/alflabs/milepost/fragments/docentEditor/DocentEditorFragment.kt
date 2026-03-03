@@ -30,7 +30,6 @@ import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.math.max
 import kotlin.toString
 
 @AndroidEntryPoint
@@ -118,13 +117,14 @@ class DocentEditorFragment : Fragment() {
                 binding.emptyMessage.visibility =
                     if (list?.isEmpty() ?: false) View.VISIBLE else View.GONE
 
-//                validateAllPersistableUris(list)
                 docentEditorAdapter?.submitList(list)
+                updateTriggersAudioFileNames()
             }
 
             viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
                 audioFiles = list
                 logger.d(TAG, "@@ DocentEdit observe new audio files: ${list?.size ?: -1} items")
+                updateTriggersAudioFileNames()
             }
 
             binding.userTitle.setOnClickListener {
@@ -138,6 +138,7 @@ class DocentEditorFragment : Fragment() {
             viewModel.loadDocentTrack(fragmentArgs.docentTrackId)
         }
     }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -342,6 +343,23 @@ class DocentEditorFragment : Fragment() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun updateTriggersAudioFileNames() {
+        val currentList = docentEditorAdapter?.currentList ?: return
+        logger.d(TAG, "@@ updateTriggersAudioFileNames --> currrent list: $currentList")
+        val newList = currentList.toList()
+        var changed = false
+        newList.forEach { item ->
+            val audioFileName = audioFiles?.find { it.id == item.audioFileId }?.fileName
+            changed = changed || (audioFileName != item.audioFileName)
+            item.audioFileName = audioFileName
+        }
+        logger.d(TAG, "@@ updateTriggersAudioFileNames --> changed $changed")
+        if (changed) {
+            logger.d(TAG, "@@ updateTriggersAudioFileNames --> list changed: $newList")
+            docentEditorAdapter?.submitList(newList)
+        }
     }
 
 }
