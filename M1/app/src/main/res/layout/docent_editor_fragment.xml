@@ -52,8 +52,10 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
             android:layout_margin="16dp"
-            android:contentDescription="Add new trigger"
+            android:contentDescription="Add Trigger"
             android:src="@android:drawable/ic_input_add"
-            app:tint="@android:color/white" />
+            app:backgroundTint="@color/colorPrimary"
+            app:tint="?attr/colorOnPrimary"
+            />
 
 </RelativeLayout>

@@ -28,5 +28,18 @@
             android:layout_alignParentBottom="true"
             />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/add_audio_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="16dp"
+            android:contentDescription="Add Audio File"
+            android:src="@android:drawable/ic_input_add"
+            app:backgroundTint="@color/colorPrimary"
+            app:tint="?attr/colorOnPrimary"
+            />
+
 </RelativeLayout>
 

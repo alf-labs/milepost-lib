@@ -109,6 +109,10 @@ class AudioFilesFragment : Fragment() {
                 validateAllPersistableUris(list)
                 audioFileAdapter?.submitList(list)
             }
+
+            binding.addAudioFab.setOnClickListener {
+                selectNewAudioDocument()
+            }
         }
     }
 
