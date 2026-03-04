@@ -1,7 +1,5 @@
 package com.alflabs.milepost.location
 
-import com.alflabs.serial.SerialReader
-import com.alflabs.serial.SerialWriter
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
@@ -18,26 +16,6 @@ data class LocationDataListPojo @JsonCreator constructor(
     fun toProto(): LocationDataList = locationDataList {
         this@LocationDataListPojo.locations.forEach { locations.add(it.toProto()) }
     }
-
-    fun toSerial(): SerialWriter {
-        val writer = SerialWriter()
-        writer.addInt("size", locations.size)
-        var i = 1
-        locations.forEach {
-            val subWriter = SerialWriter()
-            it.saveInto(subWriter)
-            writer.addSerial("L$i", subWriter)
-            i++
-        }
-        return writer
-    }
-
-    constructor(reader: SerialReader) : this(
-        List(reader.getInt("size")) { index ->
-            LocationDataPojo(reader.getSerial("L${index + 1}"))
-        },
-    )
-
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -64,22 +42,6 @@ data class LocationDataPojo @JsonCreator constructor(
         flags = this@LocationDataPojo.flags
         this@LocationDataPojo.poiLabel?.let { poiLabel = it }
     }
-
-    fun saveInto(writer: SerialWriter) {
-        latLong.saveInto(writer)
-        speed?.saveInto(writer)
-        mp?.let { writer.addFloat("mp", it) }
-        writer.addInt("flags", flags)
-        poiLabel?.let { writer.addString("poiLabel", it) }
-    }
-
-    constructor(reader: SerialReader) : this(
-        LatLongDataPojo(reader),
-        if (reader.hasName("speed")) SpeedDataPojo(reader) else null,
-        if (reader.hasName("mp")) reader.getFloat("mp") else null,
-        reader.getInt("flags"),
-        if (reader.hasName("poiLabel")) reader.getString("poiLabel") else null,
-    )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -102,20 +64,6 @@ data class LatLongDataPojo @JsonCreator constructor(
         this@LatLongDataPojo.longitude?.let { longitude = it }
         this@LatLongDataPojo.accuracy?.let { accuracy = it }
     }
-
-    fun saveInto(writer: SerialWriter) {
-        timestampMillis?.let { writer.addLong("timestampMillis", it) }
-        latitude?.let { writer.addDouble("latitude", it) }
-        longitude?.let { writer.addDouble("longitude", it) }
-        accuracy?.let { writer.addFloat("accuracy", it) }
-    }
-
-    constructor(reader: SerialReader) : this(
-        if (reader.hasName("timestampMillis")) reader.getLong("timestampMillis") else null,
-        if (reader.hasName("latitude")) reader.getDouble("latitude") else null,
-        if (reader.hasName("longitude")) reader.getDouble("longitude") else null,
-        if (reader.hasName("accuracy")) reader.getFloat("accuracy") else null,
-    )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -133,14 +81,4 @@ data class SpeedDataPojo @JsonCreator constructor(
         this@SpeedDataPojo.speedMps?.let { speedMps = it }
         this@SpeedDataPojo.speedAcc?.let { speedAcc = it }
     }
-
-    fun saveInto(writer: SerialWriter) {
-        speedMps?.let { writer.addFloat("speedMps", it) }
-        speedAcc?.let { writer.addFloat("speedAcc", it) }
-    }
-
-    constructor(reader: SerialReader) : this(
-        if (reader.hasName("speedMps")) reader.getFloat("speedMps") else null,
-        if (reader.hasName("speedAcc")) reader.getFloat("speedAcc") else null,
-    )
 }
