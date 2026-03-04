@@ -58,7 +58,7 @@ data class DocentTrackEntity(
 /** A mirror of [DocentTrackEntity] for JSON import/export. */
 data class DocentTrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("uuid") val uuid: String,
-    @param:JsonProperty("uuid") val userTitle: String? = null,
+    @param:JsonProperty("userTitle") val userTitle: String? = null,
     @param:JsonProperty("createdISO") val createdISO: String,
     @param:JsonProperty("lastUsedISO") val lastUsedISO: String? = null,
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String

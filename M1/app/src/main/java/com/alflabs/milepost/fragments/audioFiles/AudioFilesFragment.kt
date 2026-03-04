@@ -298,13 +298,41 @@ class AudioFilesFragment : Fragment() {
             }
         } catch (e: Exception) {
             logger.d(TAG, "@@ addAudioFileUri: '$fileName' is not a valid audio file", e)
-            Snackbar.make(
-                requireView(),
-                "Selected file '$fileName' is not a supported audio format",
-                Snackbar.LENGTH_LONG
-            ).show()
+            AlertDialog.Builder(requireContext())
+                .setTitle("Unsupported Format")
+                .setMessage("Selected file '$fileName' is not a supported audio format")
+                .setPositiveButton("OK", null)
+                .show()
             selectAudioFilePendingId = -1L
             return // Exit early so we don't save an invalid URI
+        }
+
+        // One limitation right now is that we use the display filenames to select files,
+        // and thus there's no way to differentiate files with the same filename. Thus, we need
+        // to reject this new file if it has the same filename as an existing file.
+        // However, that's fine if we're updating a file's persistable URI, so we allow it
+        // if the ID we're updating has the exact same filename.
+        val sameNames =
+            audioFileAdapter?.currentList
+                ?.filter { it.fileName == fileName }
+                ?.map { it.id }
+                ?: emptyList()
+
+        if (sameNames.isNotEmpty()) {
+            if (selectAudioFilePendingId >= 0
+                && sameNames.size == 1
+                && sameNames[0] == selectAudioFilePendingId) {
+                // That's ok because it's the same entry we're updating
+                logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioFilePendingId -> same filename '$fileName'")
+            } else {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Duplicate File Name")
+                    .setMessage("There is already an entry for a file named '$fileName'. File names need to be unique. Please choose a different file or rename it first.")
+                    .setPositiveButton("OK", null)
+                    .show()
+                selectAudioFilePendingId = -1L
+                return
+            }
         }
 
         // 5- Add to database or Update
