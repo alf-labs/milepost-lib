@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFilesFragmentBinding
 import com.alflabs.milepost.db.AudioFileEntity
+import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.db.audioFileMetadata
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
@@ -47,6 +48,7 @@ class AudioFilesFragment : Fragment() {
     }
 
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var playTriggerDao: PlayTriggerDao
 
     private var _binding: AudioFilesFragmentBinding? = null
     private val binding get() = _binding!!
@@ -362,18 +364,32 @@ class AudioFilesFragment : Fragment() {
         stopCurrentPlaying()
         val selected = audioFileAdapter?.getSelected() ?: return
 
-        // TBD use DAO to check there are no PlayTriggerEntity referencing this file id.
+        lifecycleScope.launch {
+            val count = playTriggerDao.countTriggersForAudioFile(selected.id)
 
-        // Display an alert to confirm deletion.
-        AlertDialog.Builder(requireContext())
-            .setTitle("Delete Audio File Reference")
-            .setMessage("Are you sure you want to delete the reference to file '${selected.fileName}'? This does not delete the actual file.")
-            .setPositiveButton("Delete") { _, _ ->
-                viewModel.deleteById(selected.id)
-                Snackbar.make(requireView(), "Reference to file '${selected.fileName}' deleted", Snackbar.LENGTH_LONG).show()
+            val msg = when {
+                count > 0 -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
+                        "This does not delete the actual file.\n" +
+                        "However, there are $count triggers using this file. They will be DELETED if you proceed."
+                else -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
+                        "This does not delete the actual file."
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+
+            // Display an alert to confirm deletion.
+            AlertDialog.Builder(requireContext())
+                .setTitle("Delete Audio File Reference")
+                .setMessage(msg)
+                .setPositiveButton("Delete") { _, _ ->
+                    viewModel.deleteById(selected.id)
+                    Snackbar.make(
+                        requireView(),
+                        "Reference to file '${selected.fileName}' deleted",
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
     }
 
     /** Check all persistable Uri. Updates the list in-place, returns whether it has changed. */

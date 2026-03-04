@@ -15,6 +15,9 @@ interface PlayTriggerDao {
     @Update
     suspend fun update(playTrigger: PlayTriggerEntity)
 
+    @Query("SELECT COUNT(*) FROM play_triggers WHERE audioFileId = :audioFileId")
+    suspend fun countTriggersForAudioFile(audioFileId: Long): Int
+
     @Query("SELECT * FROM play_triggers WHERE audioFileId = :audioFileId")
     fun getTriggersForAudioFile(audioFileId: Long): Flow<List<PlayTriggerEntity>>
 
