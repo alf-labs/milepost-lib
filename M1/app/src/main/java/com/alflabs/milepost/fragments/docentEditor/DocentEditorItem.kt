@@ -2,7 +2,7 @@ package com.alflabs.milepost.fragments.docentEditor
 
 import androidx.room.Ignore
 import com.alflabs.milepost.db.PlayTriggerEntity
-import com.alflabs.milepost.db.PlaybackTriggerMetadata
+import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 
 /**
  * A derivative of [com.alflabs.milepost.db.PlayTriggerEntity]

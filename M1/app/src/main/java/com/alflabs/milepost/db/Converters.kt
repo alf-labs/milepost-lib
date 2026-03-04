@@ -2,6 +2,7 @@ package com.alflabs.milepost.db
 
 import androidx.room.TypeConverter
 import com.alflabs.milepost.location.LocationDataList
+import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 import com.google.protobuf.AbstractMessageLite
 import com.google.protobuf.GeneratedMessageLite
 import com.google.protobuf.InvalidProtocolBufferException

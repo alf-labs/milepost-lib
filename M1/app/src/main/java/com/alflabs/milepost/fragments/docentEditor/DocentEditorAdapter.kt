@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentEditorItemBinding
-import com.alflabs.milepost.db.PlaybackTriggerDirection
+import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 
 class DocentEditorAdapter(
     private val onUpdate: (DocentEditorItem) -> Unit,

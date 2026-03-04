@@ -22,9 +22,9 @@ import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentEditorFragmentBinding
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.PlayTriggerEntity
-import com.alflabs.milepost.db.PlaybackTriggerDirection
-import com.alflabs.milepost.db.PlaybackTriggerMetadata
 import com.alflabs.milepost.fragments.audioFiles.AudioFileItem
+import com.alflabs.milepost.trigger.PlaybackTriggerDirection
+import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 import com.alflabs.utils.ILogger
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint

@@ -5,7 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.alflabs.milepost.db.GpsTrackEntity
-import com.alflabs.milepost.db.TrackEntityPojo
+import com.alflabs.milepost.db.GpsTrackEntityPojo
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -132,7 +132,7 @@ class ImporterExporter @Inject constructor(
         return try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 val objectMapper = ObjectMapper()
-                val imported = objectMapper.readValue(inputStream, TrackEntityPojo::class.java)
+                val imported = objectMapper.readValue(inputStream, GpsTrackEntityPojo::class.java)
                 return imported.toProto()
             }
         } catch (e: Exception) {

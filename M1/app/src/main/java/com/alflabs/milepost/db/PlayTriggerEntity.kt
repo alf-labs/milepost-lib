@@ -4,6 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 
 @Entity(
     tableName = "play_triggers",
@@ -34,4 +37,15 @@ data class PlayTriggerEntity(
 
     @ColumnInfo
     val playbackTrigger: PlaybackTriggerMetadata? = null
-)
+) {
+    // TBD toPojo()
+}
+
+/** A mirror of [PlayTriggerEntity] for JSON import/export. */
+data class PlayTriggerEntityPojo @JsonCreator constructor(
+    @param:JsonProperty("audioFileId") val audioFileId: Long,
+    @param:JsonProperty("docentTrackId") val docentTrackId: Long,
+    @param:JsonProperty("playbackTrigger") val playbackTrigger: PlaybackTriggerMetadata? = null
+) {
+    // TBD toProto
+}

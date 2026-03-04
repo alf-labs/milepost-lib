@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.UUID
 
 @Entity(
@@ -43,4 +45,31 @@ data class DocentTrackEntity(
         }
         return userTitle
     }
+
+    suspend fun toPojo(gpsTrackDao: GpsTrackDao) = DocentTrackEntityPojo(
+        uuid = uuid,
+        userTitle = userTitle,
+        createdISO = creationTime,
+        lastUsedISO = lastUsedTime,
+        gpsTrackUuid = gpsTrackDao.getUuid(gpsTrackId)!!
+    )
+}
+
+/** A mirror of [DocentTrackEntity] for JSON import/export. */
+data class DocentTrackEntityPojo @JsonCreator constructor(
+    @param:JsonProperty("uuid") val uuid: String,
+    @param:JsonProperty("uuid") val userTitle: String? = null,
+    @param:JsonProperty("createdISO") val createdISO: String,
+    @param:JsonProperty("lastUsedISO") val lastUsedISO: String? = null,
+    @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String
+) {
+    suspend fun toProto(gpsTrackDao: GpsTrackDao) = DocentTrackEntity(
+        id = 0,
+        uuid = uuid,
+        userTitle = userTitle,
+        creationTime = createdISO,
+        lastUsedTime = lastUsedISO,
+        gpsTrackId = gpsTrackDao.getIdByUuid(gpsTrackUuid)!!
+    )
+
 }

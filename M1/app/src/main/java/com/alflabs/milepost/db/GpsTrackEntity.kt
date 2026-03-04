@@ -58,7 +58,7 @@ data class GpsTrackEntity(
         return trackLabel
     }
 
-    fun toPojo() = TrackEntityPojo(
+    fun toPojo() = GpsTrackEntityPojo(
         uuid = uuid,
         createdDateISO = createdDateISO,
         updatedDateISO = updatedDateISO,
@@ -69,9 +69,9 @@ data class GpsTrackEntity(
     )
 }
 
-/// A mirror of [GpsTrackEntity] for JSON import/export.
+/** A mirror of [GpsTrackEntity] for JSON import/export. */
 @JsonIgnoreProperties(value = ["id"])
-data class TrackEntityPojo @JsonCreator constructor(
+data class GpsTrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("uuid")             val uuid: String,
     @param:JsonProperty("createdDateISO")   val createdDateISO: String,
     @param:JsonProperty("updatedDateISO")   val updatedDateISO: String? = null,
