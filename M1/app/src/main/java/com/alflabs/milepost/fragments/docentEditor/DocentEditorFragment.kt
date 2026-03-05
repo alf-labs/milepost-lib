@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -11,20 +14,28 @@ import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
 import android.widget.ImageButton
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.DocentEditorFragmentBinding
+import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.PlayTriggerEntity
 import com.alflabs.milepost.fragments.audioFiles.AudioFileItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
+import com.alflabs.milepost.utils.DocentImporterExporter
+import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,6 +52,9 @@ class DocentEditorFragment : Fragment() {
     }
 
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var appSettings: AppSettings
+    @Inject lateinit var docentTrackDao: DocentTrackDao
+    @Inject lateinit var docentImporterExporter: DocentImporterExporter
 
     private var _binding: DocentEditorFragmentBinding? = null
     private val binding get() = _binding!!
@@ -63,6 +77,8 @@ class DocentEditorFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         logger.d(TAG, "@@ onViewCreated")
+
+        setupMenu()
 
         lifecycleScope.launch {
             docentEditorAdapter = DocentEditorAdapter(
@@ -147,6 +163,83 @@ class DocentEditorFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.docent_editor_menu, menu)
+                ApiHelper.Menu_setOptionalIconsVisible(menu, true)
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                super.onPrepareMenu(menu)
+                logger.d(TAG, "@@ onPrepareMenu -- track entity enabled = ${docentTrackEntity != null}")
+                menu.findItem(R.id.action_playback).isEnabled = (docentTrackEntity != null)
+                menu.findItem(R.id.action_export_json).isEnabled = (docentTrackEntity != null)
+                menu.findItem(R.id.action_delete).isEnabled = (docentTrackEntity != null)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                logger.d(TAG, "@@ onMenuItemSelected: ${menuItem.itemId}")
+                return when (menuItem.itemId) {
+                    R.id.action_playback -> {
+                        playbackTrack(docentTrackEntity)
+                        true
+                    }
+
+                    R.id.action_export_json -> {
+                        val exportFile =
+                            docentImporterExporter.createJsonExportFile(requireContext(), docentTrackEntity)
+                        exportFile?.let {
+                            docentImporterExporter.shareFile(requireContext(), it)
+                        }
+                        true
+                    }
+
+                    R.id.action_delete -> {
+                        askAndMaybeDeleteTrack(docentTrackEntity)
+                        true
+                    }
+
+                    else -> false
+                }
+            }
+
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun playbackTrack(docentTrack: DocentTrackEntity?) {
+        if (docentTrack == null) return
+        lifecycleScope.launch {
+            logger.d(TAG, "@@ Set prefs Playback track: ${docentTrack.id}")
+            // TBD
+//            appSettings.setPlaybackDocentTrackId(docentTrack.id)
+//            val action = GpsReviewFragmentDirections.actionReviewToPlay()
+//            findNavController().navigate(action)
+        }
+    }
+
+    private fun askAndMaybeDeleteTrack(docentTrack: DocentTrackEntity?) {
+        if (docentTrack == null) return
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Track")
+            .setMessage("Are you sure you want to delete this docent track? This action cannot be reversed.")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch {
+                    // TBD
+//                    if (appSettings.playbackDocentTrackId() == docentTrack.id) {
+//                        logger.d(TAG, "@@ Clear prefs Playback track: -1")
+//                        appSettings.setPlaybackDocentTrackId(-1)
+//                    }
+                    docentTrackDao.deleteById(docentTrack.id)
+                    findNavController().popBackStack()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun showAddOrEditTriggerDialog(item: DocentEditorItem?) {
