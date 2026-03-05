@@ -48,7 +48,7 @@ class DocentEditorFragment : Fragment() {
     private var docentEditorAdapter: DocentEditorAdapter? = null
     private val viewModel: DocentEditorViewModel by viewModels()
     private var docentTrackEntity: DocentTrackEntity? = null
-    private var audioFiles: List<AudioFileItem>? = null
+    private var allAudioFiles: List<AudioFileItem>? = null
     private var firstLoad = true
 
     override fun onCreateView(
@@ -57,8 +57,6 @@ class DocentEditorFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DocentEditorFragmentBinding.inflate(inflater, container, false)
-
-
         return binding.root
     }
 
@@ -117,13 +115,12 @@ class DocentEditorFragment : Fragment() {
                 binding.emptyMessage.visibility =
                     if (list?.isEmpty() ?: false) View.VISIBLE else View.GONE
 
-                submitUpdatedTriggerList(list)
+                docentEditorAdapter?.submitList(list)
             }
 
             viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
-                audioFiles = list
                 logger.d(TAG, "@@ DocentEdit observe new audio files: ${list?.size ?: -1} items")
-                submitUpdatedTriggerList(docentEditorAdapter?.currentList)
+                allAudioFiles = list
             }
 
             binding.userTitle.setOnClickListener {
@@ -155,7 +152,7 @@ class DocentEditorFragment : Fragment() {
     private fun showAddOrEditTriggerDialog(item: DocentEditorItem?) {
         val isAdd = item == null
         val docentTrack = docentTrackEntity ?: return
-        val currentAudioFiles = audioFiles ?: emptyList()
+        val currentAudioFiles = allAudioFiles ?: emptyList()
         val currTrigger = item?.playbackTrigger
 
         val dialogView = layoutInflater.inflate(R.layout.docent_editor_trigger_dialog, null)
@@ -176,7 +173,7 @@ class DocentEditorFragment : Fragment() {
         val initialMpDirText = mpDirItems.getOrElse(currMpDirIndex) { mpDirItems[0] }
         mpDirectionDropdown.setText(initialMpDirText, /*filter=*/false)
 
-        // Note: this is going to fail if various files have the same filename.
+        // Note: this works because we currently impose audio files to have unique filenames.
         val audioFileNames = currentAudioFiles.map { it.fileName }.toList()
         val audioFileAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioFileNames)
@@ -355,17 +352,5 @@ class DocentEditorFragment : Fragment() {
             }
         }
         return RecyclerView.NO_POSITION
-    }
-
-    private fun submitUpdatedTriggerList(currentList: List<DocentEditorItem>?) {
-        currentList?.let {
-            val newList = currentList.toList()
-            newList.forEach { item ->
-                val audioFileName = audioFiles?.find { it.id == item.audioFileId }?.fileName
-                item.audioFileName = audioFileName
-            }
-            logger.d(TAG, "@@ updateTriggersAudioFileNames --> list submit: ${newList.size} items")
-            docentEditorAdapter?.submitList(newList)
-        }
     }
 }

@@ -21,7 +21,13 @@ interface PlayTriggerDao {
     @Query("SELECT * FROM play_triggers WHERE audioFileId = :audioFileId")
     fun getTriggersForAudioFile(audioFileId: Long): Flow<List<PlayTriggerEntity>>
 
-    @Query("SELECT id, audioFileId, docentTrackId, playbackTrigger FROM play_triggers WHERE docentTrackId = :docentTrackId")
+    @Query("""
+        SELECT T.id, T.audioFileId, T.docentTrackId, T.playbackTrigger, A.fileName
+        FROM play_triggers AS T
+        INNER JOIN audio_files AS A ON T.audioFileId = A.id
+        WHERE T.docentTrackId = :docentTrackId
+        ORDER BY A.fileName ASC
+        """)
     fun getTriggersForDocentTrack(docentTrackId: Long): Flow<List<DocentEditorItem>>
 
     @Query("DELETE FROM play_triggers WHERE id = :id")
