@@ -1,9 +1,7 @@
 package com.alflabs.milepost.utils
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import androidx.core.content.FileProvider
 import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.db.GpsTrackEntityPojo
 import com.alflabs.utils.FileOps
@@ -35,21 +33,16 @@ import javax.inject.Singleton
  */
 @Singleton
 class GpsImporterExporter @Inject constructor(
-    val logger: ILogger,
+    logger: ILogger,
     val fileOps: FileOps,
-) {
+) : ImporterExporterCommon(logger) {
 
     companion object {
         private val TAG = GpsImporterExporter::class.java.simpleName
     }
 
     private fun sanitizeTitle(track: GpsTrackEntity): String {
-        var title = track.trackLabel?.trim() ?: ""
-        title = title
-            .replace(Regex("[^A-Za-z0-9_+-]"), " ")
-            .replace(Regex("\\s+"), " ")
-            .trim()
-        return " ${title.take(64)}"
+        return sanitizeTitle(track.trackLabel)
     }
 
     /**
@@ -139,25 +132,5 @@ class GpsImporterExporter @Inject constructor(
             logger.d(TAG, "loadTrackEntityFromUri: error", e)
             null
         }
-    }
-
-    internal fun shareFile(context: Context, file: File) {
-        val userType = if (file.extension == "json") "JSON" else "CSV"
-        logger.d(TAG, "shareFile: $file as $userType")
-
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider", // Must match the authorities in AndroidManifest
-            file
-        )
-
-        val shareIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_STREAM, uri)
-            type = if (file.extension == "json") "application/json" else "text/csv"
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-
-        context.startActivity(Intent.createChooser(shareIntent, "Export $userType Location Track"))
     }
 }
