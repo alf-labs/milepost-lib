@@ -44,8 +44,7 @@ import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.milepost.db.GpsTrackSummary
 import com.alflabs.milepost.db.copy
 import com.alflabs.milepost.db.gpsTrackSummary
-import com.alflabs.milepost.fragments.docentTracks.DocentTracksFragmentDirections
-import com.alflabs.milepost.utils.ImporterExporter
+import com.alflabs.milepost.utils.GpsImporterExporter
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
 import com.alflabs.utils.ApiHelper
@@ -73,7 +72,7 @@ class GpsReviewFragment : Fragment() {
     }
 
     @Inject lateinit var logger: ILogger
-    @Inject lateinit var importerExporter: ImporterExporter
+    @Inject lateinit var gpsImporterExporter: GpsImporterExporter
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var gpsTrackDao: GpsTrackDao
     @Inject lateinit var docentTrackDao: DocentTrackDao
@@ -247,18 +246,18 @@ class GpsReviewFragment : Fragment() {
 
                     R.id.action_export_csv -> {
                         val exportFile =
-                            importerExporter.createCsvExportFile(requireContext(), gpsTrackEntity)
+                            gpsImporterExporter.createCsvExportFile(requireContext(), gpsTrackEntity)
                         exportFile?.let {
-                            importerExporter.shareFile(requireContext(), it)
+                            gpsImporterExporter.shareFile(requireContext(), it)
                         }
                         true
                     }
 
                     R.id.action_export_json -> {
                         val exportFile =
-                            importerExporter.createJsonExportFile(requireContext(), gpsTrackEntity)
+                            gpsImporterExporter.createJsonExportFile(requireContext(), gpsTrackEntity)
                         exportFile?.let {
-                            importerExporter.shareFile(requireContext(), it)
+                            gpsImporterExporter.shareFile(requireContext(), it)
                         }
                         true
                     }

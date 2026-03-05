@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.GpsTracksFragmentBinding
 import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.utils.ImporterExporter
+import com.alflabs.milepost.utils.GpsImporterExporter
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
@@ -41,7 +41,7 @@ class GpsTracksFragment : Fragment() {
 
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var logger: ILogger
-    @Inject lateinit var importerExporter: ImporterExporter
+    @Inject lateinit var gpsImporterExporter: GpsImporterExporter
 
     private var _binding: GpsTracksFragmentBinding? = null
     private val binding get() = _binding!!
@@ -127,7 +127,7 @@ class GpsTracksFragment : Fragment() {
     private fun importJsonLoadUri(uri: Uri) {
         // 2- When a file is selected, load it in memory using the Jackson library for GpsTrackEntity.class
         logger.d(TAG, "@@ ImportJSON 2 - Load URI: $uri")
-        val entity = importerExporter.loadTrackEntityFromUri(requireContext(), uri)
+        val entity = gpsImporterExporter.loadGpsTrackEntityFromUri(requireContext(), uri)
         if (entity == null) {
             Toast.makeText(requireContext(), "Failed to load JSON", Toast.LENGTH_LONG).show()
             return

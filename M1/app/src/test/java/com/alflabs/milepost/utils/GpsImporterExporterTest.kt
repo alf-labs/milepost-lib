@@ -24,10 +24,10 @@ import java.io.File
 import java.time.Instant
 
 @RunWith(AndroidJUnit4::class)
-class ImporterExporterTest {
+class GpsImporterExporterTest {
     private val fakeLogger = FakeLoggerModule.providesLogger() as StringLogger
     private val fakeFileOps = FakeFileOpsModule.providesFileOps() as FakeFileOps
-    private val importerExporter = ImporterExporter(fakeLogger, fakeFileOps)
+    private val gpsImporterExporter = GpsImporterExporter(fakeLogger, fakeFileOps)
     private lateinit var gpsTrackEntity: GpsTrackEntity
 
     @Before
@@ -97,8 +97,8 @@ class ImporterExporterTest {
         val mockContext = mock<Context> {
             on { cacheDir } doReturn File("/tmp")
         }
-        val file = importerExporter.createCsvExportFile(mockContext, gpsTrackEntity)
-        assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createCsvExportFile")
+        val file = gpsImporterExporter.createCsvExportFile(mockContext, gpsTrackEntity)
+        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: createCsvExportFile")
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).endsWith("/track test-uuid-1234 A fairly long Test+ -Track name 42 that is more than 64 characte.csv")
@@ -117,8 +117,8 @@ class ImporterExporterTest {
         val mockContext = mock<Context> {
             on { cacheDir } doReturn File("/tmp")
         }
-        val file = importerExporter.createJsonExportFile(mockContext, gpsTrackEntity)
-        assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: createJsonExportFile")
+        val file = gpsImporterExporter.createJsonExportFile(mockContext, gpsTrackEntity)
+        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: createJsonExportFile")
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).endsWith("/track test-uuid-1234 A fairly long Test+ -Track name 42 that is more than 64 characte.json")
@@ -171,7 +171,7 @@ class ImporterExporterTest {
     }
 
     @Test
-    fun loadTrackEntityFromUri_loadsOldFormatWithBearing() {
+    fun loadGpsTrackEntityFromUri_loadsOldFormatWithBearing() {
         val jsonString = """
             {
               "id" : 0,
@@ -228,9 +228,9 @@ class ImporterExporterTest {
             on { contentResolver } doReturn mockContentResolver
         }
 
-        val loadedTrackEntity = importerExporter.loadTrackEntityFromUri(mockContext, mockUri)
+        val loadedTrackEntity = gpsImporterExporter.loadGpsTrackEntityFromUri(mockContext, mockUri)
 
-        assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: loadTrackEntityFromUri")
+        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: loadTrackEntityFromUri")
         assertThat(loadedTrackEntity).isNotNull()
         loadedTrackEntity!!
         // The summary is not part of the JSON, so copy it from the original for comparison.
@@ -239,7 +239,7 @@ class ImporterExporterTest {
     }
 
     @Test
-    fun loadTrackEntityFromUri_loadsCorrectTrackEntity() {
+    fun loadTrackEntityFromUri_loadsCorrectGpsTrackEntity() {
         val jsonString = """
             {
               "id" : 0,
@@ -294,9 +294,9 @@ class ImporterExporterTest {
             on { contentResolver } doReturn mockContentResolver
         }
 
-        val loadedTrackEntity = importerExporter.loadTrackEntityFromUri(mockContext, mockUri)
+        val loadedTrackEntity = gpsImporterExporter.loadGpsTrackEntityFromUri(mockContext, mockUri)
 
-        assertThat(fakeLogger.string.trim()).isEqualTo("ImporterExporter: loadTrackEntityFromUri")
+        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: loadTrackEntityFromUri")
         assertThat(loadedTrackEntity).isNotNull()
         loadedTrackEntity!!
         // The summary is not part of the JSON, so copy it from the original for comparison.

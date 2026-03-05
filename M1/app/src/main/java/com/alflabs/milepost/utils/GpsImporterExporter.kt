@@ -34,13 +34,13 @@ import javax.inject.Singleton
  * - https://www.google.com/earth/outreach/learn/visualize-your-data-on-a-custom-map-using-google-my-maps/
  */
 @Singleton
-class ImporterExporter @Inject constructor(
+class GpsImporterExporter @Inject constructor(
     val logger: ILogger,
     val fileOps: FileOps,
 ) {
 
     companion object {
-        private val TAG = ImporterExporter::class.java.simpleName
+        private val TAG = GpsImporterExporter::class.java.simpleName
     }
 
     private fun sanitizeTitle(track: GpsTrackEntity): String {
@@ -126,7 +126,7 @@ class ImporterExporter @Inject constructor(
     /**
      * Import a GPS track from JSON.
      */
-    fun loadTrackEntityFromUri(context: Context, uri: Uri): GpsTrackEntity? {
+    fun loadGpsTrackEntityFromUri(context: Context, uri: Uri): GpsTrackEntity? {
         logger.d(TAG, "loadTrackEntityFromUri")
 
         return try {
