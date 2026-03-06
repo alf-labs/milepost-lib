@@ -30,6 +30,7 @@ import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.DocentEditorFragmentBinding
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
+import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.db.PlayTriggerEntity
 import com.alflabs.milepost.fragments.audioFiles.AudioFileItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
@@ -62,6 +63,7 @@ class DocentEditorFragment : Fragment() {
     private var docentEditorAdapter: DocentEditorAdapter? = null
     private val viewModel: DocentEditorViewModel by viewModels()
     private var docentTrackEntity: DocentTrackEntity? = null
+    private var gpsTrackEntity: GpsTrackEntity? = null
     private var allAudioFiles: List<AudioFileItem>? = null
     private var firstLoad = true
 
@@ -121,6 +123,7 @@ class DocentEditorFragment : Fragment() {
 
             viewModel.gpsTrack.observe(viewLifecycleOwner) { gpsTrack ->
                 logger.d(TAG, "@@ DocentEdit observe new GPS track: ${gpsTrack?.trackLabel}")
+                gpsTrackEntity = gpsTrack
                 val label = gpsTrack?.displayTrackLabel()
                 binding.gpsTrackLabel.text = if (label != null) "GPS Track: $label" else "GPS Track not found"
             }
@@ -190,8 +193,14 @@ class DocentEditorFragment : Fragment() {
                     }
 
                     R.id.action_export_json -> {
+                        val triggers = docentEditorAdapter?.currentList
                         val exportFile =
-                            docentImporterExporter.createJsonExportFile(requireContext(), docentTrackEntity)
+                            docentImporterExporter.createJsonExportFile(
+                                requireContext(),
+                                docentTrackEntity,
+                                gpsTrackEntity,
+                                triggers ?: emptyList()
+                            )
                         exportFile?.let {
                             docentImporterExporter.shareFile(requireContext(), it)
                         }

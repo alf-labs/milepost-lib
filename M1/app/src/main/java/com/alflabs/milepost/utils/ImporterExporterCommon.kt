@@ -7,7 +7,7 @@ import com.alflabs.utils.ILogger
 import java.io.File
 
 open class ImporterExporterCommon(
-    val logger: ILogger,
+    open val logger: ILogger,
 ) {
 
     companion object {

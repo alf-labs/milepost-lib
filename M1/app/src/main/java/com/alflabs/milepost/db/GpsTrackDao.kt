@@ -24,6 +24,9 @@ interface GpsTrackDao {
     @Query("SELECT * FROM gps_tracks WHERE id = :id")
     fun getById(id: Long): Flow<GpsTrackEntity?>
 
+    @Query("SELECT * FROM gps_tracks WHERE id = :id")
+    suspend fun getByIdAsync(id: Long): GpsTrackEntity?
+
     @Query("SELECT uuid FROM gps_tracks WHERE id = :id")
     suspend fun getUuid(id: Long): String?
 

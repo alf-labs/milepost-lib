@@ -3,6 +3,9 @@ package com.alflabs.milepost.utils
 import android.content.Context
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
+import com.alflabs.milepost.trigger.PlaybackTriggerPojo
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.annotation.JsonCreator
@@ -15,28 +18,46 @@ import javax.inject.Singleton
 
 @Singleton
 class DocentImporterExporter @Inject constructor(
-    logger: ILogger,
-    val fileOps: FileOps,
+    override val logger: ILogger,
+    private val fileOps: FileOps,
 ) : ImporterExporterCommon(logger) {
 
     companion object {
         private val TAG = DocentImporterExporter::class.java.simpleName
     }
 
-    fun createJsonExportFile(context: Context, docentTrackEntity: DocentTrackEntity?): File? {
+    fun createJsonExportFile(
+        context: Context,
+        docentTrackEntity: DocentTrackEntity?,
+        gpsTrackEntity: GpsTrackEntity?,
+        triggersList: List<DocentEditorItem>,
+    ): File? {
         logger.d(TAG, "createJsonExportFile")
 
-        if (docentTrackEntity == null) {
+        if (docentTrackEntity == null || gpsTrackEntity == null) {
             return null
         }
 
-        val exported = "docentTrackEntity.toPojo()"
+        // Creates a sorted list of unique audio file names used by all triggers.
+        val uniqueAudioFileNames = triggersList.map { it.fileName }.distinct().sorted()
+
+        val exportedTriggers = triggersList.map { PlaybackTriggerPojo(it) }
+
+        val exported = DocentTrackEntityPojo(
+            uuid = docentTrackEntity.uuid,
+            userTitle = docentTrackEntity.userTitle,
+            createdISO = docentTrackEntity.creationTime,
+            lastUsedISO = docentTrackEntity.lastUsedTime,
+            gpsTrackUuid = gpsTrackEntity.uuid,
+            gpsTrackName = gpsTrackEntity.displayTrackLabel(),
+            audioFileNames = uniqueAudioFileNames,
+            triggers = exportedTriggers,
+        )
 
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            TODO()
-            val file = File(cacheDir, "TBD" ) // "track ${exported.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
+            val file = File(cacheDir, "docent ${exported.uuid}${sanitizeTitle(docentTrackEntity.userTitle)}.json")
 
             val objectMapper = ObjectMapper()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
@@ -63,6 +84,7 @@ private data class DocentTrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
     @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
     @param:JsonProperty("audioFileNames") val audioFileNames: List<String>,
+    @param:JsonProperty("triggers") val triggers: List<PlaybackTriggerPojo>,
 ) {
     suspend fun toProto(gpsTrackDao: GpsTrackDao) = DocentTrackEntity(
         id = 0,
@@ -73,3 +95,4 @@ private data class DocentTrackEntityPojo @JsonCreator constructor(
         gpsTrackId = gpsTrackDao.getIdByUuid(gpsTrackUuid)!!
     )
 }
+

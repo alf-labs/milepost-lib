@@ -60,7 +60,7 @@ class GpsImporterExporter @Inject constructor(
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "track ${gpsTrackEntity.uuid}${sanitizeTitle(gpsTrackEntity)}.csv")
+            val file = File(cacheDir, "gps ${gpsTrackEntity.uuid}${sanitizeTitle(gpsTrackEntity)}.csv")
 
             val formatter = DateTimeFormatter.ISO_INSTANT
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
@@ -100,7 +100,7 @@ class GpsImporterExporter @Inject constructor(
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "track ${exported.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
+            val file = File(cacheDir, "gps ${exported.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
 
             val objectMapper = ObjectMapper()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
