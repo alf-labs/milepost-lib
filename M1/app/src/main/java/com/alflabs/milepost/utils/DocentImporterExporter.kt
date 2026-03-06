@@ -46,8 +46,8 @@ class DocentImporterExporter @Inject constructor(
         val exported = DocentTrackEntityPojo(
             uuid = docentTrackEntity.uuid,
             userTitle = docentTrackEntity.userTitle,
-            createdISO = docentTrackEntity.creationTime,
-            lastUsedISO = docentTrackEntity.lastUsedTime,
+            createdDateISO = docentTrackEntity.creationTime,
+            lastUsedDateISO = docentTrackEntity.lastUsedTime,
             gpsTrackUuid = gpsTrackEntity.uuid,
             gpsTrackName = gpsTrackEntity.displayTrackLabel(),
             audioFileNames = uniqueAudioFileNames,
@@ -79,8 +79,8 @@ class DocentImporterExporter @Inject constructor(
 private data class DocentTrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("uuid") val uuid: String,
     @param:JsonProperty("userTitle") val userTitle: String? = null,
-    @param:JsonProperty("createdISO") val createdISO: String,
-    @param:JsonProperty("lastUsedISO") val lastUsedISO: String? = null,
+    @param:JsonProperty("createdDateISO") val createdDateISO: String,
+    @param:JsonProperty("lastUsedDateISO") val lastUsedDateISO: String? = null,
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
     @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
     @param:JsonProperty("audioFileNames") val audioFileNames: List<String>,
@@ -90,8 +90,8 @@ private data class DocentTrackEntityPojo @JsonCreator constructor(
         id = 0,
         uuid = uuid,
         userTitle = userTitle,
-        creationTime = createdISO,
-        lastUsedTime = lastUsedISO,
+        creationTime = createdDateISO,
+        lastUsedTime = lastUsedDateISO,
         gpsTrackId = gpsTrackDao.getIdByUuid(gpsTrackUuid)!!
     )
 }
