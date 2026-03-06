@@ -3,15 +3,16 @@ package com.alflabs.milepost.trigger
 import com.alflabs.milepost.db.PlayTriggerEntity
 import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 
 /** A representation of [PlayTriggerEntity]
  * combined with [PlaybackTriggerMetadata] for JSON import/export. */
 data class PlaybackTriggerPojo @JsonCreator constructor(
-    val audioFileName: String,
-    val includeInColdStart: Boolean,
-    val mpMin: Float,
-    val mpMax: Float,
-    val mpDirection: PlaybackTriggerDirectionPojo,
+    @param:JsonProperty("audioFileName") val audioFileName: String,
+    @param:JsonProperty("includeInColdStart") val includeInColdStart: Boolean,
+    @param:JsonProperty("mpMin") val mpMin: Float,
+    @param:JsonProperty("mpMax") val mpMax: Float,
+    @param:JsonProperty("mpDirection") val mpDirection: PlaybackTriggerDirectionPojo,
 ) {
     constructor(item: DocentEditorItem) : this(
         audioFileName = item.fileName,

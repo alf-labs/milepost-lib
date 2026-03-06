@@ -2,6 +2,7 @@ package com.alflabs.milepost.utils
 
 import android.content.Context
 import android.net.Uri
+import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.alflabs.milepost.dagger.FakeFileOpsModule
 import com.alflabs.milepost.dagger.FakeLoggerModule
@@ -19,6 +20,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.robolectric.Shadows
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.time.Instant
@@ -32,6 +34,8 @@ class GpsImporterExporterTest {
 
     @Before
     fun setup() {
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
         val location1 = locationData {
             latLong = latLongData {
                 latitude = 37.592879
@@ -230,7 +234,8 @@ class GpsImporterExporterTest {
 
         val loadedTrackEntity = gpsImporterExporter.loadGpsTrackEntityFromUri(mockContext, mockUri)
 
-        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: loadTrackEntityFromUri")
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: loadGpsTrackEntityFromUri")
         assertThat(loadedTrackEntity).isNotNull()
         loadedTrackEntity!!
         // The summary is not part of the JSON, so copy it from the original for comparison.
@@ -296,7 +301,8 @@ class GpsImporterExporterTest {
 
         val loadedTrackEntity = gpsImporterExporter.loadGpsTrackEntityFromUri(mockContext, mockUri)
 
-        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: loadTrackEntityFromUri")
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: loadGpsTrackEntityFromUri")
         assertThat(loadedTrackEntity).isNotNull()
         loadedTrackEntity!!
         // The summary is not part of the JSON, so copy it from the original for comparison.

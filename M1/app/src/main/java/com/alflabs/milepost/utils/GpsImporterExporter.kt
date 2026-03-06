@@ -120,7 +120,7 @@ class GpsImporterExporter @Inject constructor(
      * Import a GPS track from JSON.
      */
     fun loadGpsTrackEntityFromUri(context: Context, uri: Uri): GpsTrackEntity? {
-        logger.d(TAG, "loadTrackEntityFromUri")
+        logger.d(TAG, "loadGpsTrackEntityFromUri")
 
         return try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -129,7 +129,7 @@ class GpsImporterExporter @Inject constructor(
                 return imported.toProto()
             }
         } catch (e: Exception) {
-            logger.d(TAG, "loadTrackEntityFromUri: error", e)
+            logger.d(TAG, "loadGpsTrackEntityFromUri: error", e)
             null
         }
     }
