@@ -2,6 +2,7 @@ package com.alflabs.milepost.op
 
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
+import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
@@ -13,6 +14,7 @@ import javax.inject.Singleton
 class Operator @Inject constructor(
     private val opGpsRecordFactory: OpGpsRecord.Factory,
     private val opGpsPlaybackFactory: OpGpsPlayback.Factory,
+    private val opDocentPlaybackFactory: OpDocentPlayback.Factory,
     private val logger: ILogger,
     private val globalState: GlobalState,
 ) {
@@ -26,6 +28,9 @@ class Operator @Inject constructor(
     private val operatorModePublisher: IPublisher<OperatorMode?> = Publishers.latest()
     private val opIdle = OpIdle()
     private var currentOp: IOpActor = opIdle
+
+    val currentDocentTrackId: Long?
+        get() = currentOp.currentDocentTrackId
 
     val currentGpsTrackId: Long?
         get() = currentOp.currentGpsTrackId
@@ -75,17 +80,19 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.IDLE)
     }
 
-    fun startGpsPlayback(track: GpsTrackEntity) {
+    fun startGpsPlayback(gpsTrack: GpsTrackEntity) {
         if (operatorMode == OperatorMode.GPS_PLAYBACK) return
         currentOp.stop()
-        logger.d(TAG, "startGpsPlayback id=${track.id}")
-        currentOp = opGpsPlaybackFactory.create(track)
+        logger.d(TAG, "startGpsPlayback id=${gpsTrack.id}")
+        currentOp = opGpsPlaybackFactory.create(gpsTrack)
         changeMode(OperatorMode.GPS_PLAYBACK)
     }
 
     fun getGpsPlaybackTrack(): GpsTrackEntity? {
         return if (currentOp is OpGpsPlayback) {
             (currentOp as OpGpsPlayback).gpsPlaybackTrack
+        } else if (currentOp is OpDocentPlayback) {
+            (currentOp as OpDocentPlayback).gpsPlaybackTrack
         } else {
             null
         }
@@ -94,6 +101,30 @@ class Operator @Inject constructor(
     fun stopGpsPlayback() {
         if (operatorMode != OperatorMode.GPS_PLAYBACK) return
         logger.d(TAG, "stopGpsPlayback id=${currentOp.currentGpsTrackId}")
+        currentOp.stop()
+        currentOp = opIdle
+        changeMode(OperatorMode.IDLE)
+    }
+
+    fun startDocentPlayback(docenTrack: DocentTrackEntity, gpsTrack: GpsTrackEntity) {
+        if (operatorMode == OperatorMode.DOCENT_PLAYBACK) return
+        currentOp.stop()
+        logger.d(TAG, "startDocentPlayback id=${docenTrack.id}")
+        currentOp = opDocentPlaybackFactory.create(docenTrack, gpsTrack)
+        changeMode(OperatorMode.DOCENT_PLAYBACK)
+    }
+
+    fun getDocentPlaybackTrack(): DocentTrackEntity? {
+        return if (currentOp is OpDocentPlayback) {
+            (currentOp as OpDocentPlayback).docentPlaybackTrack
+        } else {
+            null
+        }
+    }
+
+    fun stopDocentPlayback() {
+        if (operatorMode != OperatorMode.DOCENT_PLAYBACK) return
+        logger.d(TAG, "stopDocentPlayback id=${currentOp.currentDocentTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)

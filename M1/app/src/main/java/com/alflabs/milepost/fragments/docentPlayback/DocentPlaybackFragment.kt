@@ -46,7 +46,7 @@ class DocentPlaybackFragment : SensorsFragment() {
         private val TAG = DocentPlaybackFragment::class.java.simpleName
     }
 
-    override val operatorMode = OperatorMode.GPS_PLAYBACK   // TBD DOCENT_PLAYBACK
+    override val operatorMode = OperatorMode.DOCENT_PLAYBACK
 
     // This property is only valid between onCreateView and onDestroyView.
     private var _playbackBinding: DocentPlaybackFragmentBinding? = null
@@ -114,7 +114,7 @@ class DocentPlaybackFragment : SensorsFragment() {
         lifecycleScope.launch {
             if (viewModel.docentPlaybackTrack == null) {
                 // Get current op playback track if ongoing
-// TBD               viewModel.docentPlaybackTrack = operator.getDocentPlaybackTrack()
+                viewModel.docentPlaybackTrack = operator.getDocentPlaybackTrack()
                 viewModel.gpsPlaybackTrack = operator.getGpsPlaybackTrack()
 
                 if (viewModel.docentPlaybackTrack == null) {
@@ -202,16 +202,18 @@ class DocentPlaybackFragment : SensorsFragment() {
         if (globalState.operatorMode == operatorMode) return
 
         lifecycleScope.launch {
-            viewModel.gpsPlaybackTrack?.let {
-                playbackBinding.directionText.text = "--"
-                operator.startGpsPlayback(it)
+            viewModel.docentPlaybackTrack?.let { docentTrack ->
+                viewModel.gpsPlaybackTrack?.let { gpsTrack ->
+                    playbackBinding.directionText.text = "--"
+                    operator.startDocentPlayback(docentTrack, gpsTrack)
+                }
             }
         }
     }
 
     override fun onStopButton() {
         operator.currentGpsTrackId?.let {
-            operator.stopGpsPlayback()
+            operator.stopDocentPlayback()
         }
     }
 
@@ -220,7 +222,7 @@ class DocentPlaybackFragment : SensorsFragment() {
                                      zoomLevel: Float): CameraUpdate {
         val track = viewModel.gpsPlaybackTrack
         val locations = getLocationsList()
-        if (track != null && locations != null && locations.isNotEmpty()) {
+        if (track != null && !locations.isNullOrEmpty()) {
             val locFirst = locations.first()
             val locLast = locations.last()
             val startPos = LatLng(locFirst.latLong.latitude, locFirst.latLong.longitude)

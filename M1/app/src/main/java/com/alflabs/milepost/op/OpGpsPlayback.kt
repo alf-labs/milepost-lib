@@ -29,6 +29,9 @@ class OpGpsPlayback @AssistedInject constructor(
         private val TAG = OpGpsPlayback::class.java.simpleName
     }
 
+    override val currentDocentTrackId: Long?
+        get() = null
+
     val gpsPlaybackTrack: GpsTrackEntity
         get() = gpsTrack
 

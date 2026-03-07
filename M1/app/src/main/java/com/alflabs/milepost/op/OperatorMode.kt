@@ -5,4 +5,5 @@ enum class OperatorMode {
     SENSORS,
     GPS_RECORD,
     GPS_PLAYBACK,
+    DOCENT_PLAYBACK,
 }

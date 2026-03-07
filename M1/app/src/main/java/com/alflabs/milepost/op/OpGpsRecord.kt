@@ -37,6 +37,9 @@ class OpGpsRecord @AssistedInject constructor(
         private const val WRITE_INTERVAL_MS = 30_000
     }
 
+    override val currentDocentTrackId: Long?
+        get() = null
+
     override val currentGpsTrackId: Long
         get() = gpsTrack.id
 
