@@ -54,10 +54,25 @@
         <argument
                 android:name="docentTrackId"
                 app:argType="long" />
-        <!-- TBD action
+        <action
                 android:id="@+id/action_review_to_play"
                 app:destination="@id/nav_docent_track_play">
-        </action -->
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_docent_track_play"
+            android:name="com.alflabs.milepost.fragments.docentPlayback.DocentPlaybackFragment"
+            android:label="Playback DOCENT Track"
+            tools:layout="@layout/docent_playback_fragment">
+        <action
+                android:id="@+id/action_play_to_permissions_dlg"
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showClose"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
     </fragment>
 
     <fragment
@@ -121,7 +136,7 @@
             android:id="@+id/nav_gps_track_play"
             android:name="com.alflabs.milepost.fragments.gpsPlayback.GpsPlaybackFragment"
             android:label="Playback GPS Track"
-            tools:layout="@layout/sensors_fragment">
+            tools:layout="@layout/gps_playback_fragment">
         <action
                 android:id="@+id/action_play_to_permissions_dlg"
                 app:destination="@id/nav_permissions_dlg">
