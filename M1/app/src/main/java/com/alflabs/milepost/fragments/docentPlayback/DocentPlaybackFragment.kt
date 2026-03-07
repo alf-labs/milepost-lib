@@ -21,6 +21,7 @@ import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
 import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.google.android.gms.maps.CameraUpdate
@@ -66,6 +67,8 @@ class DocentPlaybackFragment : SensorsFragment() {
 
     @Inject lateinit var gpsTrackDao: GpsTrackDao
     @Inject lateinit var docentTrackDao: DocentTrackDao
+    @Inject lateinit var playTriggerDao: PlayTriggerDao
+
 
     private val viewModel: DocentPlaybackViewModel by viewModels()
 
@@ -124,6 +127,22 @@ class DocentPlaybackFragment : SensorsFragment() {
 
                     if (docentTrackId != -1L) {
                         viewModel.docentPlaybackTrack = docentTrackDao.getById(docentTrackId).first()
+
+                        if (viewModel.triggers.isEmpty()) {
+                            // Load triggers.
+                            // Ensure they all have a trigger structure and a valid audio file id.
+                            viewModel.triggers.addAll(
+                                playTriggerDao
+                                    .getTriggersForDocentTrack(docentTrackId)
+                                    .first()
+                                    .filter { it.playbackTrigger != null && it.audioFileId > 0 }
+                            )
+
+                            // TBD we need to kick in some kind of audio file verification
+                            // to ensure all audio files are playable BEFORE the play button
+                            // can be enabled. If not, we should redirect the user to the audio
+                            // files fragment so that they can fix the file references.
+                        }
                     }
                 }
 
@@ -149,16 +168,20 @@ class DocentPlaybackFragment : SensorsFragment() {
                 findNavController().popBackStack()
             }
 
-            viewModel.gpsPlaybackTrack?.let { track ->
-                if (!track.startLabel.isNullOrEmpty()) {
-                    viewModel.startLabel = track.startLabel
+            viewModel.docentPlaybackTrack?.let { docentTrack ->
+                // TBD
+            }
+
+            viewModel.gpsPlaybackTrack?.let { gpsTrack ->
+                if (!gpsTrack.startLabel.isNullOrEmpty()) {
+                    viewModel.startLabel = gpsTrack.startLabel
                 }
-                if (!track.endLabel.isNullOrEmpty()) {
-                    viewModel.endLabel = track.endLabel
+                if (!gpsTrack.endLabel.isNullOrEmpty()) {
+                    viewModel.endLabel = gpsTrack.endLabel
                 }
 
                 if (viewModel.filteredLocations.isEmpty()) {
-                    track.locationList?.locationsList?.let { list ->
+                    gpsTrack.locationList?.locationsList?.let { list ->
                         viewModel.filteredLocations.clear()
                         // The playback track only displays non-ignored points.
                         val notIgnored = list.filter { loc ->
