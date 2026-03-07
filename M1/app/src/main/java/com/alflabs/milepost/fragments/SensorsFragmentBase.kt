@@ -96,10 +96,10 @@ open abstract class SensorsFragmentBase: Fragment() {
         }
 
         startButton.text = when (operatorMode) {
-            OperatorMode.IDLE, OperatorMode.SENSORS -> "Test"
-            OperatorMode.GPS_RECORD -> "Record"
-            OperatorMode.GPS_PLAYBACK -> "GPS Playback"
-            OperatorMode.DOCENT_PLAYBACK -> "Docent Playback"
+            OperatorMode.IDLE, OperatorMode.SENSORS -> "Start Test"
+            OperatorMode.GPS_RECORD -> "Start Record"
+            OperatorMode.GPS_PLAYBACK -> "Start Playback"
+            OperatorMode.DOCENT_PLAYBACK -> "Start Playback"
         }
 
         startButton.setOnClickListener {

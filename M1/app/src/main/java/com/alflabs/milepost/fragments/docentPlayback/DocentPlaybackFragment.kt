@@ -9,6 +9,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentPlaybackFragmentBinding
 import com.alflabs.milepost.db.DocentTrackDao
@@ -82,6 +84,7 @@ class DocentPlaybackFragment : SensorsFragment() {
     private var trackPolylineEnd: Polyline? = null
     private var lineColorFwd: Int = -1
     private var lineColorPrev: Int = -1
+    private var docentPlaybackAdapter: DocentPlaybackAdapter? = null
 
 
     override fun actionToPermissionsDlg(): NavDirections =
@@ -115,6 +118,18 @@ class DocentPlaybackFragment : SensorsFragment() {
         globalState.mpEstimateStream.subscribe(AndroidSchedulers.mainThread(), mpEstimateSubscriber)
 
         lifecycleScope.launch {
+            docentPlaybackAdapter = DocentPlaybackAdapter()
+
+            val layoutManager = LinearLayoutManager(requireContext())
+            playbackBinding.playTriggerList?.adapter = docentPlaybackAdapter
+            playbackBinding.playTriggerList?.layoutManager = layoutManager
+
+            val dividerItemDecoration = DividerItemDecoration(
+                requireContext(),
+                layoutManager.orientation
+            )
+            playbackBinding.playTriggerList?.addItemDecoration(dividerItemDecoration)
+
             if (viewModel.docentPlaybackTrack == null) {
                 // Get current op playback track if ongoing
                 viewModel.docentPlaybackTrack = operator.getDocentPlaybackTrack()
@@ -136,6 +151,7 @@ class DocentPlaybackFragment : SensorsFragment() {
                                     .getTriggersForDocentTrack(docentTrackId)
                                     .first()
                                     .filter { it.playbackTrigger != null && it.audioFileId > 0 }
+                                    .map { DocentPlaybackItem(it) }
                             )
 
                             // TBD we need to kick in some kind of audio file verification
@@ -168,8 +184,10 @@ class DocentPlaybackFragment : SensorsFragment() {
                 findNavController().popBackStack()
             }
 
+            docentPlaybackAdapter?.submitList(viewModel.triggers)
+
             viewModel.docentPlaybackTrack?.let { docentTrack ->
-                // TBD
+                // TBD do we do not need the docent track entity?
             }
 
             viewModel.gpsPlaybackTrack?.let { gpsTrack ->

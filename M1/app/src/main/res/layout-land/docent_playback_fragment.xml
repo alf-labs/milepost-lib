@@ -83,8 +83,32 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:orientation="vertical"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:layout_weight="1"
                     >
+
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:background="@color/colorPrimary"
+                    />
+
+                <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/play_trigger_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:scrollbars="vertical"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:layout_weight="1"
+                        />
+
+                <View
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:background="@color/colorPrimary"
+                        />
 
             </LinearLayout>
 
@@ -95,6 +119,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_gravity="center_vertical"
+                    android:layout_weight="0"
                 >
 
                 <TextView

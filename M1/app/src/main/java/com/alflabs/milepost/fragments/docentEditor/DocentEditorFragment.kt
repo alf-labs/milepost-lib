@@ -154,7 +154,6 @@ class DocentEditorFragment : Fragment() {
         }
     }
 
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         docentEditorAdapter?.let { adapter ->
