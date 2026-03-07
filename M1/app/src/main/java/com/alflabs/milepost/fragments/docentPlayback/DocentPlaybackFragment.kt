@@ -206,6 +206,14 @@ class DocentPlaybackFragment : SensorsFragment() {
                 }
             }
 
+            playbackBinding.linearTrackView.setSegments(
+                viewModel.triggers.map {
+                    Triple(it.id,
+                        it.playbackTrigger!!.mpMin,
+                        it.playbackTrigger.mpMax)
+                }
+            )
+
             playbackBinding.trackLabelText.text = viewModel.gpsPlaybackTrack?.trackLabel ?: "No track selected"
             if (globalState.operatorMode != OperatorMode.GPS_PLAYBACK) {
                 playbackBinding.directionText.text = "Playback Not Started Yet"

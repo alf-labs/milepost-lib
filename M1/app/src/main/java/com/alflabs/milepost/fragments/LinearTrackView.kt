@@ -12,6 +12,16 @@ import androidx.core.graphics.withScale
 import kotlin.math.min
 
 
+/**
+ * The "linear track" view is a Subway style view of the map that displays stations
+ * at equidistances, irrelevant of their MP values.
+ *
+ * Each station is associated with an MP value. All stations must be sorted by increasing MP.
+ * There must be at least 2 stations to define a start and an end MP value.
+ *
+ * This is then used to display the current position of the train on the line as well as the
+ * relative positions of the audio segments.
+ */
 class LinearTrackView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -30,6 +40,8 @@ class LinearTrackView @JvmOverloads constructor(
     private var trainLineHeightPx = 40
     private var trainDescentPx = 0
     private var directionTowardsStart: Boolean? = null
+
+    // TBD change all colors to be configured via attributes and support Night/Day changes.
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.GRAY
@@ -65,17 +77,38 @@ class LinearTrackView @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
     }
 
+    private val segmentDefaultPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFF6f74dd.toInt() // colorAccent
+        strokeWidth = 12f
+        style = Paint.Style.STROKE
+    }
+
+    private val segmentCurrentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = 0xFFFF6600.toInt() // Orange
+        strokeWidth = 12f
+        style = Paint.Style.STROKE
+    }
+
+    private val segmentNextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.YELLOW
+        strokeWidth = 12f
+        style = Paint.Style.STROKE
+    }
+
     /** Train position in 0..1 range. Only displayed once we know where it is. */
     private var trainPositionPct: Float? = null
 
     private val stations = mutableListOf<LinearStation>()
+    private val segments = mutableListOf<LinearSegment>()
+
 
     // Unicode:
     // 0x1F682 = 0xD83D 0xDE82 = 🚂
     // 0x1F686 = 0xD83D 0xDE86 = 🚆
     private val trainSymbol = "\uD83D\uDE82"
 
-    /** Sets the stations on the linear track view.
+    /**
+     * Sets the stations on the linear track view.
      *
      * Requirements:
      * - The Pairs denote <MP value, station label>. The label should be empty if missing.
@@ -103,9 +136,66 @@ class LinearTrackView @JvmOverloads constructor(
         invalidate()
     }
 
+    /**
+     * Sets the segments on the linear track view.
+     *
+     * This MUST be called after stations have been defined, otherwise we cannot interpret
+     * the relative MP start and end values.
+     */
+    fun setSegments(newSegments: List<Triple<Long, Float, Float>>) {
+        segments.clear()
+
+        if (stations.size < 2) {
+            return
+        }
+
+        val mpFirst = stations.first().mp
+        val mpLast = stations.last().mp
+        segments.addAll(
+            newSegments.map { triple ->
+                LinearSegment(
+                    id = triple.first,
+                    pctStart = convertMpToPct(triple.second),
+                    pctEnd = convertMpToPct(triple.third),
+                    paint = segmentDefaultPaint,
+                )
+            })
+        invalidate()
+    }
+
+    fun setCurrentSegment(segmentId: Long) {
+        segments.forEach { segment ->
+            if (segment.id == segmentId) {
+                segment.paint = segmentCurrentPaint
+            } else if (segment.paint == segmentCurrentPaint) {
+                segment.paint = segmentDefaultPaint
+            }
+        }
+        invalidate()
+    }
+
+    fun setNextSegment(segmentId: Long) {
+        segments.forEach { segment ->
+            if (segment.id == segmentId) {
+                segment.paint = segmentNextPaint
+            } else if (segment.paint == segmentNextPaint) {
+                segment.paint = segmentDefaultPaint
+            }
+        }
+        invalidate()
+    }
+
     fun setCurrentMp(mp: Float) {
         if (stations.size < 2) {
             return
+        }
+        trainPositionPct = convertMpToPct(mp)
+        invalidate()
+    }
+
+    private fun convertMpToPct(mp: Float): Float {
+        if (stations.size < 2) {
+            return 0f
         }
 
         var p = -1f
@@ -126,9 +216,7 @@ class LinearTrackView @JvmOverloads constructor(
             }
         }
         if (p >= 0f) {
-            trainPositionPct = p
-            invalidate()
-            return
+            return p
         }
 
         // Linear search each interval.
@@ -145,18 +233,14 @@ class LinearTrackView @JvmOverloads constructor(
                 val mpMax = maxOf(mpFirst, station.mp)
                 if (mp in mpMin..mpMax) {
                     p = ((index - 1) + (mp - previousMp) / deltaMp) / stations.lastIndex
-                    trainPositionPct = min(1f, max(0f, p))
-                    invalidate()
-                    return
+                    return min(1f, max(0f, p))
                 }
             }
             previousMp = station.mp
         }
 
         // If we haven't found anything, use the end position.
-        trainPositionPct = 1f
-        invalidate()
-        return
+        return 1f
     }
 
     fun setDirectionTowardsStart(dir: Boolean) {
@@ -174,14 +258,25 @@ class LinearTrackView @JvmOverloads constructor(
         val lineY = paddingTop + trainLineHeightPx + stationRadiusPx
         val startX = paddingLeft + paddingPx
         val endX = this.width - paddingRight - paddingPx
+        val lenX = endX - startX
 
         // Draw horizontal line
         canvas.drawLine(startX, lineY, endX, lineY, linePaint)
 
+        // Draw segments
+        for (segment in segments) {
+            canvas.drawLine(
+                startX + lenX * segment.pctStart,
+                lineY,
+                startX + lenX * segment.pctEnd,
+                lineY,
+                segment.paint)
+        }
+
         // Draw stations markers
         val textY = lineY + stationRadiusPx + textLineHeightPx - textDescentPx
         for (station in stations) {
-            val x = startX + (endX - startX) * station.pct
+            val x = startX + lenX * station.pct
             canvas.drawCircle(x, lineY, stationRadiusPx, stationPaint)
             canvas.drawText(String.format("%.2f", station.mp), x, textY, station.paint)
             canvas.drawText(station.title, x, textY + textLineHeightPx, station.paint)
@@ -189,7 +284,7 @@ class LinearTrackView @JvmOverloads constructor(
 
         // Draw train position
         trainPositionPct?.let { pct ->
-            val trainX = startX + (endX - startX) * pct
+            val trainX = startX + lenX * pct
             val trainY = lineY - stationRadiusPx - trainDescentPx
             val tickY = lineY - stationRadiusPx
 
@@ -249,4 +344,11 @@ private data class LinearStation(
     val title: String,
     val pct: Float,
     val paint: Paint,
+)
+
+private data class LinearSegment(
+    val id: Long,
+    val pctStart: Float,
+    val pctEnd: Float,
+    var paint: Paint,
 )
