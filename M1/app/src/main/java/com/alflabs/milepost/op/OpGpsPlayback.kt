@@ -14,26 +14,26 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-class OpPlayback @AssistedInject constructor(
-    @Assisted val track: GpsTrackEntity,
+class OpGpsPlayback @AssistedInject constructor(
+    @Assisted val gpsTrack: GpsTrackEntity,
     private val logger: ILogger,
     private val globalState: GlobalState,
 ) : IOpActor {
 
     @AssistedFactory
     interface Factory {
-        fun create(track: GpsTrackEntity): OpPlayback
+        fun create(gpsTrack: GpsTrackEntity): OpGpsPlayback
     }
 
     companion object {
-        private val TAG = OpPlayback::class.java.simpleName
+        private val TAG = OpGpsPlayback::class.java.simpleName
     }
 
-    val playbackTrack: GpsTrackEntity
-        get() = track
+    val gpsPlaybackTrack: GpsTrackEntity
+        get() = gpsTrack
 
-    override val currentTrackId: Long
-        get() = track.id
+    override val currentGpsTrackId: Long
+        get() = gpsTrack.id
 
     override val currentLocationsList: List<LocationData>?
         get() = filteredLocations
@@ -47,9 +47,9 @@ class OpPlayback @AssistedInject constructor(
     private var lastDirection = MpDirection.UNKNOWN
 
     init {
-        logger.d(TAG, "init: ${track.id}")
+        logger.d(TAG, "init: ${gpsTrack.id}")
         // Only keep location data points that are not marked "ignore"
-        track.locationList?.locationsList?.let { list ->
+        gpsTrack.locationList?.locationsList?.let { list ->
             filteredLocations.clear()
             filteredLocations.addAll(list.filter { loc ->
                 !loc.flags.hasFlag(LocationFlags.IGNORE)

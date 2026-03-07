@@ -11,6 +11,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentPlaybackFragmentBinding
+import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.fragments.SensorsFragment
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
@@ -45,7 +46,7 @@ class DocentPlaybackFragment : SensorsFragment() {
         private val TAG = DocentPlaybackFragment::class.java.simpleName
     }
 
-    override val operatorMode = OperatorMode.PLAYBACK
+    override val operatorMode = OperatorMode.GPS_PLAYBACK   // TBD DOCENT_PLAYBACK
 
     // This property is only valid between onCreateView and onDestroyView.
     private var _playbackBinding: DocentPlaybackFragmentBinding? = null
@@ -64,6 +65,7 @@ class DocentPlaybackFragment : SensorsFragment() {
     override val zoomOutButton get() = playbackBinding.zoomOutBtn
 
     @Inject lateinit var gpsTrackDao: GpsTrackDao
+    @Inject lateinit var docentTrackDao: DocentTrackDao
 
     private val viewModel: DocentPlaybackViewModel by viewModels()
 
@@ -110,24 +112,40 @@ class DocentPlaybackFragment : SensorsFragment() {
         globalState.mpEstimateStream.subscribe(AndroidSchedulers.mainThread(), mpEstimateSubscriber)
 
         lifecycleScope.launch {
-            if (viewModel.gpsPlaybackTrack == null) {
+            if (viewModel.docentPlaybackTrack == null) {
                 // Get current op playback track if ongoing
-                viewModel.gpsPlaybackTrack = operator.getPlaybackTrack()
+// TBD               viewModel.docentPlaybackTrack = operator.getDocentPlaybackTrack()
+                viewModel.gpsPlaybackTrack = operator.getGpsPlaybackTrack()
+
+                if (viewModel.docentPlaybackTrack == null) {
+                    // If not, load the current track id from prefs
+                    val docentTrackId = appSettings.docentPlaybackTrackId()
+                    logger.d(TAG, "@@ Playback onResume: docentTrackId = $docentTrackId")
+
+                    if (docentTrackId != -1L) {
+                        viewModel.docentPlaybackTrack = docentTrackDao.getById(docentTrackId).first()
+                    }
+                }
 
                 if (viewModel.gpsPlaybackTrack == null) {
-                    // If not, load the current track id from prefs
-                    val trackId = appSettings.playbackTrackId()
-                    logger.d(TAG, "@@ Playback onResume: trackId = $trackId")
+                    val gpsTrackId = viewModel.docentPlaybackTrack?.gpsTrackId ?: -1L
+                    logger.d(TAG, "@@ Playback onResume: trackId = $gpsTrackId")
 
-                    if (trackId != -1L) {
-                        viewModel.gpsPlaybackTrack = gpsTrackDao.getById(trackId).first()
+                    if (gpsTrackId != -1L) {
+                        viewModel.gpsPlaybackTrack = gpsTrackDao.getById(gpsTrackId).first()
                     }
                 }
             }
 
+            if (viewModel.docentPlaybackTrack == null) {
+                // Close the fragment if no track is found
+                Toast.makeText(requireContext(), "Please select an existing Docent Track first.", Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
+            }
+
             if (viewModel.gpsPlaybackTrack == null) {
                 // Close the fragment if no track is found
-                Toast.makeText(requireContext(), "Please select an existing track first.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Please select an existing GPS Track first.", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }
 
@@ -166,7 +184,7 @@ class DocentPlaybackFragment : SensorsFragment() {
             }
 
             playbackBinding.trackLabelText.text = viewModel.gpsPlaybackTrack?.trackLabel ?: "No track selected"
-            if (globalState.operatorMode != OperatorMode.PLAYBACK) {
+            if (globalState.operatorMode != OperatorMode.GPS_PLAYBACK) {
                 playbackBinding.directionText.text = "Playback Not Started Yet"
             } else {
                 // Restore UI from viewModel if already in playback
@@ -186,14 +204,14 @@ class DocentPlaybackFragment : SensorsFragment() {
         lifecycleScope.launch {
             viewModel.gpsPlaybackTrack?.let {
                 playbackBinding.directionText.text = "--"
-                operator.startPlayback(it)
+                operator.startGpsPlayback(it)
             }
         }
     }
 
     override fun onStopButton() {
-        operator.currentTrackId?.let {
-            operator.stopPlayback()
+        operator.currentGpsTrackId?.let {
+            operator.stopGpsPlayback()
         }
     }
 

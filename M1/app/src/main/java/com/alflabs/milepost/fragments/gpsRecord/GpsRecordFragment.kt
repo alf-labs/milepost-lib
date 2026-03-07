@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class GpsRecordFragment : SensorsFragment() {
-    override val operatorMode = OperatorMode.RECORD
+    override val operatorMode = OperatorMode.GPS_RECORD
 
     @Inject
     lateinit var gpsTrackDao: GpsTrackDao
@@ -31,13 +31,13 @@ class GpsRecordFragment : SensorsFragment() {
                 createdDateISO = Date().toString(),
             )
             val recordId = gpsTrackDao.insert(track)
-            operator.startRecord(track.copy(id = recordId))
+            operator.startGpsRecord(track.copy(id = recordId))
         }
     }
 
     override fun onStopButton() {
-        operator.currentTrackId?.let {
-            operator.stopRecord()
+        operator.currentGpsTrackId?.let {
+            operator.stopGpsRecord()
             findNavController().navigate(GpsRecordFragmentDirections.actionRecordToReview(it))
         }
     }

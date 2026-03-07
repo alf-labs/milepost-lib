@@ -42,7 +42,8 @@ class AppSettings @Inject constructor(
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
         // The following values are only used internally, they can be of any type.
-        val PLAYBACK_TRACK_ID = longPreferencesKey("playback_track_id")
+        val GPS_PLAYBACK_TRACK_ID = longPreferencesKey("gps_playback_track_id")
+        val DOCENT_PLAYBACK_TRACK_ID = longPreferencesKey("docent_playback_track_id")
         val MAP_ZOOM_LEVEL = floatPreferencesKey("map_zoom_level")
 
         const val THRESHOLD_DISTANCE_METERS_DEFAULT = 100.0f
@@ -71,14 +72,24 @@ class AppSettings @Inject constructor(
             ?: THRESHOLD_SPEED_MPS_DEFAULT
     }
 
-    suspend fun playbackTrackId(): Long {
+    suspend fun gpsPlaybackTrackId(): Long {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
-        return adapter.getLong(PLAYBACK_TRACK_ID.name, -1)
+        return adapter.getLong(GPS_PLAYBACK_TRACK_ID.name, -1)
     }
 
-    suspend fun setPlaybackTrackId(trackId: Long) {
+    suspend fun setGpsPlaybackTrackId(trackId: Long) {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
-        adapter.putLong(PLAYBACK_TRACK_ID.name, trackId)
+        adapter.putLong(GPS_PLAYBACK_TRACK_ID.name, trackId)
+    }
+
+    suspend fun docentPlaybackTrackId(): Long {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getLong(DOCENT_PLAYBACK_TRACK_ID.name, -1)
+    }
+
+    suspend fun setDocentPlaybackTrackId(trackId: Long) {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        adapter.putLong(DOCENT_PLAYBACK_TRACK_ID.name, trackId)
     }
 
     suspend fun mapZoomLevel(): Float {

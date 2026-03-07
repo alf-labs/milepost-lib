@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GpsPlaybackViewModel @Inject constructor() : ViewModel() {
-    var playbackTrack: GpsTrackEntity? = null
+    var gpsPlaybackTrack: GpsTrackEntity? = null
     val filteredLocations = mutableListOf<LocationData>()
     var startLabel: String = "Startbound"
     var endLabel: String = "Endbound"

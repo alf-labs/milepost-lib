@@ -18,8 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class OpRecord @AssistedInject constructor(
-    @Assisted val track: GpsTrackEntity,
+class OpGpsRecord @AssistedInject constructor(
+    @Assisted val gpsTrack: GpsTrackEntity,
     private val clock: IClock,
     private val logger: ILogger,
     private val globalState: GlobalState,
@@ -29,23 +29,23 @@ class OpRecord @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(track: GpsTrackEntity): OpRecord
+        fun create(gpsTrack: GpsTrackEntity): OpGpsRecord
     }
 
     companion object {
-        private val TAG = OpRecord::class.java.simpleName
+        private val TAG = OpGpsRecord::class.java.simpleName
         private const val WRITE_INTERVAL_MS = 30_000
     }
 
-    override val currentTrackId: Long
-        get() = track.id
+    override val currentGpsTrackId: Long
+        get() = gpsTrack.id
 
     override val currentLocationsList: List<LocationData>?
         get() = locationDataListBuilder.locationsList
 
     private val locationSubscriber: ISubscriber<in LocationData?> =
         ISubscriber<LocationData?> { _, event -> onLocationUpdate(event) }
-    private val recordId: Long = track.id
+    private val recordId: Long = gpsTrack.id
     private var lastLocation: LocationData? = null
     private val scope = CoroutineScope(Dispatchers.IO)
     private val locationDataListBuilder = LocationDataList.newBuilder()
@@ -56,11 +56,11 @@ class OpRecord @AssistedInject constructor(
     private var needsWrite = true
 
     init {
-        logger.d(TAG, "init: ${track.id}")
+        logger.d(TAG, "init: ${gpsTrack.id}")
         globalState.locationStream.subscribe(Schedulers.sync(), locationSubscriber)
     }
 
-    suspend fun initAsync() : OpRecord {
+    suspend fun initAsync() : OpGpsRecord {
         thresholdDistanceMeters = appSettings.thresholdDistanceMeters()
         thresholdSpeedMps = appSettings.thresholdSpeedMps()
         return this

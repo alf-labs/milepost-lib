@@ -70,7 +70,7 @@ class GpsTracksFragment : Fragment() {
             useImperialUnits = appSettings.useImperialUnits()
 
             viewLifecycleOwner.lifecycleScope.launch {
-                val playbackTrackId = appSettings.playbackTrackId()
+                val playbackTrackId = appSettings.gpsPlaybackTrackId()
 
                 val adapter = GpsTrackAdapter(
                     onClick = ::showEditDialog,

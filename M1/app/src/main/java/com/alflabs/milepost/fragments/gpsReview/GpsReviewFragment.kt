@@ -301,7 +301,7 @@ class GpsReviewFragment : Fragment() {
         if (track == null) return
         lifecycleScope.launch {
             logger.d(TAG, "@@ Set prefs Playback track: ${track.id}")
-            appSettings.setPlaybackTrackId(track.id)
+            appSettings.setGpsPlaybackTrackId(track.id)
             val action = GpsReviewFragmentDirections.actionReviewToPlay()
             findNavController().navigate(action)
         }
@@ -326,9 +326,9 @@ class GpsReviewFragment : Fragment() {
                 .setMessage(msg)
                 .setPositiveButton("Delete") { _, _ ->
                     lifecycleScope.launch {
-                        if (appSettings.playbackTrackId() == track.id) {
+                        if (appSettings.gpsPlaybackTrackId() == track.id) {
                             logger.d(TAG, "@@ Clear prefs Playback track: -1")
-                            appSettings.setPlaybackTrackId(-1)
+                            appSettings.setGpsPlaybackTrackId(-1)
                         }
                         gpsTrackDao.deleteById(track.id)
                         findNavController().popBackStack()

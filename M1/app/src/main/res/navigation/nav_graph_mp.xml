@@ -63,7 +63,7 @@
     <fragment
             android:id="@+id/nav_docent_track_play"
             android:name="com.alflabs.milepost.fragments.docentPlayback.DocentPlaybackFragment"
-            android:label="Playback DOCENT Track"
+            android:label="Playback Docent Track"
             tools:layout="@layout/docent_playback_fragment">
         <action
                 android:id="@+id/action_play_to_permissions_dlg"

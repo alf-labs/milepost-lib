@@ -103,7 +103,7 @@ class DocentEditorFragment : Fragment() {
             binding.playTriggerList.addItemDecoration(dividerItemDecoration)
 
             viewModel.docentTrack.observe(viewLifecycleOwner) { docentTrack ->
-                logger.d(TAG, "@@ DocentEdit observe new DOCENT docentTrack: ${docentTrack?.userTitle}")
+                logger.d(TAG, "@@ DocentEdit observe new docentTrack: ${docentTrack?.userTitle}")
                 docentTrackEntity = docentTrack
 
                 if (docentTrack == null) {
@@ -223,10 +223,9 @@ class DocentEditorFragment : Fragment() {
         if (docentTrack == null) return
         lifecycleScope.launch {
             logger.d(TAG, "@@ Set prefs Playback track: ${docentTrack.id}")
-            // TBD
-//            appSettings.setPlaybackDocentTrackId(docentTrack.id)
-//            val action = GpsReviewFragmentDirections.actionReviewToPlay()
-//            findNavController().navigate(action)
+            appSettings.setDocentPlaybackTrackId(docentTrack.id)
+            val action = DocentEditorFragmentDirections.actionReviewToPlay()
+            findNavController().navigate(action)
         }
     }
 
@@ -235,14 +234,14 @@ class DocentEditorFragment : Fragment() {
 
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Track")
-            .setMessage("Are you sure you want to delete this docent track? This action cannot be reversed.")
+            .setMessage("Are you sure you want to delete this docent track?\n" +
+                    "This action cannot be reversed.")
             .setPositiveButton("Delete") { _, _ ->
                 lifecycleScope.launch {
-                    // TBD
-//                    if (appSettings.playbackDocentTrackId() == docentTrack.id) {
-//                        logger.d(TAG, "@@ Clear prefs Playback track: -1")
-//                        appSettings.setPlaybackDocentTrackId(-1)
-//                    }
+                    if (appSettings.docentPlaybackTrackId() == docentTrack.id) {
+                        logger.d(TAG, "@@ Clear prefs Docent Playback track: -1")
+                        appSettings.setDocentPlaybackTrackId(-1)
+                    }
                     docentTrackDao.deleteById(docentTrack.id)
                     findNavController().popBackStack()
                 }

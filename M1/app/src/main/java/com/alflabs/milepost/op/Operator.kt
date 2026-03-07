@@ -11,8 +11,8 @@ import javax.inject.Singleton
 
 @Singleton
 class Operator @Inject constructor(
-    private val opRecordFactory: OpRecord.Factory,
-    private val opPlaybackFactory: OpPlayback.Factory,
+    private val opGpsRecordFactory: OpGpsRecord.Factory,
+    private val opGpsPlaybackFactory: OpGpsPlayback.Factory,
     private val logger: ILogger,
     private val globalState: GlobalState,
 ) {
@@ -27,8 +27,8 @@ class Operator @Inject constructor(
     private val opIdle = OpIdle()
     private var currentOp: IOpActor = opIdle
 
-    val currentTrackId: Long?
-        get() = currentOp.currentTrackId
+    val currentGpsTrackId: Long?
+        get() = currentOp.currentGpsTrackId
 
     val currentLocationsList: List<LocationData>?
         get() = currentOp.currentLocationsList
@@ -59,41 +59,41 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.IDLE)
     }
 
-    suspend fun startRecord(track: GpsTrackEntity) {
-        if (operatorMode == OperatorMode.RECORD) return
+    suspend fun startGpsRecord(gpsTrack: GpsTrackEntity) {
+        if (operatorMode == OperatorMode.GPS_RECORD) return
         currentOp.stop()
-        logger.d(TAG, "startRecord id=${track.id}")
-        currentOp = opRecordFactory.create(track).initAsync()
-        changeMode(OperatorMode.RECORD)
+        logger.d(TAG, "startGpsRecord id=${gpsTrack.id}")
+        currentOp = opGpsRecordFactory.create(gpsTrack).initAsync()
+        changeMode(OperatorMode.GPS_RECORD)
     }
 
-    fun stopRecord() {
-        if (operatorMode != OperatorMode.RECORD) return
-        logger.d(TAG, "stopRecord id=${currentOp.currentTrackId}")
+    fun stopGpsRecord() {
+        if (operatorMode != OperatorMode.GPS_RECORD) return
+        logger.d(TAG, "stopGpsRecord id=${currentOp.currentGpsTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)
     }
 
-    fun startPlayback(track: GpsTrackEntity) {
-        if (operatorMode == OperatorMode.PLAYBACK) return
+    fun startGpsPlayback(track: GpsTrackEntity) {
+        if (operatorMode == OperatorMode.GPS_PLAYBACK) return
         currentOp.stop()
-        logger.d(TAG, "startPlayback id=${track.id}")
-        currentOp = opPlaybackFactory.create(track)
-        changeMode(OperatorMode.PLAYBACK)
+        logger.d(TAG, "startGpsPlayback id=${track.id}")
+        currentOp = opGpsPlaybackFactory.create(track)
+        changeMode(OperatorMode.GPS_PLAYBACK)
     }
 
-    fun getPlaybackTrack(): GpsTrackEntity? {
-        return if (currentOp is OpPlayback) {
-            (currentOp as OpPlayback).playbackTrack
+    fun getGpsPlaybackTrack(): GpsTrackEntity? {
+        return if (currentOp is OpGpsPlayback) {
+            (currentOp as OpGpsPlayback).gpsPlaybackTrack
         } else {
             null
         }
     }
 
-    fun stopPlayback() {
-        if (operatorMode != OperatorMode.PLAYBACK) return
-        logger.d(TAG, "stopPlayback id=${currentOp.currentTrackId}")
+    fun stopGpsPlayback() {
+        if (operatorMode != OperatorMode.GPS_PLAYBACK) return
+        logger.d(TAG, "stopGpsPlayback id=${currentOp.currentGpsTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)

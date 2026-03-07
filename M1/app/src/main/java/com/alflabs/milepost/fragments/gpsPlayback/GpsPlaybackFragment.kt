@@ -45,7 +45,7 @@ class GpsPlaybackFragment : SensorsFragment() {
         private val TAG = GpsPlaybackFragment::class.java.simpleName
     }
 
-    override val operatorMode = OperatorMode.PLAYBACK
+    override val operatorMode = OperatorMode.GPS_PLAYBACK
 
     // This property is only valid between onCreateView and onDestroyView.
     private var _playbackBinding: GpsPlaybackFragmentBinding? = null
@@ -110,28 +110,28 @@ class GpsPlaybackFragment : SensorsFragment() {
         globalState.mpEstimateStream.subscribe(AndroidSchedulers.mainThread(), mpEstimateSubscriber)
 
         lifecycleScope.launch {
-            if (viewModel.playbackTrack == null) {
+            if (viewModel.gpsPlaybackTrack == null) {
                 // Get current op playback track if ongoing
-                viewModel.playbackTrack = operator.getPlaybackTrack()
+                viewModel.gpsPlaybackTrack = operator.getGpsPlaybackTrack()
 
-                if (viewModel.playbackTrack == null) {
+                if (viewModel.gpsPlaybackTrack == null) {
                     // If not, load the current track id from prefs
-                    val trackId = appSettings.playbackTrackId()
-                    logger.d(TAG, "@@ Playback onResume: trackId = $trackId")
+                    val gpsTrackId = appSettings.gpsPlaybackTrackId()
+                    logger.d(TAG, "@@ Playback onResume: gpsTrackId = $gpsTrackId")
 
-                    if (trackId != -1L) {
-                        viewModel.playbackTrack = gpsTrackDao.getById(trackId).first()
+                    if (gpsTrackId != -1L) {
+                        viewModel.gpsPlaybackTrack = gpsTrackDao.getById(gpsTrackId).first()
                     }
                 }
             }
 
-            if (viewModel.playbackTrack == null) {
+            if (viewModel.gpsPlaybackTrack == null) {
                 // Close the fragment if no track is found
                 Toast.makeText(requireContext(), "Please select an existing track first.", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }
 
-            viewModel.playbackTrack?.let { track ->
+            viewModel.gpsPlaybackTrack?.let { track ->
                 if (!track.startLabel.isNullOrEmpty()) {
                     viewModel.startLabel = track.startLabel
                 }
@@ -165,8 +165,8 @@ class GpsPlaybackFragment : SensorsFragment() {
                 }
             }
 
-            playbackBinding.trackLabelText.text = viewModel.playbackTrack?.trackLabel ?: "No track selected"
-            if (globalState.operatorMode != OperatorMode.PLAYBACK) {
+            playbackBinding.trackLabelText.text = viewModel.gpsPlaybackTrack?.trackLabel ?: "No track selected"
+            if (globalState.operatorMode != OperatorMode.GPS_PLAYBACK) {
                 playbackBinding.directionText.text = "Playback Not Started Yet"
             } else {
                 // Restore UI from viewModel if already in playback
@@ -184,23 +184,23 @@ class GpsPlaybackFragment : SensorsFragment() {
         if (globalState.operatorMode == operatorMode) return
 
         lifecycleScope.launch {
-            viewModel.playbackTrack?.let {
+            viewModel.gpsPlaybackTrack?.let {
                 playbackBinding.directionText.text = "--"
-                operator.startPlayback(it)
+                operator.startGpsPlayback(it)
             }
         }
     }
 
     override fun onStopButton() {
-        operator.currentTrackId?.let {
-            operator.stopPlayback()
+        operator.currentGpsTrackId?.let {
+            operator.stopGpsPlayback()
         }
     }
 
     override fun setupInitialMapZoom(map: GoogleMap,
                                      position: LatLng,
                                      zoomLevel: Float): CameraUpdate {
-        val track = viewModel.playbackTrack
+        val track = viewModel.gpsPlaybackTrack
         val locations = getLocationsList()
         if (track != null && locations != null && locations.isNotEmpty()) {
             val locFirst = locations.first()

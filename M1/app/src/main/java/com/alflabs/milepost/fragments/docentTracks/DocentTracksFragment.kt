@@ -61,7 +61,7 @@ class DocentTracksFragment : Fragment() {
         setupMenu()
 
         lifecycleScope.launch {
-            // TODO docentPlaybackTrackId = appSettings.docentPlaybackTrackId()
+            docentPlaybackTrackId = appSettings.docentPlaybackTrackId()
 
             docentTrackAdapter = DocentTrackAdapter(
                 onClick = ::showEditDialog,
