@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.alflabs.milepost.db.AudioFileDao
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
+import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.db.PlayTriggerEntity
@@ -22,6 +23,7 @@ class DocentEditorViewModel @Inject constructor(
     private val docentTrackDao: DocentTrackDao,
     private val playTriggerDao: PlayTriggerDao,
     private val audioFileDao: AudioFileDao,
+    private val gpsTrackDao: GpsTrackDao,
 ) : ViewModel() {
 
     companion object {
@@ -39,7 +41,7 @@ class DocentEditorViewModel @Inject constructor(
     }
 
     val gpsTrack: LiveData<GpsTrackEntity?> = _docentTrackId.switchMap { id ->
-        docentTrackDao.getGpsTrackForDocentTrackId(id).asLiveData()
+        gpsTrackDao.getGpsTrackForDocentTrackId(id).asLiveData()
     }
 
     val audioFiles = audioFileDao.getItems().asLiveData()

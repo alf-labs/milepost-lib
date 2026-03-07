@@ -30,6 +30,7 @@ import com.alflabs.milepost.databinding.AudioFilesFragmentBinding
 import com.alflabs.milepost.db.AudioFileEntity
 import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.db.audioFileMetadata
+import com.alflabs.milepost.utils.pluralize
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
@@ -176,7 +177,7 @@ class AudioFilesFragment : Fragment() {
                         true
                     }
                     R.id.action_delete -> {
-                        doRemoveEntry()
+                        askAndMaybeDeleteEntry()
                         true
                     }
                     else -> false
@@ -360,7 +361,7 @@ class AudioFilesFragment : Fragment() {
         }
     }
 
-    private fun doRemoveEntry() {
+    private fun askAndMaybeDeleteEntry() {
         stopCurrentPlaying()
         val selected = audioFileAdapter?.getSelected() ?: return
 
@@ -369,13 +370,12 @@ class AudioFilesFragment : Fragment() {
 
             val msg = when {
                 count > 0 -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
-                        "This does not delete the actual file.\n" +
-                        "However, there are $count triggers using this file. They will be DELETED if you proceed."
+                        "WARNING: This will also delete $count ${count.pluralize("trigger", "triggers")} using this file.\n" +
+                        "This does not delete the actual audio file."
                 else -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
-                        "This does not delete the actual file."
+                        "This does not delete the actual audio file."
             }
 
-            // Display an alert to confirm deletion.
             AlertDialog.Builder(requireContext())
                 .setTitle("Delete Audio File Reference")
                 .setMessage(msg)

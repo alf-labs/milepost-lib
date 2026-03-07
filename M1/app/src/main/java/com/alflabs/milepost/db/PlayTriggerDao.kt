@@ -7,6 +7,7 @@ import androidx.room.Update
 import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
 import kotlinx.coroutines.flow.Flow
 
+/** All queries for the play_triggers table */
 @Dao
 interface PlayTriggerDao {
     @Insert
@@ -15,11 +16,11 @@ interface PlayTriggerDao {
     @Update
     suspend fun update(playTrigger: PlayTriggerEntity)
 
-    @Query("SELECT COUNT(*) FROM play_triggers WHERE audioFileId = :audioFileId")
-    suspend fun countTriggersForAudioFile(audioFileId: Long): Int
-
     @Query("SELECT * FROM play_triggers WHERE audioFileId = :audioFileId")
     fun getTriggersForAudioFile(audioFileId: Long): Flow<List<PlayTriggerEntity>>
+
+    @Query("SELECT COUNT(*) FROM play_triggers WHERE audioFileId = :audioFileId")
+    suspend fun countTriggersForAudioFile(audioFileId: Long): Int
 
     @Query("""
         SELECT T.id, T.audioFileId, T.docentTrackId, T.playbackTrigger, A.fileName

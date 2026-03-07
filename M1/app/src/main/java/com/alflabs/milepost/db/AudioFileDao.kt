@@ -7,6 +7,7 @@ import androidx.room.Update
 import com.alflabs.milepost.fragments.audioFiles.AudioFileItem
 import kotlinx.coroutines.flow.Flow
 
+/** All queries for the audio_files table */
 @Dao
 interface AudioFileDao {
     @Insert

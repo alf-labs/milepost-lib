@@ -45,9 +45,9 @@ import com.alflabs.milepost.db.GpsTrackSummary
 import com.alflabs.milepost.db.copy
 import com.alflabs.milepost.db.gpsTrackSummary
 import com.alflabs.milepost.utils.GpsImporterExporter
-import com.alflabs.milepost.utils.ImporterExporterCommon
 import com.alflabs.milepost.utils.MapStyle
 import com.alflabs.milepost.utils.Units
+import com.alflabs.milepost.utils.pluralize
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -77,7 +77,6 @@ class GpsReviewFragment : Fragment() {
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var gpsTrackDao: GpsTrackDao
     @Inject lateinit var docentTrackDao: DocentTrackDao
-
 
     private var _binding: GpsReviewFragmentBinding? = null
     private val binding get() = _binding!!
@@ -311,21 +310,34 @@ class GpsReviewFragment : Fragment() {
     private fun askAndMaybeDeleteTrack(track: GpsTrackEntity?) {
         if (track == null) return
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Delete Track")
-            .setMessage("Are you sure you want to delete this track? This action cannot be reversed.")
-            .setPositiveButton("Delete") { _, _ ->
-                lifecycleScope.launch {
-                    if (appSettings.playbackTrackId() == track.id) {
-                        logger.d(TAG, "@@ Clear prefs Playback track: -1")
-                        appSettings.setPlaybackTrackId(-1)
-                    }
-                    gpsTrackDao.deleteById(track.id)
-                    findNavController().popBackStack()
-                }
+        lifecycleScope.launch {
+            val count = docentTrackDao.countDocentTracksForGpsTrack(track.id)
+
+            val msg = when {
+                count > 0 -> "Are you sure you want to delete the track '${track.displayTrackLabel()}'?\n" +
+                        "WARNING: This will also delete $count associated Docent ${count.pluralize("Track", "Tracks")}.\n" +
+                        "This action cannot be reversed."
+                else -> "Are you sure you want to delete the track '${track.displayTrackLabel()}'?\n" +
+                        "This action cannot be reversed."
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Delete GPS Track")
+                .setMessage(msg)
+                .setPositiveButton("Delete") { _, _ ->
+                    lifecycleScope.launch {
+                        if (appSettings.playbackTrackId() == track.id) {
+                            logger.d(TAG, "@@ Clear prefs Playback track: -1")
+                            appSettings.setPlaybackTrackId(-1)
+                        }
+                        gpsTrackDao.deleteById(track.id)
+                        findNavController().popBackStack()
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
     }
 
     private fun showReviewTitleDialog(track: GpsTrackEntity?) {

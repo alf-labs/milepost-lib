@@ -8,6 +8,7 @@ import com.alflabs.milepost.fragments.gpsTracks.GpsTrackDisplayItem
 import com.alflabs.milepost.location.LocationDataList
 import kotlinx.coroutines.flow.Flow
 
+/** All queries for the gps_tracks table */
 @Dao
 interface GpsTrackDao {
     /** Insert a GpsTrackEntity. Set id to 0 to have it auto-generated. The new id is returned. */
@@ -32,6 +33,13 @@ interface GpsTrackDao {
 
     @Query("SELECT id FROM gps_tracks WHERE uuid = :uuid")
     suspend fun getIdByUuid(uuid: String): Long?
+
+    @Query("""
+        SELECT G.* FROM gps_tracks AS G
+        INNER JOIN docent_tracks AS D ON G.id = D.gpsTrackId
+        WHERE D.id = :docentId
+        """)
+    fun getGpsTrackForDocentTrackId(docentId: Long): Flow<GpsTrackEntity?>
 
     @Query("UPDATE gps_tracks SET locationList = :locationList WHERE id = :id")
     suspend fun updateLocationList(id: Long, locationList: LocationDataList)
