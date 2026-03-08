@@ -3,8 +3,6 @@ package com.alflabs.milepost.op
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.db.DocentTrackEntity
-import com.alflabs.milepost.location.LocationFlags
-import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.fragments.docentPlayback.DocentPlaybackItem
 import com.alflabs.rx.IPublisher
@@ -16,12 +14,21 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
+/**
+ * The Docent Playback OpActor subscribes to the global MP event stream and
+ * computes the current and next triggers.
+ * These are then sent to a global trigger event stream.
+ *
+ * The class is a bit of a misnomer as it does not actually play audio files.
+ * That action should only be done from the context of an activity/fragment or a foreground service.
+ */
 class OpDocentPlayback @AssistedInject constructor(
     @Assisted val docentTrack: DocentTrackEntity,
     @Assisted val gpsTrack: GpsTrackEntity,
     @Assisted val triggers: List<DocentPlaybackItem>,
     private val logger: ILogger,
     private val globalState: GlobalState,
+    opGpsPlaybackFactory: OpGpsPlayback.Factory,
 ) : IOpDocentActor {
 
     @AssistedFactory
@@ -37,91 +44,40 @@ class OpDocentPlayback @AssistedInject constructor(
         private val TAG = OpDocentPlayback::class.java.simpleName
     }
 
+    private val opGpsPlayback: OpGpsPlayback
+
     val docentPlaybackTrack: DocentTrackEntity
         get() = docentTrack
-
-    val gpsPlaybackTrack: GpsTrackEntity
-        get() = gpsTrack
 
     override val currentDocentTrackId: Long
         get() = docentTrack.id
 
-    override val currentGpsTrackId: Long
-        get() = gpsTrack.id
+    override val currentGpsTrackId: Long?
+        get() = opGpsPlayback.currentGpsTrackId
 
     override val currentLocationsList: List<LocationData>?
-        get() = filteredLocations
+        get() = opGpsPlayback.currentLocationsList
 
-    private val locationSubscriber: ISubscriber<in LocationData?> =
-        ISubscriber<LocationData?> { _, event -> onLocationUpdate(event) }
-    private val mpEstimatePublisher: IPublisher<MpEstimate?> = Publishers.latest()
-    private val mpEstimator = MpEstimator()
-    private val filteredLocations = mutableListOf<LocationData>()
-    private var lastIndex = -1
-    private var lastDirection = MpDirection.UNKNOWN
+    private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
+        ISubscriber<MpEstimate?> { _, event -> onMpEstimateUpdate(event) }
+    private val triggerEventPublisher: IPublisher<TriggerEvent?> = Publishers.latest()
 
     init {
-        logger.d(TAG, "init: ${gpsTrack.id}")
-        // Only keep location data points that are not marked "ignore"
-        gpsTrack.locationList?.locationsList?.let { list ->
-            filteredLocations.clear()
-            filteredLocations.addAll(list.filter { loc ->
-                !loc.flags.hasFlag(LocationFlags.IGNORE)
-            })
-        }
-        globalState.locationStream.subscribe(Schedulers.sync(), locationSubscriber)
-        globalState.mpEstimateStream.publishWith(mpEstimatePublisher)
+        logger.d(TAG, "init: ${docentTrack.id}")
+        opGpsPlayback = opGpsPlaybackFactory.create(gpsTrack)
+        globalState.mpEstimateStream.subscribe(Schedulers.sync(), mpEstimateSubscriber)
+        globalState.triggerEventStream.publishWith(triggerEventPublisher)
     }
 
     override fun stop() {
         logger.d(TAG, "stop")
-        globalState.mpEstimateStream.remove(mpEstimatePublisher)
-        globalState.locationStream.remove(locationSubscriber)
+        opGpsPlayback.stop()
+        globalState.triggerEventStream.remove(triggerEventPublisher)
+        globalState.mpEstimateStream.remove(mpEstimateSubscriber)
     }
 
-    private var tempNewIndex = -1
-    fun onLocationUpdate(newLocation: LocationData?) {
-        // Note: this call is synchronous and happens on the MpActivity Looper thread
-        // as invoked by the FusedLocationProviderClient.
-        if (newLocation == null) return
-
-        val newLatLong = newLocation.latLong
-        if (filteredLocations.isEmpty()) return
-
-        var newIndex = mpEstimator.findFirstNearest(filteredLocations, newLatLong)
-        logger.d(TAG, "onLocationUpdate: $lastIndex --> $newIndex")
-
-        // Reject an invalid index
-        if (newIndex < 0 || newIndex >= filteredLocations.size) return
-
-// DEBUG to force movement for testing
-//        if (lastIndex >= 0) {
-//            val offset = if (tempNewIndex <= 10) tempNewIndex else 20 - tempNewIndex
-//            tempNewIndex = (tempNewIndex + 1) % 20
-//
-//            newIndex = (newIndex + offset) % filteredLocations.size
-//            logger.d(TAG, "DEBUG : $lastIndex --> $newIndex ($tempNewIndex)")
-//        }
-
-        val direction = when {
-            lastIndex < 0 -> MpDirection.UNKNOWN
-            lastIndex < newIndex -> MpDirection.TO_END
-            lastIndex > newIndex -> MpDirection.TO_START
-            else -> MpDirection.UNKNOWN
-        }
-
-        val mp = mpEstimator.interpolateMp(filteredLocations, newIndex, newLatLong)
-
-        lastIndex = newIndex
-        if (direction != MpDirection.UNKNOWN) lastDirection = direction
-
-        mpEstimatePublisher.publish(MpEstimate(
-            mp = mp,
-            locIndex = newIndex,
-            latLong = filteredLocations[newIndex].latLong,
-            direction = lastDirection
-        ))
+    fun onMpEstimateUpdate(mp: MpEstimate?) {
+        if (mp == null) return
     }
-
 }
 

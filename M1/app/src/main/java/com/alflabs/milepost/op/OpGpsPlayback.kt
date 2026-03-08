@@ -14,6 +14,11 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
+/**
+ * The GPS Playback OpActor subscribes to the global location event stream and
+ * computes the MP value most closely matching the current location updates.
+ * These are then sent to a global MP event stream.
+ */
 class OpGpsPlayback @AssistedInject constructor(
     @Assisted val gpsTrack: GpsTrackEntity,
     private val logger: ILogger,
