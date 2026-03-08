@@ -4,7 +4,8 @@ import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.Operator
 import com.alflabs.milepost.op.OperatorMode
-import com.alflabs.milepost.op.TriggerEvent
+import com.alflabs.milepost.op.AudioPlayCommand
+import com.alflabs.milepost.op.AudioPlayingStatus
 import com.alflabs.milepost.service.LocationService
 import com.alflabs.milepost.service.ServiceMode
 import com.alflabs.rx.IStream
@@ -24,7 +25,8 @@ class GlobalState @Inject constructor(
 
     val locationStream: IStream<LocationData?> = Streams.stream<LocationData?>().on(Schedulers.sync())
     val mpEstimateStream: IStream<MpEstimate?> = Streams.stream<MpEstimate?>().on(Schedulers.sync())
-    val triggerEventStream: IStream<TriggerEvent?> = Streams.stream<TriggerEvent?>().on(Schedulers.sync())
+    val audioPlayCommandStream: IStream<AudioPlayCommand?> = Streams.stream<AudioPlayCommand?>().on(Schedulers.sync())
+    val audioPlayingStatusStream: IStream<AudioPlayingStatus?> = Streams.stream<AudioPlayingStatus?>().on(Schedulers.sync())
     val serviceModeStream: IStream<ServiceMode?> = Streams.stream<ServiceMode?>().on(Schedulers.sync())
     val operatorModeStream: IStream<OperatorMode?> = Streams.stream<OperatorMode?>().on(Schedulers.sync())
 

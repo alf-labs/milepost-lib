@@ -63,19 +63,19 @@ class OpDocentPlayback @AssistedInject constructor(
 
     private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
         ISubscriber<MpEstimate?> { _, event -> onMpEstimateUpdate(event) }
-    private val triggerEventPublisher: IPublisher<TriggerEvent?> = Publishers.latest()
+    private val audioPlayCommandPublisher: IPublisher<AudioPlayCommand?> = Publishers.latest()
 
     init {
         logger.d(TAG, "init: ${docentTrack.id}")
         opGpsPlayback = opGpsPlaybackFactory.create(gpsTrack)
         globalState.mpEstimateStream.subscribe(Schedulers.sync(), mpEstimateSubscriber)
-        globalState.triggerEventStream.publishWith(triggerEventPublisher)
+        globalState.audioPlayCommandStream.publishWith(audioPlayCommandPublisher)
     }
 
     override fun stop() {
         logger.d(TAG, "stop")
         opGpsPlayback.stop()
-        globalState.triggerEventStream.remove(triggerEventPublisher)
+        globalState.audioPlayCommandStream.remove(audioPlayCommandPublisher)
         globalState.mpEstimateStream.remove(mpEstimateSubscriber)
     }
 
