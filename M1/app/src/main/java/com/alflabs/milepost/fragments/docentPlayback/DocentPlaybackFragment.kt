@@ -134,6 +134,9 @@ class DocentPlaybackFragment : SensorsFragment() {
                 // Get current op playback track if ongoing
                 viewModel.docentPlaybackTrack = operator.getDocentPlaybackTrack()
                 viewModel.gpsPlaybackTrack = operator.getGpsPlaybackTrack()
+                if (viewModel.triggers.isEmpty()) {
+                    viewModel.triggers.addAll(operator.getDocentPlaybackTriggers() ?: emptyList())
+                }
 
                 if (viewModel.docentPlaybackTrack == null) {
                     // If not, load the current track id from prefs
@@ -188,6 +191,7 @@ class DocentPlaybackFragment : SensorsFragment() {
 
             viewModel.docentPlaybackTrack?.let { docentTrack ->
                 // TBD do we do not need the docent track entity?
+                // We should at least display its name.
             }
 
             viewModel.gpsPlaybackTrack?.let { gpsTrack ->
@@ -264,7 +268,7 @@ class DocentPlaybackFragment : SensorsFragment() {
     }
 
     override fun onStopButton() {
-        operator.currentGpsTrackId?.let {
+        operator.currentDocentTrackId?.let {
             operator.stopDocentPlayback()
         }
     }

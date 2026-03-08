@@ -22,7 +22,7 @@ class OpDocentPlayback @AssistedInject constructor(
     @Assisted val triggers: List<DocentPlaybackItem>,
     private val logger: ILogger,
     private val globalState: GlobalState,
-) : IOpActor {
+) : IOpDocentActor {
 
     @AssistedFactory
     interface Factory {

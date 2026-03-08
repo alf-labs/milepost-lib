@@ -25,7 +25,7 @@ class OpGpsRecord @AssistedInject constructor(
     private val globalState: GlobalState,
     private val appSettings: AppSettings,
     private val gpsTrackDao: GpsTrackDao,
-) : IOpActor {
+) : IOpGpsActor {
 
     @AssistedFactory
     interface Factory {
@@ -36,9 +36,6 @@ class OpGpsRecord @AssistedInject constructor(
         private val TAG = OpGpsRecord::class.java.simpleName
         private const val WRITE_INTERVAL_MS = 30_000
     }
-
-    override val currentDocentTrackId: Long?
-        get() = null
 
     override val currentGpsTrackId: Long
         get() = gpsTrack.id

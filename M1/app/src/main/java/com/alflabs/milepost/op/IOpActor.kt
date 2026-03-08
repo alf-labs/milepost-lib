@@ -1,13 +1,6 @@
 package com.alflabs.milepost.op
 
-import com.alflabs.milepost.location.LocationData
-
+/** An [IOpActor] implements the actions that support an operation. */
 interface IOpActor {
-
-    val currentDocentTrackId: Long?
-    val currentGpsTrackId: Long?
-
-    val currentLocationsList: List<LocationData>?
-
     fun stop()
 }

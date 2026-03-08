@@ -18,7 +18,7 @@ class OpGpsPlayback @AssistedInject constructor(
     @Assisted val gpsTrack: GpsTrackEntity,
     private val logger: ILogger,
     private val globalState: GlobalState,
-) : IOpActor {
+) : IOpGpsActor {
 
     @AssistedFactory
     interface Factory {
@@ -28,9 +28,6 @@ class OpGpsPlayback @AssistedInject constructor(
     companion object {
         private val TAG = OpGpsPlayback::class.java.simpleName
     }
-
-    override val currentDocentTrackId: Long?
-        get() = null
 
     val gpsPlaybackTrack: GpsTrackEntity
         get() = gpsTrack

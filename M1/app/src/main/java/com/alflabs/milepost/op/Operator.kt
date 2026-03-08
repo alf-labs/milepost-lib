@@ -31,14 +31,22 @@ class Operator @Inject constructor(
     private var currentOp: IOpActor = opIdle
 
     val currentDocentTrackId: Long?
-        get() = currentOp.currentDocentTrackId
+        get() = when(val op = currentOp) {
+            is IOpDocentActor -> op.currentDocentTrackId
+            else -> null
+        }
 
     val currentGpsTrackId: Long?
-        get() = currentOp.currentGpsTrackId
+        get() = when(val op = currentOp) {
+            is IOpGpsActor -> op.currentGpsTrackId
+            else -> null
+        }
 
     val currentLocationsList: List<LocationData>?
-        get() = currentOp.currentLocationsList
-
+        get() = when(val op = currentOp) {
+            is IOpGpsActor -> op.currentLocationsList
+            else -> null
+        }
 
     init {
         globalState.operatorModeStream.publishWith(operatorModePublisher)
@@ -75,7 +83,8 @@ class Operator @Inject constructor(
 
     fun stopGpsRecord() {
         if (operatorMode != OperatorMode.GPS_RECORD) return
-        logger.d(TAG, "stopGpsRecord id=${currentOp.currentGpsTrackId}")
+        val op = currentOp as OpGpsRecord
+        logger.d(TAG, "stopGpsRecord id=${op.currentGpsTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)
@@ -90,18 +99,17 @@ class Operator @Inject constructor(
     }
 
     fun getGpsPlaybackTrack(): GpsTrackEntity? {
-        return if (currentOp is OpGpsPlayback) {
-            (currentOp as OpGpsPlayback).gpsPlaybackTrack
-        } else if (currentOp is OpDocentPlayback) {
-            (currentOp as OpDocentPlayback).gpsPlaybackTrack
-        } else {
-            null
+        return when (val op = currentOp) {
+            is OpGpsPlayback -> op.gpsPlaybackTrack
+            is OpDocentPlayback -> op.gpsPlaybackTrack
+            else -> null
         }
     }
 
     fun stopGpsPlayback() {
         if (operatorMode != OperatorMode.GPS_PLAYBACK) return
-        logger.d(TAG, "stopGpsPlayback id=${currentOp.currentGpsTrackId}")
+        val op = currentOp as OpGpsRecord
+        logger.d(TAG, "stopGpsPlayback id=${op.currentGpsTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)
@@ -120,16 +128,23 @@ class Operator @Inject constructor(
     }
 
     fun getDocentPlaybackTrack(): DocentTrackEntity? {
-        return if (currentOp is OpDocentPlayback) {
-            (currentOp as OpDocentPlayback).docentPlaybackTrack
-        } else {
-            null
+        return when (val op = currentOp) {
+            is OpDocentPlayback -> op.docentPlaybackTrack
+            else -> null
+        }
+    }
+
+    fun getDocentPlaybackTriggers(): List<DocentPlaybackItem>? {
+        return when (val op = currentOp) {
+            is OpDocentPlayback -> op.triggers
+            else -> null
         }
     }
 
     fun stopDocentPlayback() {
         if (operatorMode != OperatorMode.DOCENT_PLAYBACK) return
-        logger.d(TAG, "stopDocentPlayback id=${currentOp.currentDocentTrackId}")
+        val op = currentOp as OpDocentPlayback
+        logger.d(TAG, "stopDocentPlayback id=${op.currentDocentTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)
