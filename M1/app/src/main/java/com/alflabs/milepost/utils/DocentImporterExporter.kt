@@ -134,7 +134,9 @@ class DocentImporterExporter @Inject constructor(
                             triggerItems = entity.triggers.map {
                                 it.toItem(
                                     docentTrackId = 0,
-                                    audioFileNameToId = validated.audioFileNamesToId)
+                                    audioFileNameToId = validated.audioFileNamesToId,
+                                    audioFileNameToUri = validated.audioFileNamesToUri,
+                                )
                             }
                         )
                     }
@@ -184,6 +186,7 @@ data class DocentImportValidationResult(
     val message: String,
     val gpsTrackId: Long,
     val audioFileNamesToId: Map<String, Long>,
+    val audioFileNamesToUri: Map<String, String>,
 )
 
 data class DocentImportResult(

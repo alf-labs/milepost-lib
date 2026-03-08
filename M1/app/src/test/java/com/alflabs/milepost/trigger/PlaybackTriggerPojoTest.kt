@@ -18,9 +18,10 @@ class PlaybackTriggerPojoTest {
         val item = DocentEditorItem(
             id = 123L,
             audioFileId = 456L,
+            persistableUri = "Uri-456",
             docentTrackId = 789L,
             playbackTrigger = metadata,
-            fileName = "test_audio.mp3"
+            fileName = "test_audio.mp3",
         )
 
         val pojo = PlaybackTriggerPojo(item)
@@ -43,9 +44,10 @@ class PlaybackTriggerPojoTest {
         )
 
         val audioFileNameToId = mapOf("test_audio.mp3" to 456L)
+        val audioFileNameToUri = mapOf("test_audio.mp3" to "Uri-456")
         val docentTrackId = 789L
 
-        val item = pojo.toItem(docentTrackId, audioFileNameToId)
+        val item = pojo.toItem(docentTrackId, audioFileNameToId, audioFileNameToUri)
 
         assertThat(item.id).isEqualTo(0L)
         assertThat(item.fileName).isEqualTo("test_audio.mp3")

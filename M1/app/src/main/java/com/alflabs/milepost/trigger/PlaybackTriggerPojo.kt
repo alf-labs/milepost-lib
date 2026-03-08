@@ -22,11 +22,16 @@ data class PlaybackTriggerPojo @JsonCreator constructor(
         mpDirection = PlaybackTriggerDirectionPojo(item.playbackTrigger.mpDirection)
     )
 
-    fun toItem(docentTrackId: Long, audioFileNameToId: Map<String, Long>) : DocentEditorItem {
+    fun toItem(
+        docentTrackId: Long,
+        audioFileNameToId: Map<String, Long>,
+        audioFileNameToUri: Map<String, String>,
+    ) : DocentEditorItem {
         return DocentEditorItem(
             id = 0,
             fileName = this@PlaybackTriggerPojo.audioFileName,
             audioFileId = audioFileNameToId[this@PlaybackTriggerPojo.audioFileName]!!,
+            persistableUri = audioFileNameToUri[this@PlaybackTriggerPojo.audioFileName]!!,
             docentTrackId = docentTrackId,
             playbackTrigger = playbackTriggerMetadata {
                 includeInColdStart = this@PlaybackTriggerPojo.includeInColdStart

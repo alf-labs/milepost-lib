@@ -69,7 +69,7 @@ class DocentPlaybackAdapter :
 
 class DocentPlaybackDiffCallback : DiffUtil.ItemCallback<DocentPlaybackItem>() {
     override fun areItemsTheSame(oldItem: DocentPlaybackItem, newItem: DocentPlaybackItem): Boolean {
-        return oldItem.id == newItem.id
+        return oldItem.triggerId == newItem.triggerId
     }
 
     override fun areContentsTheSame(oldItem: DocentPlaybackItem, newItem: DocentPlaybackItem): Boolean {

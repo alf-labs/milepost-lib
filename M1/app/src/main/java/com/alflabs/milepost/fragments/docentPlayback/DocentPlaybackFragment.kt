@@ -233,7 +233,7 @@ class DocentPlaybackFragment : SensorsFragment() {
 
             playbackBinding.linearTrackView.setSegments(
                 viewModel.triggers.map {
-                    Triple(it.id,
+                    Triple(it.triggerId,
                         it.playbackTrigger!!.mpMin,
                         it.playbackTrigger.mpMax)
                 }

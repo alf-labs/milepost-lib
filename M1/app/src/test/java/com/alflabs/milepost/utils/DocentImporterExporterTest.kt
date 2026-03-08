@@ -67,6 +67,7 @@ class DocentImporterExporterTest {
             DocentEditorItem(
                 id = 1,
                 audioFileId = 1,
+                persistableUri = "Uri-1",
                 docentTrackId = 42L,
                 fileName = audioFiles[1]!!,
                 playbackTrigger = playbackTriggerMetadata {
@@ -79,6 +80,7 @@ class DocentImporterExporterTest {
             DocentEditorItem(
                 id = 2,
                 audioFileId = 2,
+                persistableUri = "Uri-2",
                 docentTrackId = 42L,
                 fileName = audioFiles[2]!!,
                 playbackTrigger = playbackTriggerMetadata {
@@ -91,6 +93,7 @@ class DocentImporterExporterTest {
             DocentEditorItem(
                 id = 3,
                 audioFileId = 3,
+                persistableUri = "Uri-3",
                 docentTrackId = 42L,
                 fileName = audioFiles[3]!!,
                 playbackTrigger = playbackTriggerMetadata {
@@ -199,7 +202,14 @@ class DocentImporterExporterTest {
                     "audio 3 segment" to 3L,
                     "audio 4 segment" to 4L,
                     "audio 5 segment" to 5L,
-                )
+                ),
+                audioFileNamesToUri = mapOf(
+                    "audio 1 segment" to "Uri-1",
+                    "audio 2 segment" to "Uri-2",
+                    "audio 3 segment" to "Uri-3",
+                    "audio 4 segment" to "Uri-4",
+                    "audio 5 segment" to "Uri-5",
+                ),
             )
         }
 

@@ -15,6 +15,7 @@ data class DocentEditorItem(
     val playbackTrigger: PlaybackTriggerMetadata?,
     // Fields from the AudioFileEntity
     val fileName: String,
+    val persistableUri: String,
 ) {
 
     fun toEntity() : PlayTriggerEntity {

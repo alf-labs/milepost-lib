@@ -23,7 +23,7 @@ interface PlayTriggerDao {
     suspend fun countTriggersForAudioFile(audioFileId: Long): Int
 
     @Query("""
-        SELECT T.id, T.audioFileId, T.docentTrackId, T.playbackTrigger, A.fileName
+        SELECT T.id, T.audioFileId, T.docentTrackId, T.playbackTrigger, A.fileName, A.persistableUri
         FROM play_triggers AS T
         INNER JOIN audio_files AS A ON T.audioFileId = A.id
         WHERE T.docentTrackId = :docentTrackId

@@ -52,6 +52,9 @@ class OpDocentPlayback @AssistedInject constructor(
     override val currentDocentTrackId: Long
         get() = docentTrack.id
 
+    val gpsPlaybackTrack: GpsTrackEntity
+        get() = gpsTrack
+
     override val currentGpsTrackId: Long?
         get() = opGpsPlayback.currentGpsTrackId
 
