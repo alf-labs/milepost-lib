@@ -6,6 +6,7 @@ import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.hasFlag
 import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.fragments.docentPlayback.DocentPlaybackItem
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Publishers
@@ -18,13 +19,18 @@ import dagger.assisted.AssistedInject
 class OpDocentPlayback @AssistedInject constructor(
     @Assisted val docentTrack: DocentTrackEntity,
     @Assisted val gpsTrack: GpsTrackEntity,
+    @Assisted val triggers: List<DocentPlaybackItem>,
     private val logger: ILogger,
     private val globalState: GlobalState,
 ) : IOpActor {
 
     @AssistedFactory
     interface Factory {
-        fun create(docentTrack: DocentTrackEntity, gpsTrack: GpsTrackEntity): OpDocentPlayback
+        fun create(
+            docentTrack: DocentTrackEntity,
+            gpsTrack: GpsTrackEntity,
+            triggers: List<DocentPlaybackItem>,
+        ): OpDocentPlayback
     }
 
     companion object {

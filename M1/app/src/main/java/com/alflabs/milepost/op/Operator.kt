@@ -4,6 +4,7 @@ import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackEntity
+import com.alflabs.milepost.fragments.docentPlayback.DocentPlaybackItem
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -106,11 +107,15 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.IDLE)
     }
 
-    fun startDocentPlayback(docenTrack: DocentTrackEntity, gpsTrack: GpsTrackEntity) {
+    fun startDocentPlayback(
+        docenTrack: DocentTrackEntity,
+        gpsTrack: GpsTrackEntity,
+        triggers: List<DocentPlaybackItem>
+    ) {
         if (operatorMode == OperatorMode.DOCENT_PLAYBACK) return
         currentOp.stop()
         logger.d(TAG, "startDocentPlayback id=${docenTrack.id}")
-        currentOp = opDocentPlaybackFactory.create(docenTrack, gpsTrack)
+        currentOp = opDocentPlaybackFactory.create(docenTrack, gpsTrack, triggers)
         changeMode(OperatorMode.DOCENT_PLAYBACK)
     }
 

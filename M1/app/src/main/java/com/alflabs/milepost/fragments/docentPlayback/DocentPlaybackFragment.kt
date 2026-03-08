@@ -121,14 +121,14 @@ class DocentPlaybackFragment : SensorsFragment() {
             docentPlaybackAdapter = DocentPlaybackAdapter()
 
             val layoutManager = LinearLayoutManager(requireContext())
-            playbackBinding.playTriggerList?.adapter = docentPlaybackAdapter
-            playbackBinding.playTriggerList?.layoutManager = layoutManager
+            playbackBinding.playTriggerList.adapter = docentPlaybackAdapter
+            playbackBinding.playTriggerList.layoutManager = layoutManager
 
             val dividerItemDecoration = DividerItemDecoration(
                 requireContext(),
                 layoutManager.orientation
             )
-            playbackBinding.playTriggerList?.addItemDecoration(dividerItemDecoration)
+            playbackBinding.playTriggerList.addItemDecoration(dividerItemDecoration)
 
             if (viewModel.docentPlaybackTrack == null) {
                 // Get current op playback track if ongoing
@@ -257,7 +257,7 @@ class DocentPlaybackFragment : SensorsFragment() {
             viewModel.docentPlaybackTrack?.let { docentTrack ->
                 viewModel.gpsPlaybackTrack?.let { gpsTrack ->
                     playbackBinding.directionText.text = "--"
-                    operator.startDocentPlayback(docentTrack, gpsTrack)
+                    operator.startDocentPlayback(docentTrack, gpsTrack, viewModel.triggers)
                 }
             }
         }
