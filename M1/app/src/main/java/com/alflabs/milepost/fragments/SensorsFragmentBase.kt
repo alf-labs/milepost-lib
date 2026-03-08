@@ -74,15 +74,15 @@ open abstract class SensorsFragmentBase: Fragment() {
     protected abstract val hasBinding: Boolean
     protected abstract val startButton: Button
     protected abstract val stopButton: Button
-    protected abstract val mapView: MapView
+    protected abstract val mapView: MapView?
     protected abstract val mapViewOpt: MapView?
     protected abstract val statusText: TextView
     protected abstract val locationText: TextView
     protected abstract val locationAccText: TextView?
     protected abstract val speedText: TextView
     protected abstract val speedAccText: TextView?
-    protected abstract val zoomInButton: ImageButton
-    protected abstract val zoomOutButton: ImageButton
+    protected abstract val zoomInButton: ImageButton?
+    protected abstract val zoomOutButton: ImageButton?
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -124,17 +124,17 @@ open abstract class SensorsFragmentBase: Fragment() {
 
         updateButtons()
 
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync { map ->
+        mapView?.onCreate(savedInstanceState)
+        mapView?.getMapAsync { map ->
             googleMap = map
             googleMap?.let { MapStyle.applyMapStyle(
                 requireContext(),
                 it,
                 logger) }
-            zoomInButton.setOnClickListener {
+            zoomInButton?.setOnClickListener {
                 onMapZoom(map, 1)
             }
-            zoomOutButton.setOnClickListener {
+            zoomOutButton?.setOnClickListener {
                 onMapZoom(map, -1)
             }
             lifecycleScope.launch {

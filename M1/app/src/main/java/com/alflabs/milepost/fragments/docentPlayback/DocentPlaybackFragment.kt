@@ -206,22 +206,25 @@ class DocentPlaybackFragment : SensorsFragment() {
                             !loc.flags.hasFlag(LocationFlags.IGNORE)
                         }
                         viewModel.filteredLocations.addAll(notIgnored)
-
-                        playbackBinding.linearTrackView.setStations(notIgnored
-                            .filterIndexed { index, loc ->
-                                index == 0 || index == notIgnored.lastIndex || loc.hasPoiLabel()
-                            }
-                            .mapIndexed { index, loc ->
-                                val title =
-                                    if (loc.hasPoiLabel()) loc.poiLabel
-                                    else if (index == 0) viewModel.startLabel
-                                    else if (index == notIgnored.lastIndex) viewModel.endLabel
-                                    else "--"
-                                Pair(loc.mp, title)
-                            }
-                        )
                     }
                 }
+            }
+
+            if (viewModel.filteredLocations.isNotEmpty()) {
+                val notIgnored = viewModel.filteredLocations
+                playbackBinding.linearTrackView.setStations(
+                    notIgnored.filterIndexed { index, loc ->
+                        index == 0 || index == notIgnored.lastIndex || loc.hasPoiLabel()
+                    }
+                    .mapIndexed { index, loc ->
+                        val title =
+                            if (loc.hasPoiLabel()) loc.poiLabel
+                            else if (index == 0) viewModel.startLabel
+                            else if (index == notIgnored.lastIndex) viewModel.endLabel
+                            else "--"
+                        Pair(loc.mp, title)
+                    }
+                )
             }
 
             playbackBinding.linearTrackView.setSegments(

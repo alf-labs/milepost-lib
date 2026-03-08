@@ -79,19 +79,19 @@ class LinearTrackView @JvmOverloads constructor(
 
     private val segmentDefaultPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFF6f74dd.toInt() // colorAccent
-        strokeWidth = 12f
+        strokeWidth = 16f
         style = Paint.Style.STROKE
     }
 
     private val segmentCurrentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = 0xFFFF6600.toInt() // Orange
-        strokeWidth = 12f
+        strokeWidth = 16f
         style = Paint.Style.STROKE
     }
 
     private val segmentNextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.YELLOW
-        strokeWidth = 12f
+        strokeWidth = 16f
         style = Paint.Style.STROKE
     }
 

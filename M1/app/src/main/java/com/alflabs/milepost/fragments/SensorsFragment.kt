@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.navigation.NavDirections
 import com.alflabs.milepost.databinding.SensorsFragmentBinding
@@ -12,6 +13,7 @@ import com.alflabs.milepost.op.OperatorMode
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -30,15 +32,15 @@ open class SensorsFragment: SensorsFragmentBase() {
     override val hasBinding get() = _sensorsBinding != null
     override val startButton get() = sensorsBinding.startButton
     override val stopButton get() = sensorsBinding.stopButton
-    override val mapView get() = sensorsBinding.mapView
+    override val mapView: MapView? get() = sensorsBinding.mapView
     override val mapViewOpt get() = if (hasBinding) mapView else null
     override val statusText get() = sensorsBinding.statusText
     override val locationText get() = sensorsBinding.locationText
     override val locationAccText get() = sensorsBinding.locationAccText
     override val speedText get() = sensorsBinding.speedText
     override val speedAccText: TextView?; get() = sensorsBinding.speedAccText
-    override val zoomInButton get() = sensorsBinding.zoomInBtn
-    override val zoomOutButton get() = sensorsBinding.zoomOutBtn
+    override val zoomInButton: ImageButton? get() = sensorsBinding.zoomInBtn
+    override val zoomOutButton: ImageButton? get() = sensorsBinding.zoomOutBtn
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
