@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import kotlin.math.max
 import androidx.core.graphics.withScale
+import com.alflabs.milepost.R
 import kotlin.math.min
 
 
@@ -41,33 +42,31 @@ class LinearTrackView @JvmOverloads constructor(
     private var trainDescentPx = 0
     private var directionTowardsStart: Boolean? = null
 
-    // TBD change all colors to be configured via attributes and support Night/Day changes.
-
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.GRAY
+        color = context.getColor(R.color.linear_line)
         strokeWidth = 8f
         style = Paint.Style.STROKE
     }
 
     private val stationPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.GRAY
+        color = context.getColor(R.color.linear_station)
         style = Paint.Style.FILL
     }
 
     private val textStartPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
+        color = context.getColor(R.color.linear_text)
         textSize = 24f
         textAlign = Paint.Align.LEFT
     }
 
     private val textMiddlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
+        color = context.getColor(R.color.linear_text)
         textSize = 24f
         textAlign = Paint.Align.CENTER
     }
 
     private val textEndPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.BLACK
+        color = context.getColor(R.color.linear_text)
         textSize = 24f
         textAlign = Paint.Align.RIGHT
     }
@@ -78,22 +77,23 @@ class LinearTrackView @JvmOverloads constructor(
     }
 
     private val segmentDefaultPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF6f74dd.toInt() // colorAccent
+        color = context.getColor(R.color.linear_segment)
         strokeWidth = 16f
         style = Paint.Style.STROKE
     }
 
     private val segmentCurrentPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFFF6600.toInt() // Orange
+        color = context.getColor(R.color.linear_segment_curr)
         strokeWidth = 16f
         style = Paint.Style.STROKE
     }
 
     private val segmentNextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.YELLOW
+        color = context.getColor(R.color.linear_segment_next)
         strokeWidth = 16f
         style = Paint.Style.STROKE
     }
+
 
     /** Train position in 0..1 range. Only displayed once we know where it is. */
     private var trainPositionPct: Float? = null
