@@ -5,7 +5,7 @@ import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 
 data class DocentPlaybackItem(
     val isPlaying: Boolean,
-    val isNext: Boolean,
+    val isPending: Boolean,
     // Fields from the PlayTriggerEntity
     val triggerId: Long,
     val audioFileId: Long,
@@ -16,7 +16,7 @@ data class DocentPlaybackItem(
 ) {
     constructor(editorItem: DocentEditorItem) : this(
         isPlaying = false,
-        isNext = false,
+        isPending = false,
         triggerId = editorItem.id,
         audioFileId = editorItem.audioFileId,
         playbackTrigger = editorItem.playbackTrigger,

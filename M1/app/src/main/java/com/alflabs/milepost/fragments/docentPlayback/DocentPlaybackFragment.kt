@@ -14,18 +14,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentPlaybackFragmentBinding
 import com.alflabs.milepost.db.DocentTrackDao
+import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.fragments.SensorsFragment
 import com.alflabs.milepost.location.LatLongData
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.LocationFlags
 import com.alflabs.milepost.location.hasFlag
+import com.alflabs.milepost.op.AudioPlayCommand
+import com.alflabs.milepost.op.AudioPlayingStatus
 import com.alflabs.milepost.op.MpDirection
 import com.alflabs.milepost.op.MpEstimate
 import com.alflabs.milepost.op.OperatorMode
-import com.alflabs.milepost.db.GpsTrackDao
-import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.rx.AndroidSchedulers
+import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
+import com.alflabs.rx.Publishers
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -71,11 +75,13 @@ class DocentPlaybackFragment : SensorsFragment() {
     @Inject lateinit var docentTrackDao: DocentTrackDao
     @Inject lateinit var playTriggerDao: PlayTriggerDao
 
-
     private val viewModel: DocentPlaybackViewModel by viewModels()
 
     private val mpEstimateSubscriber: ISubscriber<in MpEstimate?> =
         ISubscriber<MpEstimate?> { _, event -> onMpEstimate(googleMap, event) }
+    private val audioPlayingStatusSubscriber: ISubscriber<in AudioPlayingStatus?> =
+        ISubscriber<AudioPlayingStatus?> { _, event -> onAudioPlayingStatus(event) }
+    private val audioPlayCommandPublisher: IPublisher<AudioPlayCommand?> = Publishers.latest()
     private var markerTrackStart: Marker? = null
     private var markerTrackEnd: Marker? = null
     private var markerMpCurrent: Marker? = null
@@ -116,6 +122,8 @@ class DocentPlaybackFragment : SensorsFragment() {
         super.onResume()
 
         globalState.mpEstimateStream.subscribe(AndroidSchedulers.mainThread(), mpEstimateSubscriber)
+        globalState.audioPlayingStatusStream.subscribe(AndroidSchedulers.mainThread(), audioPlayingStatusSubscriber)
+        globalState.audioPlayCommandStream.publishWith(audioPlayCommandPublisher)
 
         lifecycleScope.launch {
             docentPlaybackAdapter = DocentPlaybackAdapter()
@@ -246,12 +254,20 @@ class DocentPlaybackFragment : SensorsFragment() {
                 // Restore UI from viewModel if already in playback
                 viewModel.lastMp?.let { onMpEstimate(googleMap, it) }
             }
+
+            audioPlayCommandPublisher.publish(AudioPlayCommand(
+                command = AudioPlayCommand.Command.Status,
+                triggerId = -1L,
+                persistableUri = "",
+            ))
         }
     }
 
     override fun onPause() {
         super.onPause()
         globalState.mpEstimateStream.remove(mpEstimateSubscriber)
+        globalState.audioPlayingStatusStream.remove(audioPlayingStatusSubscriber)
+        globalState.audioPlayCommandStream.remove(audioPlayCommandPublisher)
     }
 
     override fun onStartButton() {
@@ -310,6 +326,36 @@ class DocentPlaybackFragment : SensorsFragment() {
         }
 
         return super.setupInitialMapZoom(map, position, zoomLevel)
+    }
+
+    private fun onAudioPlayingStatus(status: AudioPlayingStatus?) {
+        if (status == null) return
+        logger.d(TAG, "@@ AudioPlayingStatus: $status")
+        // This may potentially be called outside of the proper binding lifecycle.
+        if (!hasBinding) return
+
+        var changed = false
+        val oldList = docentPlaybackAdapter?.currentList
+        val newList = oldList?.map { item ->
+            if (status.type == AudioPlayingStatus.Type.Current) {
+                val isPlaying = item.triggerId == status.triggerId
+                if (isPlaying != item.isPlaying) {
+                    changed = true
+                    return@map item.copy(isPlaying = isPlaying)
+                }
+            } else if (status.type == AudioPlayingStatus.Type.Pending) {
+                val isNext = item.triggerId == status.triggerId
+                if (isNext != item.isPending) {
+                    changed = true
+                    return@map item.copy(isPending = isNext)
+                }
+            }
+            item
+        }
+
+        if (changed) {
+            docentPlaybackAdapter?.submitList(newList)
+        }
     }
 
     private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate) {

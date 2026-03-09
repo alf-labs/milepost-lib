@@ -63,6 +63,7 @@ class DocentMediaPlayer @AssistedInject constructor(
                     startPlaying(audio)
                 } else {
                     pending = audio
+                    sendStatus(AudioPlayingStatus.Type.Pending, pending)
                 }
             }
             AudioPlayCommand.Command.Force -> {
@@ -75,6 +76,7 @@ class DocentMediaPlayer @AssistedInject constructor(
                 pending?.let {
                     if (it.triggerId == command.triggerId) {
                         pending = null
+                        sendStatus(AudioPlayingStatus.Type.Pending, pending)
                     }
                 }
             }
@@ -121,6 +123,7 @@ class DocentMediaPlayer @AssistedInject constructor(
         stopPlaying()
         pending?.let {
             pending = null
+            sendStatus(AudioPlayingStatus.Type.Pending, pending)
             logger.d(TAG, "@@ start Pending: ${it.triggerId}, ${it.persistableUri}")
             startPlaying(it)
         }

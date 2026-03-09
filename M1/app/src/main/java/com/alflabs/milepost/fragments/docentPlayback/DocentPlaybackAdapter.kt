@@ -52,7 +52,7 @@ class DocentPlaybackAdapter :
 
             binding.triggerInfo.text = when {
                 item.isPlaying -> "Playing"
-                item.isNext -> "Next"
+                item.isPending -> "Pending"
                 else -> "--"
             }
 
