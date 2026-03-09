@@ -11,6 +11,7 @@ import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentPlaybackFragmentBinding
 import com.alflabs.milepost.db.DocentTrackDao
@@ -335,28 +336,43 @@ class DocentPlaybackFragment : SensorsFragment() {
         if (!hasBinding) return
 
         var changed = false
+        var scrollIndex = -1
         val oldList = docentPlaybackAdapter?.currentList
-        val newList = oldList?.map { item ->
+        val newList = oldList?.mapIndexed { index, item ->
             if (status.type == AudioPlayingStatus.Type.Current) {
                 val isPlaying = item.triggerId == status.triggerId
                 if (isPlaying != item.isPlaying) {
                     changed = true
-                    return@map item.copy(isPlaying = isPlaying)
+                    if (isPlaying) {
+                        scrollIndex = index
+                    }
+                    return@mapIndexed item.copy(isPlaying = isPlaying)
                 }
             } else if (status.type == AudioPlayingStatus.Type.Pending) {
                 val isNext = item.triggerId == status.triggerId
                 if (isNext != item.isPending) {
                     changed = true
-                    return@map item.copy(isPending = isNext)
+                    return@mapIndexed item.copy(isPending = isNext)
                 }
             }
             item
         }
 
         if (changed) {
-            docentPlaybackAdapter?.submitList(newList)
+            docentPlaybackAdapter?.submitList(newList) {
+                if (scrollIndex >= 0) {
+                    val scroller = object : LinearSmoothScroller(context) {
+                        override fun getVerticalSnapPreference(): Int {
+                            return SNAP_TO_START
+                        }
+                    }
+                    scroller.targetPosition = scrollIndex
+                    playbackBinding.playTriggerList.layoutManager?.startSmoothScroll(scroller)
+                }
+            }
         }
     }
+
 
     private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate) {
         logger.d(TAG, "onMpEstimate: $mp")

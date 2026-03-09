@@ -71,7 +71,7 @@ class OpGpsPlayback @AssistedInject constructor(
     }
 
     private var tempNewIndex = -1
-    private var forceDebugLoop = true
+    private var forceDebugLoop = false
     fun onLocationUpdate(newLocation: LocationData?) {
         // Note: this call is synchronous and happens on the MpActivity Looper thread
         // as invoked by the FusedLocationProviderClient.
