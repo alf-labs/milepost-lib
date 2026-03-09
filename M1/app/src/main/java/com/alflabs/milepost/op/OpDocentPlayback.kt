@@ -98,7 +98,7 @@ class OpDocentPlayback @AssistedInject constructor(
         globalState.mpEstimateStream.remove(mpEstimateSubscriber)
     }
 
-    fun onMpEstimateUpdate(estimate: MpEstimate?) {
+    private fun onMpEstimateUpdate(estimate: MpEstimate?) {
         if (estimate == null) return
 
         val mp = estimate.mp    // for debugging purposes

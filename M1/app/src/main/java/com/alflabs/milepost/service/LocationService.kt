@@ -59,6 +59,7 @@ class LocationService : Service() {
         }
     }
 
+    @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
     @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     @Inject lateinit var locationRequest: LocationRequest
     @Inject lateinit var logger: ILogger
@@ -67,6 +68,7 @@ class LocationService : Service() {
     @Inject lateinit var appSettings: AppSettings
 
     private lateinit var locationCallback: LocationCallback
+    private lateinit var docentMediaPlayer: DocentMediaPlayer
     private val serviceModePublisher: IPublisher<ServiceMode?> = Publishers.latest()
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
 
@@ -78,6 +80,7 @@ class LocationService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         logger.d(TAG, "onStartCommand: $intent")
 
+        docentMediaPlayer = docentMediaPlayerFactory.create(this)
         globalState.serviceModeStream.publishWith(serviceModePublisher)
         globalState.locationStream.publishWith(locationPublisher)
 
@@ -149,6 +152,7 @@ class LocationService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         logger.d(TAG, "onDestroy")
+        docentMediaPlayer.onDestroy()
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         serviceMode = ServiceMode.STOPPED
         serviceModePublisher.publish(serviceMode)
