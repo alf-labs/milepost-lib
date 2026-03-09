@@ -14,7 +14,10 @@ message PlaybackTriggerMetadata {
 }
 
 enum PlaybackTriggerDirection {
+  // Matches any direction, including unknown.
   DIRECTION_UNSPECIFIED = 0;
+  // Matches only a known direction towards lower MP point.
   DIRECTION_TO_LOWER_MP = 1;
+  // Matches only a known direction towards higher MP point.
   DIRECTION_TO_HIGHER_MP = 2;
 }
