@@ -1,7 +1,11 @@
 package com.alflabs.milepost.service
 
 import android.content.Context
+import android.media.MediaPlayer
+import android.widget.Toast
+import androidx.core.net.toUri
 import com.alflabs.milepost.app.GlobalState
+import com.alflabs.milepost.fragments.audioFiles.AudioFilesFragment
 import com.alflabs.milepost.op.AudioPlayCommand
 import com.alflabs.milepost.op.AudioPlayingStatus
 import com.alflabs.rx.IPublisher
@@ -31,12 +35,17 @@ class DocentMediaPlayer @AssistedInject constructor(
         ISubscriber<AudioPlayCommand?> { _, event -> onAudioPlayCommand(event) }
     private val audioPlayingStatusPublisher: IPublisher<AudioPlayingStatus?> = Publishers.latest()
 
+    private var current: AudioInfo? = null
+    private var pending: AudioInfo? = null
+    private var mediaPlayer: MediaPlayer? = null
+
     init {
         globalState.audioPlayCommandStream.subscribe(Schedulers.sync(), audioPlayCommandSubscriber)
         globalState.audioPlayingStatusStream.publishWith(audioPlayingStatusPublisher)
     }
 
     fun onDestroy() {
+        stopPlaying()
         globalState.audioPlayingStatusStream.remove(audioPlayingStatusPublisher)
         globalState.audioPlayCommandStream.remove(audioPlayCommandSubscriber)
     }
@@ -44,5 +53,93 @@ class DocentMediaPlayer @AssistedInject constructor(
     private fun onAudioPlayCommand(command: AudioPlayCommand?) {
         if (command == null) return
         logger.d(TAG, "@@ command: $command")
+
+        when(command.command) {
+            AudioPlayCommand.Command.QueueAdd -> {
+                val audio = AudioInfo(
+                    triggerId = command.triggerId,
+                    persistableUri = command.persistableUri)
+                if (current == null) {
+                    startPlaying(audio)
+                } else {
+                    pending = audio
+                }
+            }
+            AudioPlayCommand.Command.Force -> {
+                val audio = AudioInfo(
+                    triggerId = command.triggerId,
+                    persistableUri = command.persistableUri)
+                startPlaying(audio)
+            }
+            AudioPlayCommand.Command.QueueRemove -> {
+                pending?.let {
+                    if (it.triggerId == command.triggerId) {
+                        pending = null
+                    }
+                }
+            }
+            AudioPlayCommand.Command.Status -> {
+                sendStatus(AudioPlayingStatus.Type.Current, current)
+                sendStatus(AudioPlayingStatus.Type.Pending, pending)
+            }
+        }
+
+    }
+
+    private fun sendStatus(type: AudioPlayingStatus.Type, audio: AudioInfo?) {
+        val status = AudioPlayingStatus(
+            type = type,
+            isPlaying = audio?.isPlaying ?: false,
+            triggerId = audio?.triggerId ?: -1L,
+        )
+        audioPlayingStatusPublisher.publish(status)
+    }
+
+    private fun startPlaying(audio: AudioInfo) {
+        stopPlaying()
+        try {
+            mediaPlayer = MediaPlayer().apply {
+                logger.d(TAG, "@@ startPlaying: ${audio.triggerId}, ${audio.persistableUri}")
+                setDataSource(context, audio.persistableUri.toUri())
+                prepare()
+                start()
+                current = audio.copy(isPlaying = true)
+                sendStatus(AudioPlayingStatus.Type.Current, current)
+                setOnCompletionListener {
+                    onCompletion()
+                }
+            }
+        } catch (e: Exception) {
+            logger.d(TAG, "Error playing audio", e)
+            Toast.makeText(context, "Error playing audio file", Toast.LENGTH_LONG).show()
+            stopPlaying()
+        }
+
+    }
+
+    private fun onCompletion() {
+        stopPlaying()
+        pending?.let {
+            pending = null
+            logger.d(TAG, "@@ start Pending: ${it.triggerId}, ${it.persistableUri}")
+            startPlaying(it)
+        }
+    }
+
+    private fun stopPlaying() {
+        mediaPlayer?.release()
+        mediaPlayer = null
+        current?.let {
+            current = it.copy(isPlaying = false)
+            sendStatus(AudioPlayingStatus.Type.Current, current)
+            logger.d(TAG, "@@ stopPlaying: ${it.triggerId}, ${it.persistableUri}")
+            current = null
+        }
     }
 }
+
+private data class AudioInfo(
+    val triggerId: Long,
+    val persistableUri: String,
+    var isPlaying: Boolean = false,
+)
