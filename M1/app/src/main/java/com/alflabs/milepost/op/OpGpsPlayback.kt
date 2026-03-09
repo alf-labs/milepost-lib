@@ -71,13 +71,27 @@ class OpGpsPlayback @AssistedInject constructor(
     }
 
     private var tempNewIndex = -1
+    private var forceDebugLoop = true
     fun onLocationUpdate(newLocation: LocationData?) {
         // Note: this call is synchronous and happens on the MpActivity Looper thread
         // as invoked by the FusedLocationProviderClient.
         if (newLocation == null) return
 
-        val newLatLong = newLocation.latLong
         if (filteredLocations.isEmpty()) return
+
+        // val newLatLong = newLocation.latLong
+        val newLatLong = if (!forceDebugLoop) {
+                newLocation.latLong
+            }
+            else {
+                val s1x = filteredLocations.size
+                val s2x = s1x * 2
+                tempNewIndex = (tempNewIndex + 1) % s2x
+                val newIndex = if (tempNewIndex < s1x) tempNewIndex else s2x - tempNewIndex
+                logger.d(TAG, "DEBUG LOOP : $lastIndex --> $newIndex ($tempNewIndex)")
+                filteredLocations[newIndex].latLong
+            }
+
 
 // DEBUG... is examineNearby working properly?
 //        var newIndex = if (lastIndex == -1) {
