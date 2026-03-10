@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DocentTriggerViewModel @Inject constructor(
+class DocentTriggersViewModel @Inject constructor(
     private val docentTrackDao: DocentTrackDao,
     private val playTriggerDao: PlayTriggerDao,
     private val audioFileDao: AudioFileDao,
@@ -27,7 +27,7 @@ class DocentTriggerViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        private val TAG = DocentTriggerViewModel::class.java.simpleName
+        private val TAG = DocentTriggersViewModel::class.java.simpleName
     }
 
     private val _docentTrackId = MutableLiveData<Long>()

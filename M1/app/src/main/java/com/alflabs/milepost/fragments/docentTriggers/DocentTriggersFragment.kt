@@ -60,8 +60,8 @@ class DocentTriggersFragment : Fragment() {
     private var _binding: DocentTriggersFragmentBinding? = null
     private val binding get() = _binding!!
     private val fragmentArgs: DocentTriggerFragmentArgs by navArgs()
-    private var docentTriggerAdapter: DocentTriggerAdapter? = null
-    private val viewModel: DocentTriggerViewModel by viewModels()
+    private var docentTriggersAdapter: DocentTriggersAdapter? = null
+    private val viewModel: DocentTriggersViewModel by viewModels()
     private var docentTrackEntity: DocentTrackEntity? = null
     private var gpsTrackEntity: GpsTrackEntity? = null
     private var allAudioFiles: List<AudioFileItem>? = null
@@ -83,17 +83,17 @@ class DocentTriggersFragment : Fragment() {
         setupMenu()
 
         lifecycleScope.launch {
-            docentTriggerAdapter = DocentTriggerAdapter(
+            docentTriggersAdapter = DocentTriggersAdapter(
                 onUpdate = ::showAddOrEditTriggerDialog,
             )
 
             val layoutManager = LinearLayoutManager(requireContext())
-            binding.playTriggerList.adapter = docentTriggerAdapter
+            binding.playTriggerList.adapter = docentTriggersAdapter
             binding.playTriggerList.layoutManager = layoutManager
 
             savedInstanceState?.let {
                 val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
-                docentTriggerAdapter?.setSelectedPosition(selectedPosition)
+                docentTriggersAdapter?.setSelectedPosition(selectedPosition)
             }
 
             val dividerItemDecoration = DividerItemDecoration(
@@ -103,7 +103,7 @@ class DocentTriggersFragment : Fragment() {
             binding.playTriggerList.addItemDecoration(dividerItemDecoration)
 
             viewModel.docentTrack.observe(viewLifecycleOwner) { docentTrack ->
-                logger.d(TAG, "@@ DocentEdit observe new docentTrack: ${docentTrack?.userTitle}")
+                logger.d(TAG, "@@ DocentTriggers observe new docentTrack: ${docentTrack?.userTitle}")
                 docentTrackEntity = docentTrack
 
                 if (docentTrack == null) {
@@ -122,23 +122,23 @@ class DocentTriggersFragment : Fragment() {
             }
 
             viewModel.gpsTrack.observe(viewLifecycleOwner) { gpsTrack ->
-                logger.d(TAG, "@@ DocentEdit observe new GPS track: ${gpsTrack?.trackLabel}")
+                logger.d(TAG, "@@ DocentTriggers observe new GPS track: ${gpsTrack?.trackLabel}")
                 gpsTrackEntity = gpsTrack
                 val label = gpsTrack?.displayTrackLabel()
                 binding.gpsTrackLabel.text = if (label != null) "GPS Track: $label" else "GPS Track not found"
             }
 
             viewModel.triggers.observe(viewLifecycleOwner) { list ->
-                logger.d(TAG, "@@ DocentEdit observe new list: ${list?.size ?: -1} items")
+                logger.d(TAG, "@@ DocentTriggers observe new list: ${list?.size ?: -1} items")
 
                 binding.emptyMessage.visibility =
                     if (list?.isEmpty() ?: false) View.VISIBLE else View.GONE
 
-                docentTriggerAdapter?.submitList(list)
+                docentTriggersAdapter?.submitList(list)
             }
 
             viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
-                logger.d(TAG, "@@ DocentEdit observe new audio files: ${list?.size ?: -1} items")
+                logger.d(TAG, "@@ DocentTriggers observe new audio files: ${list?.size ?: -1} items")
                 allAudioFiles = list
             }
 
@@ -156,7 +156,7 @@ class DocentTriggersFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        docentTriggerAdapter?.let { adapter ->
+        docentTriggersAdapter?.let { adapter ->
             logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
             outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
@@ -192,7 +192,7 @@ class DocentTriggersFragment : Fragment() {
                     }
 
                     R.id.action_export_json -> {
-                        val triggers = docentTriggerAdapter?.currentList
+                        val triggers = docentTriggersAdapter?.currentList
                         val exportFile =
                             docentImporterExporter.createJsonExportFile(
                                 requireContext(),
@@ -443,7 +443,7 @@ class DocentTriggersFragment : Fragment() {
     }
 
     private fun notifyItemIdChanged(id: Long) : Int {
-        docentTriggerAdapter?.let { adapter ->
+        docentTriggersAdapter?.let { adapter ->
             val list = adapter.currentList
             val first = list.indexOfFirst { it.id == id }
             if (first >= 0) {

@@ -10,13 +10,13 @@ import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentTriggerItemBinding
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 
-class DocentTriggerAdapter(
+class DocentTriggersAdapter(
     private val onUpdate: (DocentTriggerItem) -> Unit,
 ) :
-    ListAdapter<DocentTriggerItem, DocentTriggerAdapter.DocentTriggerViewHolder>(DocentTriggerDiffCallback()) {
+    ListAdapter<DocentTriggerItem, DocentTriggersAdapter.DocentTriggersViewHolder>(DocentTriggersDiffCallback()) {
 
     companion object {
-        private val TAG = DocentTriggerAdapter::class.java.simpleName
+        private val TAG = DocentTriggersAdapter::class.java.simpleName
     }
 
     @Deprecated("may not want to use this, remove later")
@@ -45,19 +45,19 @@ class DocentTriggerAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentTriggerViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentTriggersViewHolder {
         val binding = DocentTriggerItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return DocentTriggerViewHolder(binding)
+        return DocentTriggersViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: DocentTriggerViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: DocentTriggersViewHolder, position: Int) {
         val item = getItem(position)
         holder.bind(item, position == selectedPosition)
     }
 
-    inner class DocentTriggerViewHolder(
+    inner class DocentTriggersViewHolder(
         private val binding: DocentTriggerItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
@@ -108,7 +108,7 @@ class DocentTriggerAdapter(
     }
 }
 
-class DocentTriggerDiffCallback : DiffUtil.ItemCallback<DocentTriggerItem>() {
+class DocentTriggersDiffCallback : DiffUtil.ItemCallback<DocentTriggerItem>() {
     override fun areItemsTheSame(oldItem: DocentTriggerItem, newItem: DocentTriggerItem): Boolean {
         return oldItem.id == newItem.id
     }
