@@ -45,10 +45,10 @@ import javax.inject.Inject
 import kotlin.toString
 
 @AndroidEntryPoint
-class DocentTriggerFragment : Fragment() {
+class DocentTriggersFragment : Fragment() {
 
     companion object {
-        private val TAG = DocentTriggerFragment::class.java.simpleName
+        private val TAG = DocentTriggersFragment::class.java.simpleName
         private const val KEY_SELECTED_POSITION = "selected-position"
     }
 

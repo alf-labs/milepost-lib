@@ -48,7 +48,7 @@
 
     <fragment
             android:id="@+id/nav_docent_trigger_list"
-            android:name="com.alflabs.milepost.fragments.docentTriggers.DocentTriggerFragment"
+            android:name="com.alflabs.milepost.fragments.docentTriggers.DocentTriggersFragment"
             android:label="Docent Triggers"
             tools:layout="@layout/docent_triggers_fragment">
         <argument
