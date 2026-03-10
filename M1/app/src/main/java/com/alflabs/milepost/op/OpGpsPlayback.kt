@@ -1,5 +1,6 @@
 package com.alflabs.milepost.op
 
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.location.LocationFlags
@@ -13,6 +14,8 @@ import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * The GPS Playback OpActor subscribes to the global location event stream and
@@ -23,6 +26,7 @@ class OpGpsPlayback @AssistedInject constructor(
     @Assisted val gpsTrack: GpsTrackEntity,
     private val logger: ILogger,
     private val globalState: GlobalState,
+    private val appSettings: AppSettings,
 ) : IOpGpsActor {
 
     @AssistedFactory
@@ -50,6 +54,7 @@ class OpGpsPlayback @AssistedInject constructor(
     private val filteredLocations = mutableListOf<LocationData>()
     private var lastIndex = -1
     private var lastDirection = MpDirection.UNKNOWN
+    private var simulateGps = -1
 
     init {
         logger.d(TAG, "init: ${gpsTrack.id}")
@@ -64,14 +69,22 @@ class OpGpsPlayback @AssistedInject constructor(
         globalState.mpEstimateStream.publishWith(mpEstimatePublisher)
     }
 
+    suspend fun initAsync() {
+        simulateGps = when(appSettings.simulateGps()) {
+            "from_start" -> 1
+            "from_end" -> 2
+            else -> -1
+        }
+    }
+
     override fun stop() {
         logger.d(TAG, "stop")
         globalState.mpEstimateStream.remove(mpEstimatePublisher)
         globalState.locationStream.remove(locationSubscriber)
     }
 
-    private var tempNewIndex = -1
-    private var forceDebugLoop = false
+    private var simulIndex = -1
+    private var simulInc = 0
     fun onLocationUpdate(newLocation: LocationData?) {
         // Note: this call is synchronous and happens on the MpActivity Looper thread
         // as invoked by the FusedLocationProviderClient.
@@ -79,18 +92,31 @@ class OpGpsPlayback @AssistedInject constructor(
 
         if (filteredLocations.isEmpty()) return
 
-        // val newLatLong = newLocation.latLong
-        val newLatLong = if (!forceDebugLoop) {
+        val newLatLong = when {
+            // Simulate from start or end
+            simulateGps > 0 -> {
+                val sz1 = filteredLocations.lastIndex
+                if (simulInc == 0) {
+                    if (simulateGps == 1) {
+                        simulIndex = 0
+                        simulInc = 1
+                    } else {
+                        simulIndex = sz1
+                        simulInc = -1
+                    }
+                } else {
+                    simulIndex = min(max(0, simulIndex + simulInc), sz1)
+                    if (simulIndex == 0 || simulIndex >= sz1) {
+                        simulInc = -simulInc
+                    }
+                }
+                filteredLocations[simulIndex].latLong
+            }
+            // Use real coordinate
+            else -> {
                 newLocation.latLong
             }
-            else {
-                val s1x = filteredLocations.size
-                val s2x = s1x * 2
-                tempNewIndex = (tempNewIndex + 1) % s2x
-                val newIndex = if (tempNewIndex < s1x) tempNewIndex else s2x - tempNewIndex
-                logger.d(TAG, "DEBUG LOOP : $lastIndex --> $newIndex ($tempNewIndex)")
-                filteredLocations[newIndex].latLong
-            }
+        }
 
 
 // DEBUG... is examineNearby working properly?
@@ -99,20 +125,11 @@ class OpGpsPlayback @AssistedInject constructor(
 //        } else {
 //            mpEstimator.examineNearby(locations, newLatLong, lastIndex)
 //        }
-        var newIndex = mpEstimator.findFirstNearest(filteredLocations, newLatLong)
+        val newIndex = mpEstimator.findFirstNearest(filteredLocations, newLatLong)
         logger.d(TAG, "onLocationUpdate: $lastIndex --> $newIndex")
 
         // Reject an invalid index
         if (newIndex < 0 || newIndex >= filteredLocations.size) return
-
-// DEBUG to force movement for testing
-//        if (lastIndex >= 0) {
-//            val offset = if (tempNewIndex <= 10) tempNewIndex else 20 - tempNewIndex
-//            tempNewIndex = (tempNewIndex + 1) % 20
-//
-//            newIndex = (newIndex + offset) % filteredLocations.size
-//            logger.d(TAG, "DEBUG : $lastIndex --> $newIndex ($tempNewIndex)")
-//        }
 
         val direction = when {
             lastIndex < 0 -> MpDirection.UNKNOWN

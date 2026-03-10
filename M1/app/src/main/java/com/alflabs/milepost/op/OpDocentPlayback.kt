@@ -88,7 +88,10 @@ class OpDocentPlayback @AssistedInject constructor(
                 true
             }
         } ?: true
+    }
 
+    suspend fun initAsync() {
+        opGpsPlayback.initAsync()
     }
 
     override fun stop() {

@@ -41,6 +41,7 @@ class AppSettings @Inject constructor(
         val USE_IMPERIAL_UNITS = booleanPreferencesKey("use_imperial_units")
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
+        val SIMULATE_GPS = stringPreferencesKey("simulate_gps")
         // The following values are only used internally, they can be of any type.
         val GPS_PLAYBACK_TRACK_ID = longPreferencesKey("gps_playback_track_id")
         val DOCENT_PLAYBACK_TRACK_ID = longPreferencesKey("docent_playback_track_id")
@@ -100,6 +101,11 @@ class AppSettings @Inject constructor(
     suspend fun setMapZoomLevel(level: Float) {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         adapter.putFloat(MAP_ZOOM_LEVEL.name, level)
+    }
+
+    suspend fun simulateGps(): String {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getString(SIMULATE_GPS.name, "none")
     }
 
     // ------

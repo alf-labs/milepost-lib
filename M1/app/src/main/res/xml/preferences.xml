@@ -20,6 +20,15 @@
                 app:dialogTitle="Set threshold speed in meters per second"
                 />
 
+        <ListPreference
+                app:key="simulate_gps"
+                app:title="Simulate GPS"
+                app:entries="@array/pref_simulate_gps_entries"
+                app:entryValues="@array/pref_simulate_gps_values"
+                app:defaultValue="none"
+                app:useSimpleSummaryProvider="true"
+                />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

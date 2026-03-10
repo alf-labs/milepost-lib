@@ -90,11 +90,13 @@ class Operator @Inject constructor(
         changeMode(OperatorMode.IDLE)
     }
 
-    fun startGpsPlayback(gpsTrack: GpsTrackEntity) {
+    suspend fun startGpsPlayback(gpsTrack: GpsTrackEntity) {
         if (operatorMode == OperatorMode.GPS_PLAYBACK) return
         currentOp.stop()
         logger.d(TAG, "startGpsPlayback id=${gpsTrack.id}")
-        currentOp = opGpsPlaybackFactory.create(gpsTrack)
+        val op = opGpsPlaybackFactory.create(gpsTrack)
+        op.initAsync()
+        currentOp = op
         changeMode(OperatorMode.GPS_PLAYBACK)
     }
 
@@ -108,14 +110,13 @@ class Operator @Inject constructor(
 
     fun stopGpsPlayback() {
         if (operatorMode != OperatorMode.GPS_PLAYBACK) return
-        val op = currentOp as OpGpsRecord
-        logger.d(TAG, "stopGpsPlayback id=${op.currentGpsTrackId}")
+        logger.d(TAG, "stopGpsPlayback ${(currentOp as? OpGpsPlayback)?.currentGpsTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)
     }
 
-    fun startDocentPlayback(
+    suspend fun startDocentPlayback(
         docenTrack: DocentTrackEntity,
         gpsTrack: GpsTrackEntity,
         triggers: List<DocentPlaybackItem>
@@ -123,7 +124,9 @@ class Operator @Inject constructor(
         if (operatorMode == OperatorMode.DOCENT_PLAYBACK) return
         currentOp.stop()
         logger.d(TAG, "startDocentPlayback id=${docenTrack.id}")
-        currentOp = opDocentPlaybackFactory.create(docenTrack, gpsTrack, triggers)
+        val op = opDocentPlaybackFactory.create(docenTrack, gpsTrack, triggers)
+        op.initAsync()
+        currentOp = op
         changeMode(OperatorMode.DOCENT_PLAYBACK)
     }
 
@@ -143,8 +146,7 @@ class Operator @Inject constructor(
 
     fun stopDocentPlayback() {
         if (operatorMode != OperatorMode.DOCENT_PLAYBACK) return
-        val op = currentOp as OpDocentPlayback
-        logger.d(TAG, "stopDocentPlayback id=${op.currentDocentTrackId}")
+        logger.d(TAG, "stopDocentPlayback ${(currentOp as? OpDocentPlayback)?.currentDocentTrackId}")
         currentOp.stop()
         currentOp = opIdle
         changeMode(OperatorMode.IDLE)
