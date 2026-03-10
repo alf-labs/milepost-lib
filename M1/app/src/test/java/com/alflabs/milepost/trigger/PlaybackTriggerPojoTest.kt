@@ -1,6 +1,6 @@
 package com.alflabs.milepost.trigger
 
-import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
+import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -15,7 +15,7 @@ class PlaybackTriggerPojoTest {
             mpDirection = PlaybackTriggerDirection.DIRECTION_TO_HIGHER_MP
         }
 
-        val item = DocentEditorItem(
+        val item = DocentTriggerItem(
             id = 123L,
             audioFileId = 456L,
             persistableUri = "Uri-456",

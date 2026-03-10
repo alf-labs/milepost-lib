@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.docentEditor
+package com.alflabs.milepost.fragments.docentTriggers
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DocentEditorViewModel @Inject constructor(
+class DocentTriggerViewModel @Inject constructor(
     private val docentTrackDao: DocentTrackDao,
     private val playTriggerDao: PlayTriggerDao,
     private val audioFileDao: AudioFileDao,
@@ -27,7 +27,7 @@ class DocentEditorViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        private val TAG = DocentEditorViewModel::class.java.simpleName
+        private val TAG = DocentTriggerViewModel::class.java.simpleName
     }
 
     private val _docentTrackId = MutableLiveData<Long>()
@@ -36,7 +36,7 @@ class DocentEditorViewModel @Inject constructor(
         docentTrackDao.getById(id).asLiveData()
     }
 
-    val triggers: LiveData<List<DocentEditorItem>?> = _docentTrackId.switchMap { id ->
+    val triggers: LiveData<List<DocentTriggerItem>?> = _docentTrackId.switchMap { id ->
         playTriggerDao.getTriggersForDocentTrack(id).asLiveData()
     }
 

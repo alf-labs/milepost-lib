@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.docentEditor
+package com.alflabs.milepost.fragments.docentTriggers
 
 import android.os.Bundle
 import android.text.Editable
@@ -27,7 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.databinding.DocentEditorFragmentBinding
+import com.alflabs.milepost.databinding.DocentTriggersFragmentBinding
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackEntity
@@ -45,10 +45,10 @@ import javax.inject.Inject
 import kotlin.toString
 
 @AndroidEntryPoint
-class DocentEditorFragment : Fragment() {
+class DocentTriggerFragment : Fragment() {
 
     companion object {
-        private val TAG = DocentEditorFragment::class.java.simpleName
+        private val TAG = DocentTriggerFragment::class.java.simpleName
         private const val KEY_SELECTED_POSITION = "selected-position"
     }
 
@@ -57,11 +57,11 @@ class DocentEditorFragment : Fragment() {
     @Inject lateinit var docentTrackDao: DocentTrackDao
     @Inject lateinit var docentImporterExporter: DocentImporterExporter
 
-    private var _binding: DocentEditorFragmentBinding? = null
+    private var _binding: DocentTriggersFragmentBinding? = null
     private val binding get() = _binding!!
-    private val fragmentArgs: DocentEditorFragmentArgs by navArgs()
-    private var docentEditorAdapter: DocentEditorAdapter? = null
-    private val viewModel: DocentEditorViewModel by viewModels()
+    private val fragmentArgs: DocentTriggerFragmentArgs by navArgs()
+    private var docentTriggerAdapter: DocentTriggerAdapter? = null
+    private val viewModel: DocentTriggerViewModel by viewModels()
     private var docentTrackEntity: DocentTrackEntity? = null
     private var gpsTrackEntity: GpsTrackEntity? = null
     private var allAudioFiles: List<AudioFileItem>? = null
@@ -72,7 +72,7 @@ class DocentEditorFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = DocentEditorFragmentBinding.inflate(inflater, container, false)
+        _binding = DocentTriggersFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -83,17 +83,17 @@ class DocentEditorFragment : Fragment() {
         setupMenu()
 
         lifecycleScope.launch {
-            docentEditorAdapter = DocentEditorAdapter(
+            docentTriggerAdapter = DocentTriggerAdapter(
                 onUpdate = ::showAddOrEditTriggerDialog,
             )
 
             val layoutManager = LinearLayoutManager(requireContext())
-            binding.playTriggerList.adapter = docentEditorAdapter
+            binding.playTriggerList.adapter = docentTriggerAdapter
             binding.playTriggerList.layoutManager = layoutManager
 
             savedInstanceState?.let {
                 val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
-                docentEditorAdapter?.setSelectedPosition(selectedPosition)
+                docentTriggerAdapter?.setSelectedPosition(selectedPosition)
             }
 
             val dividerItemDecoration = DividerItemDecoration(
@@ -134,7 +134,7 @@ class DocentEditorFragment : Fragment() {
                 binding.emptyMessage.visibility =
                     if (list?.isEmpty() ?: false) View.VISIBLE else View.GONE
 
-                docentEditorAdapter?.submitList(list)
+                docentTriggerAdapter?.submitList(list)
             }
 
             viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
@@ -156,7 +156,7 @@ class DocentEditorFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        docentEditorAdapter?.let { adapter ->
+        docentTriggerAdapter?.let { adapter ->
             logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
             outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
@@ -192,7 +192,7 @@ class DocentEditorFragment : Fragment() {
                     }
 
                     R.id.action_export_json -> {
-                        val triggers = docentEditorAdapter?.currentList
+                        val triggers = docentTriggerAdapter?.currentList
                         val exportFile =
                             docentImporterExporter.createJsonExportFile(
                                 requireContext(),
@@ -223,7 +223,7 @@ class DocentEditorFragment : Fragment() {
         lifecycleScope.launch {
             logger.d(TAG, "@@ Set prefs Playback track: ${docentTrack.id}")
             appSettings.setDocentPlaybackTrackId(docentTrack.id)
-            val action = DocentEditorFragmentDirections.actionReviewToPlay()
+            val action = DocentTriggerFragmentDirections.actionReviewToPlay()
             findNavController().navigate(action)
         }
     }
@@ -249,7 +249,7 @@ class DocentEditorFragment : Fragment() {
             .show()
     }
 
-    private fun showAddOrEditTriggerDialog(item: DocentEditorItem?) {
+    private fun showAddOrEditTriggerDialog(item: DocentTriggerItem?) {
         val isAdd = item == null
         val docentTrack = docentTrackEntity ?: return
         val currentAudioFiles = allAudioFiles ?: emptyList()
@@ -416,7 +416,7 @@ class DocentEditorFragment : Fragment() {
     private fun showReviewTitleDialog(docentTrack: DocentTrackEntity?) {
         if (docentTrack == null) return
 
-        val dialogView = layoutInflater.inflate(R.layout.docent_editor_title_dialog, null)
+        val dialogView = layoutInflater.inflate(R.layout.docent_triggers_title_dialog, null)
         val trackTitleEditText = dialogView.findViewById<TextInputEditText>(R.id.track_title_edittext)
 
         trackTitleEditText.setText(docentTrack.displayUserTitle())
@@ -443,7 +443,7 @@ class DocentEditorFragment : Fragment() {
     }
 
     private fun notifyItemIdChanged(id: Long) : Int {
-        docentEditorAdapter?.let { adapter ->
+        docentTriggerAdapter?.let { adapter ->
             val list = adapter.currentList
             val first = list.indexOfFirst { it.id == id }
             if (first >= 0) {

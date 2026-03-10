@@ -1,13 +1,13 @@
-package com.alflabs.milepost.fragments.docentEditor
+package com.alflabs.milepost.fragments.docentTriggers
 
 import com.alflabs.milepost.db.PlayTriggerEntity
 import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 
 /**
  * A derivative of [com.alflabs.milepost.db.PlayTriggerEntity]
- * suitable for the [DocentEditorFragment] recycler view.
+ * suitable for the [DocentTriggerFragment] recycler view.
  */
-data class DocentEditorItem(
+data class DocentTriggerItem(
     // Fields from the PlayTriggerEntity
     val id: Long,
     val audioFileId: Long,
@@ -28,6 +28,6 @@ data class DocentEditorItem(
     }
 
     override fun toString(): String {
-        return "DocentEditorItem(id=$id, audioFileId=$audioFileId [$fileName], docentTrackId=$docentTrackId, playbackTrigger=$playbackTrigger)"
+        return "DocentTriggerItem(id=$id, audioFileId=$audioFileId [$fileName], docentTrackId=$docentTrackId, playbackTrigger=$playbackTrigger)"
     }
 }

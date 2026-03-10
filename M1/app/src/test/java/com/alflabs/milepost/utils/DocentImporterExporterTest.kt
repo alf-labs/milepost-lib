@@ -10,7 +10,7 @@ import com.alflabs.milepost.dagger.FakeLoggerModule
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.db.gpsTrackSummary
-import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
+import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import com.alflabs.milepost.location.LocationDataList
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 import com.alflabs.milepost.trigger.playbackTriggerMetadata
@@ -33,7 +33,7 @@ class DocentImporterExporterTest {
     private val docentImporterExporter = DocentImporterExporter(fakeLogger, fakeFileOps)
     private lateinit var docentTrackEntity: DocentTrackEntity
     private lateinit var gpsTrackEntity: GpsTrackEntity
-    private lateinit var docentItems: List<DocentEditorItem>
+    private lateinit var docentItems: List<DocentTriggerItem>
 
     @Before
     fun setup() {
@@ -64,7 +64,7 @@ class DocentImporterExporterTest {
         )
 
         docentItems = listOf(
-            DocentEditorItem(
+            DocentTriggerItem(
                 id = 1,
                 audioFileId = 1,
                 persistableUri = "Uri-1",
@@ -77,7 +77,7 @@ class DocentImporterExporterTest {
                     mpDirection = PlaybackTriggerDirection.DIRECTION_TO_HIGHER_MP
                 },
             ),
-            DocentEditorItem(
+            DocentTriggerItem(
                 id = 2,
                 audioFileId = 2,
                 persistableUri = "Uri-2",
@@ -90,7 +90,7 @@ class DocentImporterExporterTest {
                     mpDirection = PlaybackTriggerDirection.DIRECTION_UNSPECIFIED
                 },
             ),
-            DocentEditorItem(
+            DocentTriggerItem(
                 id = 3,
                 audioFileId = 3,
                 persistableUri = "Uri-3",

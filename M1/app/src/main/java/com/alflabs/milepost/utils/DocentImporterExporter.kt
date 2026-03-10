@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackEntity
-import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
+import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import com.alflabs.milepost.trigger.PlaybackTriggerPojo
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
@@ -34,7 +34,7 @@ class DocentImporterExporter @Inject constructor(
         context: Context,
         docentTrackEntity: DocentTrackEntity?,
         gpsTrackEntity: GpsTrackEntity?,
-        triggersList: List<DocentEditorItem>,
+        triggersList: List<DocentTriggerItem>,
     ): File? {
         logger.d(TAG, "createJsonExportFile")
 
@@ -191,5 +191,5 @@ data class DocentImportValidationResult(
 
 data class DocentImportResult(
     val docentTrackEntity: DocentTrackEntity,
-    val triggerItems: List<DocentEditorItem>,
+    val triggerItems: List<DocentTriggerItem>,
 )

@@ -1,6 +1,6 @@
 package com.alflabs.milepost.fragments.docentPlayback
 
-import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
+import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 
 data class DocentPlaybackItem(
@@ -14,7 +14,7 @@ data class DocentPlaybackItem(
     val fileName: String,
     val persistableUri: String,
 ) {
-    constructor(editorItem: DocentEditorItem) : this(
+    constructor(editorItem: DocentTriggerItem) : this(
         isPlaying = false,
         isPending = false,
         triggerId = editorItem.id,

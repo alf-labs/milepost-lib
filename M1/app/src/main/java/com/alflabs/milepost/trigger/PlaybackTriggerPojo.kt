@@ -1,7 +1,7 @@
 package com.alflabs.milepost.trigger
 
 import com.alflabs.milepost.db.PlayTriggerEntity
-import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
+import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -14,7 +14,7 @@ data class PlaybackTriggerPojo @JsonCreator constructor(
     @param:JsonProperty("mpMax") val mpMax: Float,
     @param:JsonProperty("mpDirection") val mpDirection: PlaybackTriggerDirectionPojo,
 ) {
-    constructor(item: DocentEditorItem) : this(
+    constructor(item: DocentTriggerItem) : this(
         audioFileName = item.fileName,
         includeInColdStart = item.playbackTrigger!!.includeInColdStart,
         mpMin = item.playbackTrigger.mpMin,
@@ -26,8 +26,8 @@ data class PlaybackTriggerPojo @JsonCreator constructor(
         docentTrackId: Long,
         audioFileNameToId: Map<String, Long>,
         audioFileNameToUri: Map<String, String>,
-    ) : DocentEditorItem {
-        return DocentEditorItem(
+    ) : DocentTriggerItem {
+        return DocentTriggerItem(
             id = 0,
             fileName = this@PlaybackTriggerPojo.audioFileName,
             audioFileId = audioFileNameToId[this@PlaybackTriggerPojo.audioFileName]!!,

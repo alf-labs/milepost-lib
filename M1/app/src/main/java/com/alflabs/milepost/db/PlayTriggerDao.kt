@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import com.alflabs.milepost.fragments.docentEditor.DocentEditorItem
+import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import kotlinx.coroutines.flow.Flow
 
 /** All queries for the play_triggers table */
@@ -29,7 +29,7 @@ interface PlayTriggerDao {
         WHERE T.docentTrackId = :docentTrackId
         ORDER BY A.fileName ASC
         """)
-    fun getTriggersForDocentTrack(docentTrackId: Long): Flow<List<DocentEditorItem>>
+    fun getTriggersForDocentTrack(docentTrackId: Long): Flow<List<DocentTriggerItem>>
 
     @Query("DELETE FROM play_triggers WHERE id = :id")
     suspend fun deleteById(id: Long)

@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.docentEditor
+package com.alflabs.milepost.fragments.docentTriggers
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -7,16 +7,16 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
-import com.alflabs.milepost.databinding.DocentEditorItemBinding
+import com.alflabs.milepost.databinding.DocentTriggerItemBinding
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 
-class DocentEditorAdapter(
-    private val onUpdate: (DocentEditorItem) -> Unit,
+class DocentTriggerAdapter(
+    private val onUpdate: (DocentTriggerItem) -> Unit,
 ) :
-    ListAdapter<DocentEditorItem, DocentEditorAdapter.DocentEditorViewHolder>(DocentEditorDiffCallback()) {
+    ListAdapter<DocentTriggerItem, DocentTriggerAdapter.DocentTriggerViewHolder>(DocentTriggerDiffCallback()) {
 
     companion object {
-        private val TAG = DocentEditorAdapter::class.java.simpleName
+        private val TAG = DocentTriggerAdapter::class.java.simpleName
     }
 
     @Deprecated("may not want to use this, remove later")
@@ -37,7 +37,7 @@ class DocentEditorAdapter(
     }
 
     @Deprecated("may not want to use this, remove later")
-    fun getSelected(): DocentEditorItem? {
+    fun getSelected(): DocentTriggerItem? {
         return if (selectedPosition != RecyclerView.NO_POSITION) {
             getItem(selectedPosition)
         } else {
@@ -45,23 +45,23 @@ class DocentEditorAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentEditorViewHolder {
-        val binding = DocentEditorItemBinding.inflate(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentTriggerViewHolder {
+        val binding = DocentTriggerItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return DocentEditorViewHolder(binding)
+        return DocentTriggerViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: DocentEditorViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: DocentTriggerViewHolder, position: Int) {
         val item = getItem(position)
         holder.bind(item, position == selectedPosition)
     }
 
-    inner class DocentEditorViewHolder(
-        private val binding: DocentEditorItemBinding,
+    inner class DocentTriggerViewHolder(
+        private val binding: DocentTriggerItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: DocentEditorItem, isSelected: Boolean) {
+        fun bind(item: DocentTriggerItem, isSelected: Boolean) {
             val trigger = item.playbackTrigger
             binding.triggerTitle.text = "${item.fileName.ifEmpty { "Unknown Audio ${item.audioFileId}" }}"
             if (trigger != null) {
@@ -108,12 +108,12 @@ class DocentEditorAdapter(
     }
 }
 
-class DocentEditorDiffCallback : DiffUtil.ItemCallback<DocentEditorItem>() {
-    override fun areItemsTheSame(oldItem: DocentEditorItem, newItem: DocentEditorItem): Boolean {
+class DocentTriggerDiffCallback : DiffUtil.ItemCallback<DocentTriggerItem>() {
+    override fun areItemsTheSame(oldItem: DocentTriggerItem, newItem: DocentTriggerItem): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: DocentEditorItem, newItem: DocentEditorItem): Boolean {
+    override fun areContentsTheSame(oldItem: DocentTriggerItem, newItem: DocentTriggerItem): Boolean {
         return oldItem == newItem
     }
 }
