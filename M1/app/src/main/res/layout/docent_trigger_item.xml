@@ -28,4 +28,11 @@
             android:layout_marginStart="16dp"
             tools:text="Trigger Info" />
 
+    <TextView
+            android:id="@+id/duration_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            tools:text="Duration Info" />
+
 </LinearLayout>

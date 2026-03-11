@@ -1,11 +1,13 @@
 package com.alflabs.milepost.fragments.docentTriggers
 
+import androidx.room.Ignore
+import com.alflabs.milepost.db.AudioFileMetadata
 import com.alflabs.milepost.db.PlayTriggerEntity
 import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 
 /**
  * A derivative of [com.alflabs.milepost.db.PlayTriggerEntity]
- * suitable for the [DocentTriggerFragment] recycler view.
+ * suitable for the [DocentTriggersFragment] recycler view.
  */
 data class DocentTriggerItem(
     // Fields from the PlayTriggerEntity
@@ -16,7 +18,11 @@ data class DocentTriggerItem(
     // Fields from the AudioFileEntity
     val fileName: String,
     val persistableUri: String,
+    val metadata: AudioFileMetadata? = null,
 ) {
+    // These fields are internal and not populated by the DAO in getItems().
+    @Ignore var durationDisplay: String = ""
+    @Ignore var durationMp: Float = 0f
 
     fun toEntity() : PlayTriggerEntity {
         return PlayTriggerEntity(

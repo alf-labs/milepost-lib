@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.AudioFileItemBinding
+import com.alflabs.milepost.utils.Time
 import java.util.concurrent.TimeUnit
 
 class AudioFileAdapter(
@@ -64,7 +65,7 @@ class AudioFileAdapter(
         fun bind(item: AudioFileItem, isSelected: Boolean) {
 
             val metadata = item.metadata?.let { data ->
-                "Duration: ${formatMillis(data.durationMs)}"
+                "Duration: ${Time.formatMillis(data.durationMs)}"
             } ?: ""
 
             binding.fileName.text = item.fileName
@@ -126,21 +127,6 @@ class AudioFileAdapter(
             })
         }
     }
-
-    @SuppressLint("DefaultLocale")
-    private fun formatMillis(ms: Long): String {
-        val hours = TimeUnit.MILLISECONDS.toHours(ms)
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(ms) % 60
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
-
-        return if (hours > 0) {
-            String.format("%02dh %02dm %02ds", hours, minutes, seconds)
-        } else {
-            String.format("%02dm %02ds", minutes, seconds)
-        }
-    }
-
-
 }
 
 class AudioFileDiffCallback : DiffUtil.ItemCallback<AudioFileItem>() {

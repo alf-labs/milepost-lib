@@ -36,6 +36,8 @@ import com.alflabs.milepost.fragments.audioFiles.AudioFileItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 import com.alflabs.milepost.utils.DocentImporterExporter
+import com.alflabs.milepost.utils.Time
+import com.alflabs.milepost.utils.Units
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.textfield.TextInputEditText
@@ -59,7 +61,7 @@ class DocentTriggersFragment : Fragment() {
 
     private var _binding: DocentTriggersFragmentBinding? = null
     private val binding get() = _binding!!
-    private val fragmentArgs: DocentTriggerFragmentArgs by navArgs()
+    private val fragmentArgs: DocentTriggersFragmentArgs by navArgs()
     private var docentTriggersAdapter: DocentTriggersAdapter? = null
     private val viewModel: DocentTriggersViewModel by viewModels()
     private var docentTrackEntity: DocentTrackEntity? = null
@@ -126,15 +128,17 @@ class DocentTriggersFragment : Fragment() {
                 gpsTrackEntity = gpsTrack
                 val label = gpsTrack?.displayTrackLabel()
                 binding.gpsTrackLabel.text = if (label != null) "GPS Track: $label" else "GPS Track not found"
+                updateDurations(docentTriggersAdapter?.currentList, gpsTrackEntity)
             }
 
             viewModel.triggers.observe(viewLifecycleOwner) { list ->
-                logger.d(TAG, "@@ DocentTriggers observe new list: ${list?.size ?: -1} items")
+                logger.d(TAG, "@@ DocentTriggers observe new triggers: ${list?.size ?: -1} items")
 
                 binding.emptyMessage.visibility =
                     if (list?.isEmpty() ?: false) View.VISIBLE else View.GONE
 
                 docentTriggersAdapter?.submitList(list)
+                updateDurations(list, gpsTrackEntity)
             }
 
             viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
@@ -223,7 +227,7 @@ class DocentTriggersFragment : Fragment() {
         lifecycleScope.launch {
             logger.d(TAG, "@@ Set prefs Playback track: ${docentTrack.id}")
             appSettings.setDocentPlaybackTrackId(docentTrack.id)
-            val action = DocentTriggerFragmentDirections.actionReviewToPlay()
+            val action = DocentTriggersFragmentDirections.actionReviewToPlay()
             findNavController().navigate(action)
         }
     }
@@ -452,5 +456,62 @@ class DocentTriggersFragment : Fragment() {
             }
         }
         return RecyclerView.NO_POSITION
+    }
+
+    private fun updateDurations(
+        list: List<DocentTriggerItem>?,
+        gpsTrackEntity: GpsTrackEntity?
+    ) {
+        val locations = gpsTrackEntity?.locationList ?: return
+        if (list.isNullOrEmpty()) return
+        list.forEach { item ->
+            val oldDisplay = item.durationDisplay
+            val oldDurMp = item.durationMp
+            val durationMs = item.metadata?.durationMs ?: 0L
+            item.durationDisplay = Time.formatMillis(durationMs)
+
+            // Find the speed of all the locations matching the trigger interval
+            item.playbackTrigger?.let { trigger ->
+                val mpMin = trigger.mpMin
+                val mpMax = trigger.mpMax
+
+                val speedsMPH = locations
+                    .locationsList
+                    .filter {
+                        it.hasSpeed() &&
+                        it.speed.speedMps > 0 &&
+                        it.hasMp() && it.mp >= mpMin && it.mp <= mpMax
+                    }
+                    .map { Units.mps_to_mph(it.speed.speedMps) }
+
+                val medianMPH = medianSpeed(speedsMPH)
+                val averageMPG = averageSpeed(speedsMPH)
+
+                logger.d(TAG, "@@ updateDurations: trigger ${item.id} -> avg $averageMPG / median $medianMPH / speeds $speedsMPH")
+                val newDurMp = medianMPH * durationMs.toFloat() / 1000f / 3600f
+                item.durationMp = newDurMp
+            }
+
+            if (oldDisplay != item.durationDisplay || oldDurMp != item.durationMp) {
+                logger.d(TAG, "@@ updateDurations: trigger ${item.id} -> duration ${item.durationDisplay} (${item.durationMp} MP)")
+                notifyItemIdChanged(item.id)
+            }
+        }
+    }
+
+    private fun medianSpeed(speeds: List<Float>) : Float {
+        if (speeds.isEmpty()) return 0.0f
+        val sorted = speeds.sorted()
+        val mid = sorted.size / 2
+        return if (sorted.size % 2 == 0) {
+            (sorted[mid - 1] + sorted[mid]) / 2
+        } else {
+            sorted[mid]
+        }
+    }
+
+    private fun averageSpeed(speeds: List<Float>) : Float {
+        if (speeds.isEmpty()) return 0.0f
+        return speeds.average().toFloat()
     }
 }

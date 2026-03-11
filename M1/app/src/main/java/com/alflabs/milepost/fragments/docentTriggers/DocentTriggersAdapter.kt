@@ -81,6 +81,9 @@ class DocentTriggersAdapter(
                 binding.triggerRange.text = "--"
                 binding.triggerInfo.text = "--"
             }
+            val mpDur = String.format("%.2f", item.durationMp)
+            binding.durationInfo.text = "Duration: ${item.durationDisplay} ($mpDur MP)"
+
 
             binding.root.setOnClickListener {
                 onUpdate(item)
