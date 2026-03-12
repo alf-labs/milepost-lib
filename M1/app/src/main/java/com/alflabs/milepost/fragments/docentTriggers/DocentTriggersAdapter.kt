@@ -63,7 +63,7 @@ class DocentTriggersAdapter(
 
         fun bind(item: DocentTriggerItem, isSelected: Boolean) {
             val trigger = item.playbackTrigger
-            binding.triggerTitle.text = "${item.fileName.ifEmpty { "Unknown Audio ${item.audioFileId}" }}"
+            binding.triggerTitle.text = "${item.fileName.ifEmpty { "Unknown Audio ${item.audioSegmentId}" }}"
             if (trigger != null) {
                 binding.triggerInfo.text =
                     if (trigger.includeInColdStart) "Include in Cold Start"

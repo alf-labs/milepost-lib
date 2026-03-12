@@ -7,7 +7,7 @@ import androidx.room.Update
 import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import kotlinx.coroutines.flow.Flow
 
-/** All queries for the audio_files table */
+/** All queries for the audio_segments table */
 @Dao
 interface AudioSegmentDao {
     @Insert
@@ -16,15 +16,15 @@ interface AudioSegmentDao {
     @Update
     suspend fun update(audioFile: AudioSegmentEntity)
 
-    @Query("UPDATE audio_files SET fileName = :fileName, persistableUri = :persistableUri WHERE id = :id")
+    @Query("UPDATE audio_segments SET fileName = :fileName, persistableUri = :persistableUri WHERE id = :id")
     suspend fun updatePersistableUri(id: Long, fileName: String, persistableUri: String)
 
-    @Query("SELECT * FROM audio_files WHERE id = :id")
+    @Query("SELECT * FROM audio_segments WHERE id = :id")
     fun getById(id: Long): Flow<AudioSegmentEntity?>
 
-    @Query("SELECT id, fileName, lastAccessTime, persistableUri, metadata FROM audio_files ORDER BY fileName ASC")
+    @Query("SELECT id, uuid, fileName, lastAccessTime, persistableUri, metadata FROM audio_segments ORDER BY fileName ASC")
     fun getItems(): Flow<List<AudioSegmentItem>>
 
-    @Query("DELETE FROM audio_files WHERE id = :id")
+    @Query("DELETE FROM audio_segments WHERE id = :id")
     suspend fun deleteById(id: Long)
 }

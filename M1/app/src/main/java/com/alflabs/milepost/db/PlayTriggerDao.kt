@@ -16,16 +16,16 @@ interface PlayTriggerDao {
     @Update
     suspend fun update(playTrigger: PlayTriggerEntity)
 
-    @Query("SELECT * FROM play_triggers WHERE audioFileId = :audioFileId")
-    fun getTriggersForAudioSegment(audioFileId: Long): Flow<List<PlayTriggerEntity>>
+    @Query("SELECT * FROM play_triggers WHERE audioSegmentId = :audioSegmentId")
+    fun getTriggersForAudioSegment(audioSegmentId: Long): Flow<List<PlayTriggerEntity>>
 
-    @Query("SELECT COUNT(*) FROM play_triggers WHERE audioFileId = :audioFileId")
-    suspend fun countTriggersForAudioSegment(audioFileId: Long): Int
+    @Query("SELECT COUNT(*) FROM play_triggers WHERE audioSegmentId = :audioSegmentId")
+    suspend fun countTriggersForAudioSegment(audioSegmentId: Long): Int
 
     @Query("""
-        SELECT T.id, T.audioFileId, T.docentTrackId, T.playbackTrigger, A.fileName, A.persistableUri, A.metadata
+        SELECT T.id, T.audioSegmentId, T.docentTrackId, T.playbackTrigger, A.fileName, A.persistableUri, A.metadata
         FROM play_triggers AS T
-        INNER JOIN audio_files AS A ON T.audioFileId = A.id
+        INNER JOIN audio_segments AS A ON T.audioSegmentId = A.id
         WHERE T.docentTrackId = :docentTrackId
         ORDER BY A.fileName ASC
         """)

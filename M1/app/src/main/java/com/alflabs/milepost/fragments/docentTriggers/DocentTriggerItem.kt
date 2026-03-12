@@ -12,7 +12,7 @@ import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 data class DocentTriggerItem(
     // Fields from the PlayTriggerEntity
     val id: Long,
-    val audioFileId: Long,
+    val audioSegmentId: Long,
     val docentTrackId: Long,
     val playbackTrigger: PlaybackTriggerMetadata?,
     // Fields from the AudioSegmentEntity
@@ -27,13 +27,13 @@ data class DocentTriggerItem(
     fun toEntity() : PlayTriggerEntity {
         return PlayTriggerEntity(
             id = id,
-            audioFileId = audioFileId,
+            audioSegmentId = audioSegmentId,
             docentTrackId = docentTrackId,
             playbackTrigger = playbackTrigger
         )
     }
 
     override fun toString(): String {
-        return "DocentTriggerItem(id=$id, audioFileId=$audioFileId [$fileName], docentTrackId=$docentTrackId, playbackTrigger=$playbackTrigger)"
+        return "DocentTriggerItem(id=$id, audioSegmentId=$audioSegmentId [$fileName], docentTrackId=$docentTrackId, playbackTrigger=$playbackTrigger)"
     }
 }

@@ -30,7 +30,7 @@ data class PlaybackTriggerPojo @JsonCreator constructor(
         return DocentTriggerItem(
             id = 0,
             fileName = this@PlaybackTriggerPojo.audioFileName,
-            audioFileId = audioFileNameToId[this@PlaybackTriggerPojo.audioFileName]!!,
+            audioSegmentId = audioFileNameToId[this@PlaybackTriggerPojo.audioFileName]!!,
             persistableUri = audioFileNameToUri[this@PlaybackTriggerPojo.audioFileName]!!,
             docentTrackId = docentTrackId,
             playbackTrigger = playbackTriggerMetadata {
@@ -42,4 +42,3 @@ data class PlaybackTriggerPojo @JsonCreator constructor(
         )
     }
 }
-

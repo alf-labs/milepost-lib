@@ -9,6 +9,7 @@ import com.alflabs.milepost.db.AudioSegmentMetadata
  */
 data class AudioSegmentItem(
     val id: Long,
+    val uuid: String,
     val fileName: String,
     val lastAccessTime: String,
     val persistableUri: String,

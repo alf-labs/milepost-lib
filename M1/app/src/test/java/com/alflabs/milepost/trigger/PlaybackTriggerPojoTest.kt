@@ -17,7 +17,7 @@ class PlaybackTriggerPojoTest {
 
         val item = DocentTriggerItem(
             id = 123L,
-            audioFileId = 456L,
+            audioSegmentId = 456L,
             persistableUri = "Uri-456",
             docentTrackId = 789L,
             playbackTrigger = metadata,
@@ -51,7 +51,7 @@ class PlaybackTriggerPojoTest {
 
         assertThat(item.id).isEqualTo(0L)
         assertThat(item.fileName).isEqualTo("test_audio.mp3")
-        assertThat(item.audioFileId).isEqualTo(456L)
+        assertThat(item.audioSegmentId).isEqualTo(456L)
         assertThat(item.docentTrackId).isEqualTo(docentTrackId)
 
         val metadata = item.playbackTrigger!!

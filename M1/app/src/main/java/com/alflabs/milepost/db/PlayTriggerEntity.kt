@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
         ForeignKey(
             entity = AudioSegmentEntity::class,
             parentColumns = ["id"],
-            childColumns = ["audioFileId"],
+            childColumns = ["audioSegmentId"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
@@ -30,7 +30,7 @@ data class PlayTriggerEntity(
     val id: Long = 0,
 
     @ColumnInfo(index = true)
-    val audioFileId: Long,
+    val audioSegmentId: Long,
 
     @ColumnInfo(index = true)
     val docentTrackId: Long,
@@ -43,7 +43,8 @@ data class PlayTriggerEntity(
 
 /** A mirror of [PlayTriggerEntity] for JSON import/export. */
 data class PlayTriggerEntityPojo @JsonCreator constructor(
-    @param:JsonProperty("audioFileId") val audioFileId: Long,
+    // TBD alias audioFileId
+    @param:JsonProperty("audioSegmentId") val audioSegmentId: Long,
     @param:JsonProperty("docentTrackId") val docentTrackId: Long,
     @param:JsonProperty("playbackTrigger") val playbackTrigger: PlaybackTriggerMetadata? = null
 ) {

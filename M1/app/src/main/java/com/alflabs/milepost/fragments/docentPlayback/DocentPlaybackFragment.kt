@@ -157,12 +157,12 @@ class DocentPlaybackFragment : SensorsFragment() {
 
                         if (viewModel.triggers.isEmpty()) {
                             // Load triggers.
-                            // Ensure they all have a trigger structure and a valid audio file id.
+                            // Ensure they all have a trigger structure and a valid audio segment id.
                             viewModel.triggers.addAll(
                                 playTriggerDao
                                     .getTriggersForDocentTrack(docentTrackId)
                                     .first()
-                                    .filter { it.playbackTrigger != null && it.audioFileId > 0 }
+                                    .filter { it.playbackTrigger != null && it.audioSegmentId > 0 }
                                     .map { DocentPlaybackItem(it) }
                             )
 

@@ -8,7 +8,7 @@ data class DocentPlaybackItem(
     val isPending: Boolean,
     // Fields from the PlayTriggerEntity
     val triggerId: Long,
-    val audioFileId: Long,
+    val audioSegmentId: Long,
     val playbackTrigger: PlaybackTriggerMetadata?,
     // Fields from the AudioSegmentEntity
     val fileName: String,
@@ -18,7 +18,7 @@ data class DocentPlaybackItem(
         isPlaying = false,
         isPending = false,
         triggerId = editorItem.id,
-        audioFileId = editorItem.audioFileId,
+        audioSegmentId = editorItem.audioSegmentId,
         playbackTrigger = editorItem.playbackTrigger,
         fileName = editorItem.fileName,
         persistableUri = editorItem.persistableUri,

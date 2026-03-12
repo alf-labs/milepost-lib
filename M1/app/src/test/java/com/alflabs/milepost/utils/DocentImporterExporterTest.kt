@@ -66,7 +66,7 @@ class DocentImporterExporterTest {
         docentItems = listOf(
             DocentTriggerItem(
                 id = 1,
-                audioFileId = 1,
+                audioSegmentId = 1,
                 persistableUri = "Uri-1",
                 docentTrackId = 42L,
                 fileName = audioFiles[1]!!,
@@ -79,7 +79,7 @@ class DocentImporterExporterTest {
             ),
             DocentTriggerItem(
                 id = 2,
-                audioFileId = 2,
+                audioSegmentId = 2,
                 persistableUri = "Uri-2",
                 docentTrackId = 42L,
                 fileName = audioFiles[2]!!,
@@ -92,7 +92,7 @@ class DocentImporterExporterTest {
             ),
             DocentTriggerItem(
                 id = 3,
-                audioFileId = 3,
+                audioSegmentId = 3,
                 persistableUri = "Uri-3",
                 docentTrackId = 42L,
                 fileName = audioFiles[3]!!,

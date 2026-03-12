@@ -282,7 +282,7 @@ class DocentTriggersFragment : Fragment() {
         val audioSegmentAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentNames)
         audioSegmentDropdown.setAdapter(audioSegmentAdapter)
-        val currAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.id == (item?.audioFileId ?: -1) }
+        val currAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.id == (item?.audioSegmentId ?: -1) }
         if (currAudioSegmentIndex >= 0) {
             audioSegmentDropdown.setText(audioSegmentNames[currAudioSegmentIndex], /*filter=*/false)
         }
@@ -333,7 +333,7 @@ class DocentTriggersFragment : Fragment() {
                 var changed = isAdd
                 val newTrigger = currTrigger?.toBuilder() ?: PlaybackTriggerMetadata.newBuilder()
                 var newEntity = item?.toEntity() ?: PlayTriggerEntity(
-                    audioFileId = 0,
+                    audioSegmentId = 0,
                     docentTrackId = docentTrack.id,
                 )
 
@@ -361,7 +361,7 @@ class DocentTriggersFragment : Fragment() {
                 val newAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.fileName == newAudio }
                 if (newAudioSegmentIndex >= 0 && newAudioSegmentIndex != currAudioSegmentIndex) {
                     changed = true
-                    newEntity = newEntity.copy(audioFileId = currentAudioSegments[newAudioSegmentIndex].id)
+                    newEntity = newEntity.copy(audioSegmentId = currentAudioSegments[newAudioSegmentIndex].id)
                 }
 
                 newEntity = newEntity.copy(playbackTrigger = newTrigger.build())

@@ -34,7 +34,7 @@ class DocentPlaybackAdapter :
         fun bind(item: DocentPlaybackItem) {
             val trigger = item.playbackTrigger
 
-            binding.triggerTitle.text = "${item.fileName.ifEmpty { "Unknown Audio ${item.audioFileId}" }}"
+            binding.triggerTitle.text = "${item.fileName.ifEmpty { "Unknown Audio ${item.audioSegmentId}" }}"
             if (trigger != null) {
                 val mpMin = String.format("%.2f", trigger.mpMin)
                 val mpMax = String.format("%.2f", trigger.mpMax)
