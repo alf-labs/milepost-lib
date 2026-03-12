@@ -1,18 +1,18 @@
-package com.alflabs.milepost.fragments.audioFiles
+package com.alflabs.milepost.fragments.audioSegments
 
 import androidx.room.Ignore
-import com.alflabs.milepost.db.AudioFileMetadata
+import com.alflabs.milepost.db.AudioSegmentMetadata
 
 /**
- * A derivative of [com.alflabs.milepost.db.AudioFileEntity]
- * suitable for the [AudioFilesFragment] recycler view.
+ * A derivative of [com.alflabs.milepost.db.AudioSegmentEntity]
+ * suitable for the [AudioSegmentsFragment] recycler view.
  */
-data class AudioFileItem(
+data class AudioSegmentItem(
     val id: Long,
     val fileName: String,
     val lastAccessTime: String,
     val persistableUri: String,
-    val metadata: AudioFileMetadata?,
+    val metadata: AudioSegmentMetadata?,
 ) {
     // These fields are internal and not populated by the DAO in getItems().
     @Ignore var uriValid: Boolean? = null

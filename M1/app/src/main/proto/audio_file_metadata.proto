@@ -4,6 +4,6 @@ package com.alflabs.milepost.db;
 
 option java_multiple_files = true;
 
-message AudioFileMetadata {
+message AudioSegmentMetadata {
   int64 duration_ms = 1;
 }

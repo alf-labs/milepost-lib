@@ -10,7 +10,7 @@ data class DocentPlaybackItem(
     val triggerId: Long,
     val audioFileId: Long,
     val playbackTrigger: PlaybackTriggerMetadata?,
-    // Fields from the AudioFileEntity
+    // Fields from the AudioSegmentEntity
     val fileName: String,
     val persistableUri: String,
 ) {

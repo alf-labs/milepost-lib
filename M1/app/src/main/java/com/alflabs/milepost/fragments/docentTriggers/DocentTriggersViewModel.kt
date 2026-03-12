@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
-import com.alflabs.milepost.db.AudioFileDao
+import com.alflabs.milepost.db.AudioSegmentDao
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackDao
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class DocentTriggersViewModel @Inject constructor(
     private val docentTrackDao: DocentTrackDao,
     private val playTriggerDao: PlayTriggerDao,
-    private val audioFileDao: AudioFileDao,
+    private val audioSegmentDao: AudioSegmentDao,
     private val gpsTrackDao: GpsTrackDao,
 ) : ViewModel() {
 
@@ -44,7 +44,7 @@ class DocentTriggersViewModel @Inject constructor(
         gpsTrackDao.getGpsTrackForDocentTrackId(id).asLiveData()
     }
 
-    val audioFiles = audioFileDao.getItems().asLiveData()
+    val audioSegments = audioSegmentDao.getItems().asLiveData()
 
     fun loadDocentTrack(docentTrackId: Long) {
         Log.d(TAG, "Edit load track by id #$docentTrackId")

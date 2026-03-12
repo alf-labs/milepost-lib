@@ -1,7 +1,7 @@
 package com.alflabs.milepost.fragments.docentTriggers
 
 import androidx.room.Ignore
-import com.alflabs.milepost.db.AudioFileMetadata
+import com.alflabs.milepost.db.AudioSegmentMetadata
 import com.alflabs.milepost.db.PlayTriggerEntity
 import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 
@@ -15,10 +15,10 @@ data class DocentTriggerItem(
     val audioFileId: Long,
     val docentTrackId: Long,
     val playbackTrigger: PlaybackTriggerMetadata?,
-    // Fields from the AudioFileEntity
+    // Fields from the AudioSegmentEntity
     val fileName: String,
     val persistableUri: String,
-    val metadata: AudioFileMetadata? = null,
+    val metadata: AudioSegmentMetadata? = null,
 ) {
     // These fields are internal and not populated by the DAO in getItems().
     @Ignore var durationDisplay: String = ""

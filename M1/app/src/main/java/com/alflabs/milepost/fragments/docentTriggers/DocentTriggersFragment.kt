@@ -32,7 +32,7 @@ import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackEntity
 import com.alflabs.milepost.db.PlayTriggerEntity
-import com.alflabs.milepost.fragments.audioFiles.AudioFileItem
+import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 import com.alflabs.milepost.trigger.PlaybackTriggerMetadata
 import com.alflabs.milepost.utils.DocentImporterExporter
@@ -66,7 +66,7 @@ class DocentTriggersFragment : Fragment() {
     private val viewModel: DocentTriggersViewModel by viewModels()
     private var docentTrackEntity: DocentTrackEntity? = null
     private var gpsTrackEntity: GpsTrackEntity? = null
-    private var allAudioFiles: List<AudioFileItem>? = null
+    private var allAudioSegments: List<AudioSegmentItem>? = null
     private var firstLoad = true
 
     override fun onCreateView(
@@ -141,9 +141,9 @@ class DocentTriggersFragment : Fragment() {
                 updateDurations(list, gpsTrackEntity)
             }
 
-            viewModel.audioFiles.observe(viewLifecycleOwner) { list ->
+            viewModel.audioSegments.observe(viewLifecycleOwner) { list ->
                 logger.d(TAG, "@@ DocentTriggers observe new audio files: ${list?.size ?: -1} items")
-                allAudioFiles = list
+                allAudioSegments = list
             }
 
             binding.userTitle.setOnClickListener {
@@ -256,11 +256,11 @@ class DocentTriggersFragment : Fragment() {
     private fun showAddOrEditTriggerDialog(item: DocentTriggerItem?) {
         val isAdd = item == null
         val docentTrack = docentTrackEntity ?: return
-        val currentAudioFiles = allAudioFiles ?: emptyList()
+        val currentAudioSegments = allAudioSegments ?: emptyList()
         val currTrigger = item?.playbackTrigger
 
         val dialogView = layoutInflater.inflate(R.layout.docent_editor_trigger_dialog, null)
-        val audioFileDropdown =
+        val audioSegmentDropdown =
             dialogView.findViewById<AutoCompleteTextView>(R.id.audio_file_dropdown)
         val audioPlayButton = dialogView.findViewById<ImageButton>(R.id.audio_play_btn)
         val mpMinEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_min_edittext)
@@ -278,15 +278,15 @@ class DocentTriggersFragment : Fragment() {
         mpDirectionDropdown.setText(initialMpDirText, /*filter=*/false)
 
         // Note: this works because we currently impose audio files to have unique filenames.
-        val audioFileNames = currentAudioFiles.map { it.fileName }.toList()
-        val audioFileAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioFileNames)
-        audioFileDropdown.setAdapter(audioFileAdapter)
-        val currAudioFileIndex = currentAudioFiles.indexOfFirst { it.id == (item?.audioFileId ?: -1) }
-        if (currAudioFileIndex >= 0) {
-            audioFileDropdown.setText(audioFileNames[currAudioFileIndex], /*filter=*/false)
+        val audioSegmentNames = currentAudioSegments.map { it.fileName }.toList()
+        val audioSegmentAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentNames)
+        audioSegmentDropdown.setAdapter(audioSegmentAdapter)
+        val currAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.id == (item?.audioFileId ?: -1) }
+        if (currAudioSegmentIndex >= 0) {
+            audioSegmentDropdown.setText(audioSegmentNames[currAudioSegmentIndex], /*filter=*/false)
         }
-        logger.d(TAG, "@@ audio files:: #$currAudioFileIndex in ... $audioFileNames")
+        logger.d(TAG, "@@ audio files:: #$currAudioSegmentIndex in ... $audioSegmentNames")
 
         audioPlayButton.setOnClickListener {
             logger.d(TAG, "TBD On play button click")
@@ -311,7 +311,7 @@ class DocentTriggersFragment : Fragment() {
             .setPositiveButton(if (isAdd) "Add" else "Update") { _, _ ->
                 // Since we have a validator, we know the values here are valid strings
                 // or valid floats.
-                val newAudio = audioFileDropdown.text.toString().trim()
+                val newAudio = audioSegmentDropdown.text.toString().trim()
                 val newMpDir = mpDirectionDropdown.text.toString().trim()
                 var newMpMin = mpMinEditText.text.toString().toFloat()
                 var newMpMax = mpMaxEditText.text.toString().toFloat()
@@ -358,10 +358,10 @@ class DocentTriggersFragment : Fragment() {
                     newTrigger.setMpDirection(PlaybackTriggerDirection.forNumber(newMpDirIndex))
                 }
 
-                val newAudioFileIndex = currentAudioFiles.indexOfFirst { it.fileName == newAudio }
-                if (newAudioFileIndex >= 0 && newAudioFileIndex != currAudioFileIndex) {
+                val newAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.fileName == newAudio }
+                if (newAudioSegmentIndex >= 0 && newAudioSegmentIndex != currAudioSegmentIndex) {
                     changed = true
-                    newEntity = newEntity.copy(audioFileId = currentAudioFiles[newAudioFileIndex].id)
+                    newEntity = newEntity.copy(audioFileId = currentAudioSegments[newAudioSegmentIndex].id)
                 }
 
                 newEntity = newEntity.copy(playbackTrigger = newTrigger.build())
@@ -388,7 +388,7 @@ class DocentTriggersFragment : Fragment() {
         positiveButton.isEnabled = false
 
         val validationFunction = {
-            val hasAudio = audioFileDropdown.text.isNotBlank()
+            val hasAudio = audioSegmentDropdown.text.isNotBlank()
             val hasMpDir = mpDirectionDropdown.text.isNotBlank()
             val newMpMin = mpMinEditText.text.toString().toFloatOrNull()
             val hasMpMin = newMpMin != null
@@ -400,7 +400,7 @@ class DocentTriggersFragment : Fragment() {
                     && newMpMin != newMpMax
         }
 
-        audioFileDropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }
+        audioSegmentDropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }
         mpDirectionDropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }
 
         val textWatcher = object : TextWatcher {

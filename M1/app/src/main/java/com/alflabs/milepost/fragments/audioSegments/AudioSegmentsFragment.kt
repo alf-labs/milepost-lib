@@ -1,4 +1,4 @@
-package com.alflabs.milepost.fragments.audioFiles
+package com.alflabs.milepost.fragments.audioSegments
 
 import android.content.Context
 import android.content.Intent
@@ -26,10 +26,10 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
-import com.alflabs.milepost.databinding.AudioFilesFragmentBinding
-import com.alflabs.milepost.db.AudioFileEntity
+import com.alflabs.milepost.databinding.AudioSegmentsFragmentBinding
+import com.alflabs.milepost.db.AudioSegmentEntity
 import com.alflabs.milepost.db.PlayTriggerDao
-import com.alflabs.milepost.db.audioFileMetadata
+import com.alflabs.milepost.db.audioSegmentMetadata
 import com.alflabs.milepost.utils.pluralize
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
@@ -41,24 +41,24 @@ import java.time.Instant
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class AudioFilesFragment : Fragment() {
+class AudioSegmentsFragment : Fragment() {
 
     companion object {
-        private val TAG = AudioFilesFragment::class.java.simpleName
+        private val TAG = AudioSegmentsFragment::class.java.simpleName
         private const val KEY_SELECTED_POSITION = "selected-position"
     }
 
     @Inject lateinit var logger: ILogger
     @Inject lateinit var playTriggerDao: PlayTriggerDao
 
-    private var _binding: AudioFilesFragmentBinding? = null
+    private var _binding: AudioSegmentsFragmentBinding? = null
     private val binding get() = _binding!!
-    private var audioFileAdapter: AudioFileAdapter? = null
-    private var itemPlaying: AudioFileItem? = null
+    private var audioSegmentAdapter: AudioSegmentAdapter? = null
+    private var itemPlaying: AudioSegmentItem? = null
     private var mediaPlayer: MediaPlayer? = null
-    private var selectAudioFilePendingId: Long = -1L
+    private var selectAudioSegmentPendingId: Long = -1L
 
-    private val viewModel: AudioFilesViewModel by viewModels()
+    private val viewModel: AudioSegmentViewModel by viewModels()
 
     private val selectAudioFileLauncher =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
@@ -74,7 +74,7 @@ class AudioFilesFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = AudioFilesFragmentBinding.inflate(inflater, container, false)
+        _binding = AudioSegmentsFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -85,18 +85,18 @@ class AudioFilesFragment : Fragment() {
         setupMenu()
 
         lifecycleScope.launch {
-            audioFileAdapter = AudioFileAdapter(
+            audioSegmentAdapter = AudioSegmentAdapter(
                 onPlay = ::onPlayStopItem,
                 onUpdate = ::onUpdateAudioDocumentUri,
             )
 
             val layoutManager = LinearLayoutManager(requireContext())
-            binding.audioFileList.adapter = audioFileAdapter
+            binding.audioFileList.adapter = audioSegmentAdapter
             binding.audioFileList.layoutManager = layoutManager
 
             savedInstanceState?.let {
                 val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
-                audioFileAdapter?.setSelectedPosition(selectedPosition)
+                audioSegmentAdapter?.setSelectedPosition(selectedPosition)
             }
 
             val dividerItemDecoration = DividerItemDecoration(
@@ -108,9 +108,9 @@ class AudioFilesFragment : Fragment() {
             viewModel.items.observe(viewLifecycleOwner) { list ->
                 binding.emptyMessage.visibility =
                     if (list.isEmpty()) View.VISIBLE else View.GONE
-                logger.d(TAG, "@@ AudioFiles observe new list: ${list.size} items")
+                logger.d(TAG, "@@ AudioSegments observe new list: ${list.size} items")
                 validateAllPersistableUris(list)
-                audioFileAdapter?.submitList(list)
+                audioSegmentAdapter?.submitList(list)
             }
 
             binding.addAudioFab.setOnClickListener {
@@ -123,11 +123,11 @@ class AudioFilesFragment : Fragment() {
         super.onResume()
         logger.d(TAG, "@@ onResume")
         lifecycleScope.launch {
-            audioFileAdapter?.currentList?.let { list ->
+            audioSegmentAdapter?.currentList?.let { list ->
                 val copy = list.toList()
                 val changed = validateAllPersistableUris(copy)
                 if (changed) {
-                    audioFileAdapter?.submitList(copy)
+                    audioSegmentAdapter?.submitList(copy)
                 }
             }
         }
@@ -135,7 +135,7 @@ class AudioFilesFragment : Fragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        audioFileAdapter?.let { adapter ->
+        audioSegmentAdapter?.let { adapter ->
             logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
             outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
@@ -165,7 +165,7 @@ class AudioFilesFragment : Fragment() {
             override fun onPrepareMenu(menu: Menu) {
                 super.onPrepareMenu(menu)
                 menu.findItem(R.id.action_delete)?.let { menuItem ->
-                    val pos = audioFileAdapter?.selectedPosition ?: RecyclerView.NO_POSITION
+                    val pos = audioSegmentAdapter?.selectedPosition ?: RecyclerView.NO_POSITION
                     menuItem.isEnabled = (pos != RecyclerView.NO_POSITION)
                 }
             }
@@ -186,7 +186,7 @@ class AudioFilesFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    private fun onPlayStopItem(item: AudioFileItem) {
+    private fun onPlayStopItem(item: AudioSegmentItem) {
         // This toggles play/stop. Only one item can play at a time.
         itemPlaying?.let { current ->
             val isSame = current.id == item.id
@@ -230,7 +230,7 @@ class AudioFilesFragment : Fragment() {
     }
 
     private fun notifyItemIdChanged(id: Long) : Int {
-        audioFileAdapter?.let { adapter ->
+        audioSegmentAdapter?.let { adapter ->
             val list = adapter.currentList
             val first = list.indexOfFirst { it.id == id }
             if (first >= 0) {
@@ -241,12 +241,12 @@ class AudioFilesFragment : Fragment() {
         return RecyclerView.NO_POSITION
     }
 
-    private fun onUpdateAudioDocumentUri(item: AudioFileItem) {
+    private fun onUpdateAudioDocumentUri(item: AudioSegmentItem) {
         logger.d(TAG, "@@ onUpdateUriForItem: ${item.id}")
         stopCurrentPlaying()
 
         // select an audio file and update the URI for this specific item.id
-        selectAudioFilePendingId = item.id
+        selectAudioSegmentPendingId = item.id
         selectAudioFileLauncher.launch(arrayOf("audio/*"))
     }
 
@@ -256,7 +256,7 @@ class AudioFilesFragment : Fragment() {
         // 1- Ask user to select an audio file using the Storage Access Framework (SAF).
         // Use a ActivityResultContracts call suitable to return a Persistable URI
         // that can be stored in the database to open the file much later.
-        selectAudioFilePendingId = -1L
+        selectAudioSegmentPendingId = -1L
         selectAudioFileLauncher.launch(arrayOf("audio/*"))
     }
 
@@ -306,7 +306,7 @@ class AudioFilesFragment : Fragment() {
                 .setMessage("Selected file '$fileName' is not a supported audio format")
                 .setPositiveButton("OK", null)
                 .show()
-            selectAudioFilePendingId = -1L
+            selectAudioSegmentPendingId = -1L
             return // Exit early so we don't save an invalid URI
         }
 
@@ -316,61 +316,61 @@ class AudioFilesFragment : Fragment() {
         // However, that's fine if we're updating a file's persistable URI, so we allow it
         // if the ID we're updating has the exact same filename.
         val sameNames =
-            audioFileAdapter?.currentList
+            audioSegmentAdapter?.currentList
                 ?.filter { it.fileName == fileName }
                 ?.map { it.id }
                 ?: emptyList()
 
         if (sameNames.isNotEmpty()) {
-            if (selectAudioFilePendingId >= 0
+            if (selectAudioSegmentPendingId >= 0
                 && sameNames.size == 1
-                && sameNames[0] == selectAudioFilePendingId) {
+                && sameNames[0] == selectAudioSegmentPendingId) {
                 // That's ok because it's the same entry we're updating
-                logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioFilePendingId -> same filename '$fileName'")
+                logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioSegmentPendingId -> same filename '$fileName'")
             } else {
                 AlertDialog.Builder(requireContext())
                     .setTitle("Duplicate File Name")
                     .setMessage("There is already an entry for a file named '$fileName'. File names need to be unique. Please choose a different file or rename it first.")
                     .setPositiveButton("OK", null)
                     .show()
-                selectAudioFilePendingId = -1L
+                selectAudioSegmentPendingId = -1L
                 return
             }
         }
 
         // 5- Add to database or Update
-        if (selectAudioFilePendingId >= 0) {
+        if (selectAudioSegmentPendingId >= 0) {
             viewModel.updatePersistableUri(
-                selectAudioFilePendingId,
+                selectAudioSegmentPendingId,
                 fileName,
                 persistableUri)
-            logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioFilePendingId -> $persistableUri")
-            notifyItemIdChanged(selectAudioFilePendingId)
-            selectAudioFilePendingId = -1L
+            logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioSegmentPendingId -> $persistableUri")
+            notifyItemIdChanged(selectAudioSegmentPendingId)
+            selectAudioSegmentPendingId = -1L
         } else {
-            val newAudioFile = AudioFileEntity(
+            val newAudioSegment = AudioSegmentEntity(
                 fileName = fileName,
                 lastAccessTime = Instant.now().toString(),
                 persistableUri = persistableUri,
-                metadata = audioFileMetadata {
+                metadata = audioSegmentMetadata {
                     this.durationMs = durationMs
                 }
             )
-            viewModel.insert(newAudioFile)
-            logger.d(TAG, "@@ addAudioFileUri: added $newAudioFile")
+            viewModel.insert(newAudioSegment)
+            logger.d(TAG, "@@ addAudioFileUri: added $newAudioSegment")
         }
     }
 
     private fun askAndMaybeDeleteEntry() {
         stopCurrentPlaying()
-        val selected = audioFileAdapter?.getSelected() ?: return
+        val selected = audioSegmentAdapter?.getSelected() ?: return
 
         lifecycleScope.launch {
-            val count = playTriggerDao.countTriggersForAudioFile(selected.id)
+            val count = playTriggerDao.countTriggersForAudioSegment(selected.id)
 
             val msg = when {
                 count > 0 -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
-                        "WARNING: This will also delete $count ${count.pluralize("trigger", "triggers")} using this file.\n" +
+                        "WARNING: This will also delete $count ${count.pluralize("trigger", "triggers")} using this segment.\n" +
                         "This does not delete the actual audio file."
                 else -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
                         "This does not delete the actual audio file."
@@ -393,7 +393,7 @@ class AudioFilesFragment : Fragment() {
     }
 
     /** Check all persistable Uri. Updates the list in-place, returns whether it has changed. */
-    private fun validateAllPersistableUris(list: List<AudioFileItem>) : Boolean {
+    private fun validateAllPersistableUris(list: List<AudioSegmentItem>) : Boolean {
         var changed = false
         for (item in list) {
             val oldValid = item.uriValid

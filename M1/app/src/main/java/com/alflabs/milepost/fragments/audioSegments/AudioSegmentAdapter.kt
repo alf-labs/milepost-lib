@@ -1,6 +1,5 @@
-package com.alflabs.milepost.fragments.audioFiles
+package com.alflabs.milepost.fragments.audioSegments
 
-import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
@@ -11,17 +10,16 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
-import com.alflabs.milepost.databinding.AudioFileItemBinding
+import com.alflabs.milepost.databinding.AudioSegmentItemBinding
 import com.alflabs.milepost.utils.Time
-import java.util.concurrent.TimeUnit
 
-class AudioFileAdapter(
-    private val onPlay: (AudioFileItem) -> Unit,
-    private val onUpdate: (AudioFileItem) -> Unit,
-) : ListAdapter<AudioFileItem, AudioFileAdapter.AudioFileViewHolder>(AudioFileDiffCallback()) {
+class AudioSegmentAdapter(
+    private val onPlay: (AudioSegmentItem) -> Unit,
+    private val onUpdate: (AudioSegmentItem) -> Unit,
+) : ListAdapter<AudioSegmentItem, AudioSegmentAdapter.AudioSegmentViewHolder>(AudioSegmentDiffCallback()) {
 
     companion object {
-        private val TAG = AudioFileAdapter::class.java.simpleName
+        private val TAG = AudioSegmentAdapter::class.java.simpleName
     }
 
     var selectedPosition = RecyclerView.NO_POSITION
@@ -38,7 +36,7 @@ class AudioFileAdapter(
         }
     }
 
-    fun getSelected() : AudioFileItem? {
+    fun getSelected() : AudioSegmentItem? {
         return if (selectedPosition != RecyclerView.NO_POSITION) {
             getItem(selectedPosition)
         } else {
@@ -46,23 +44,23 @@ class AudioFileAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : AudioFileViewHolder {
-        val binding = AudioFileItemBinding.inflate(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) : AudioSegmentViewHolder {
+        val binding = AudioSegmentItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return AudioFileViewHolder(binding)
+        return AudioSegmentViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: AudioFileViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: AudioSegmentViewHolder, position: Int) {
         val item = getItem(position)
         holder.bind(item, position == selectedPosition)
     }
 
-    inner class AudioFileViewHolder(
-        private val binding: AudioFileItemBinding,
+    inner class AudioSegmentViewHolder(
+        private val binding: AudioSegmentItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: AudioFileItem, isSelected: Boolean) {
+        fun bind(item: AudioSegmentItem, isSelected: Boolean) {
 
             val metadata = item.metadata?.let { data ->
                 "Duration: ${Time.formatMillis(data.durationMs)}"
@@ -129,17 +127,17 @@ class AudioFileAdapter(
     }
 }
 
-class AudioFileDiffCallback : DiffUtil.ItemCallback<AudioFileItem>() {
+class AudioSegmentDiffCallback : DiffUtil.ItemCallback<AudioSegmentItem>() {
     override fun areItemsTheSame(
-        oldItem: AudioFileItem,
-        newItem: AudioFileItem
+        oldItem: AudioSegmentItem,
+        newItem: AudioSegmentItem
     ) : Boolean {
         return oldItem.id == newItem.id
     }
 
     override fun areContentsTheSame(
-        oldItem: AudioFileItem,
-        newItem: AudioFileItem
+        oldItem: AudioSegmentItem,
+        newItem: AudioSegmentItem
     ) : Boolean {
         return oldItem == newItem
     }

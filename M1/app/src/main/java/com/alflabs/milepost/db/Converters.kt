@@ -25,10 +25,10 @@ class Converters {
     fun toGpsTrackSummary(value: String?): GpsTrackSummary?  = toProto<GpsTrackSummary>(value)
 
     @TypeConverter
-    fun fromAudioFileMetadata(value: AudioFileMetadata?): String? = fromProto(value)
+    fun fromAudioSegmentMetadata(value: AudioSegmentMetadata?): String? = fromProto(value)
 
     @TypeConverter
-    fun toAudioFileMetadata(value: String?): AudioFileMetadata?  = toProto<AudioFileMetadata>(value)
+    fun toAudioSegmentMetadata(value: String?): AudioSegmentMetadata?  = toProto<AudioSegmentMetadata>(value)
 
     @TypeConverter
     fun fromPlaybackTriggerMetadata(value: PlaybackTriggerMetadata?): String? = fromProto(value)

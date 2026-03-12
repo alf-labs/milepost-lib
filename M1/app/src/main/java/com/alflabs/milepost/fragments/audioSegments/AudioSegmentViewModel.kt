@@ -1,36 +1,36 @@
-package com.alflabs.milepost.fragments.audioFiles
+package com.alflabs.milepost.fragments.audioSegments
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.alflabs.milepost.db.AudioFileDao
-import com.alflabs.milepost.db.AudioFileEntity
+import com.alflabs.milepost.db.AudioSegmentDao
+import com.alflabs.milepost.db.AudioSegmentEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AudioFilesViewModel @Inject constructor(
-    private val audioFileDao: AudioFileDao
+class AudioSegmentViewModel @Inject constructor(
+    private val audioSegmentDao: AudioSegmentDao
 ) : ViewModel() {
 
-    val items = audioFileDao.getItems().asLiveData()
+    val items = audioSegmentDao.getItems().asLiveData()
 
-    fun insert(audioFile: AudioFileEntity) {
+    fun insert(audioFile: AudioSegmentEntity) {
         viewModelScope.launch {
-            audioFileDao.insert(audioFile)
+            audioSegmentDao.insert(audioFile)
         }
     }
 
     fun updatePersistableUri(id: Long, fileName: String, persistableUri: String) {
         viewModelScope.launch {
-            audioFileDao.updatePersistableUri(id, fileName, persistableUri)
+            audioSegmentDao.updatePersistableUri(id, fileName, persistableUri)
         }
     }
 
     fun deleteById(id: Long) {
         viewModelScope.launch {
-            audioFileDao.deleteById(id)
+            audioSegmentDao.deleteById(id)
         }
     }
 }

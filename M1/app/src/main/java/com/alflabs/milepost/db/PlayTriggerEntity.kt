@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
     tableName = "play_triggers",
     foreignKeys = [
         ForeignKey(
-            entity = AudioFileEntity::class,
+            entity = AudioSegmentEntity::class,
             parentColumns = ["id"],
             childColumns = ["audioFileId"],
             onDelete = ForeignKey.CASCADE

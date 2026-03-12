@@ -17,9 +17,9 @@
     <item android:title="Audio Tracks">
         <menu>
             <item
-                    android:id="@+id/nav_audio_file_list"
+                    android:id="@+id/nav_audio_segment_list"
                     android:icon="@drawable/ic_nav_menu_list"
-                    android:title="Audio Files" />
+                    android:title="Audio Segments" />
 
             <item
                     android:id="@+id/nav_docent_track_list"
