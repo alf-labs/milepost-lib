@@ -22,7 +22,7 @@ interface AudioSegmentDao {
     @Query("SELECT * FROM audio_segments WHERE id = :id")
     fun getById(id: Long): Flow<AudioSegmentEntity?>
 
-    @Query("SELECT id, uuid, fileName, lastAccessTime, persistableUri, metadata FROM audio_segments ORDER BY fileName ASC")
+    @Query("SELECT id, fileName, lastAccessTime, persistableUri, metadata FROM audio_segments ORDER BY fileName ASC")
     fun getItems(): Flow<List<AudioSegmentItem>>
 
     @Query("DELETE FROM audio_segments WHERE id = :id")
