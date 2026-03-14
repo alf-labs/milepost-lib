@@ -1,12 +1,14 @@
 package com.alflabs.milepost.service
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.core.net.toUri
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.op.AudioPlayCommand
 import com.alflabs.milepost.op.AudioPlayingStatus
+import com.alflabs.milepost.utils.Time
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Publishers
@@ -92,6 +94,7 @@ class DocentMediaPlayer @AssistedInject constructor(
             type = type,
             isPlaying = audio?.isPlaying ?: false,
             triggerId = audio?.triggerId ?: -1L,
+            playDisplay = audio?.playDisplay ?: "",
         )
         audioPlayingStatusPublisher.publish(status)
     }
@@ -99,12 +102,24 @@ class DocentMediaPlayer @AssistedInject constructor(
     private fun startPlaying(audio: AudioInfo) {
         stopPlaying()
         try {
+            val uri = audio.persistableUri.toUri()
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(context, uri)
+
+            // If the file is not a valid media file, the following call might return null or throw
+            val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            val durationMs = durationStr?.toLong() ?: 0L
+
+            retriever.release()
+
             mediaPlayer = MediaPlayer().apply {
-                logger.d(TAG, "@@ startPlaying: ${audio.triggerId}, ${audio.persistableUri}")
-                setDataSource(context, audio.persistableUri.toUri())
+                logger.d(TAG, "@@ startPlaying: ${audio.triggerId}, $uri")
+                setDataSource(context, uri)
                 prepare()
                 start()
-                current = audio.copy(isPlaying = true)
+                current = audio.copy(
+                    isPlaying = true,
+                    playDisplay = Time.formatMillis(durationMs))
                 sendStatus(AudioPlayingStatus.Type.Current, current)
                 setOnCompletionListener {
                     onCompletion()
@@ -132,7 +147,9 @@ class DocentMediaPlayer @AssistedInject constructor(
         mediaPlayer?.release()
         mediaPlayer = null
         current?.let {
-            current = it.copy(isPlaying = false)
+            current = it.copy(
+                isPlaying = false,
+                playDisplay = "")
             sendStatus(AudioPlayingStatus.Type.Current, current)
             logger.d(TAG, "@@ stopPlaying: ${it.triggerId}, ${it.persistableUri}")
             current = null
@@ -144,4 +161,5 @@ private data class AudioInfo(
     val triggerId: Long,
     val persistableUri: String,
     var isPlaying: Boolean = false,
+    val playDisplay: String = "",
 )

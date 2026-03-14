@@ -91,6 +91,7 @@ class DocentPlaybackFragment : SensorsFragment() {
     private var trackPolylineEnd: Polyline? = null
     private var lineColorFwd: Int = -1
     private var lineColorPrev: Int = -1
+    private var currentPlayIndex: Int = -1
     private var docentPlaybackAdapter: DocentPlaybackAdapter? = null
 
 
@@ -334,17 +335,42 @@ class DocentPlaybackFragment : SensorsFragment() {
         logger.d(TAG, "@@ AudioPlayingStatus: $status")
         // This may potentially be called outside of the proper binding lifecycle.
         if (!hasBinding) return
+        // Can't update a null list.
+        val oldList = docentPlaybackAdapter?.currentList ?: return
+
+        // TBD: this does not update properly in the stop case.
+
+        if (currentPlayIndex >= 0) {
+            oldList[currentPlayIndex]?.let { current ->
+                if (current.triggerId == status.triggerId) {
+                    if (current.isPlaying != status.isPlaying || current.playDisplay != status.playDisplay) {
+                        val newList = oldList.map {
+                            if (it.triggerId == status.triggerId) {
+                                it.copy(isPlaying = status.isPlaying).apply {
+                                    playDisplay = status.playDisplay
+                                }
+                            } else {
+                                it
+                            }
+                        }
+                        logger.d(TAG, "@@ AudioPlayingStatus: update single item currentPlayIndex = $currentPlayIndex")
+                        docentPlaybackAdapter?.submitList(newList)
+                        docentPlaybackAdapter?.notifyItemChanged(currentPlayIndex)
+                        return
+                    }
+                }
+            }
+        }
 
         var changed = false
-        var scrollIndex = -1
-        val oldList = docentPlaybackAdapter?.currentList
-        val newList = oldList?.mapIndexed { index, item ->
+        var newCurrentPlayIndex = if (status.type == AudioPlayingStatus.Type.Current) -1 else currentPlayIndex
+        val newList = oldList.mapIndexed { index, item ->
             if (status.type == AudioPlayingStatus.Type.Current) {
                 val isPlaying = item.triggerId == status.triggerId
                 if (isPlaying != item.isPlaying) {
                     changed = true
                     if (isPlaying) {
-                        scrollIndex = index
+                        newCurrentPlayIndex = index
                     }
                     return@mapIndexed item.copy(isPlaying = isPlaying)
                 }
@@ -359,14 +385,16 @@ class DocentPlaybackFragment : SensorsFragment() {
         }
 
         if (changed) {
+            logger.d(TAG, "@@ AudioPlayingStatus: update entire list newCurrentPlayIndex = $newCurrentPlayIndex")
             docentPlaybackAdapter?.submitList(newList) {
-                if (scrollIndex >= 0) {
+                currentPlayIndex = newCurrentPlayIndex
+                if (newCurrentPlayIndex >= 0) {
                     val scroller = object : LinearSmoothScroller(context) {
                         override fun getVerticalSnapPreference(): Int {
                             return SNAP_TO_START
                         }
                     }
-                    scroller.targetPosition = scrollIndex
+                    scroller.targetPosition = newCurrentPlayIndex
                     playbackBinding.playTriggerList.layoutManager?.startSmoothScroll(scroller)
                 }
             }
@@ -375,7 +403,7 @@ class DocentPlaybackFragment : SensorsFragment() {
 
 
     private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate) {
-        logger.d(TAG, "onMpEstimate: $mp")
+        logger.d(TAG, "onMpEstimate: ${mp.mp}")
         // This may potentially be called outside of the proper binding lifecycle.
         if (!hasBinding) return
 

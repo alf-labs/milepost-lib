@@ -56,7 +56,7 @@ class DocentPlaybackAdapter :
             }
 
             if (item.isPlaying) {
-                binding.playRange.text = "timestamp"
+                binding.playRange.text = item.playDisplay
             } else {
                 binding.playRange.text = ""
             }

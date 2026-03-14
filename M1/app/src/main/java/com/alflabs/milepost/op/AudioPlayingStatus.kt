@@ -10,6 +10,7 @@ data class AudioPlayingStatus(
     val type: Type,
     val isPlaying: Boolean,
     val triggerId: Long,
+    val playDisplay: String,
 ) {
     enum class Type {
         Current,

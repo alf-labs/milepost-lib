@@ -21,6 +21,7 @@ data class DocentTriggerItem(
     val metadata: AudioSegmentMetadata? = null,
 ) {
     // These fields are internal and not populated by the DAO in getItems().
+    // They are also not part of the default adapter equality diff callback.
     @Ignore var durationDisplay: String = ""
     @Ignore var durationMp: Float = 0f
 
