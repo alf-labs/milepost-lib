@@ -47,13 +47,18 @@ class DocentPlaybackAdapter :
                 binding.triggerRange.text = "MP Range: $mpMin $mpDir $mpMax"
             } else {
                 binding.triggerRange.text = "--"
-                binding.triggerInfo.text = "--"
             }
 
-            binding.triggerInfo.text = when {
+            binding.playStatus.text = when {
                 item.isPlaying -> "Playing"
                 item.isPending -> "Pending"
-                else -> "--"
+                else -> ""
+            }
+
+            if (item.isPlaying) {
+                binding.playRange.text = "timestamp"
+            } else {
+                binding.playRange.text = ""
             }
 
 //            itemView.setBackgroundColor(
