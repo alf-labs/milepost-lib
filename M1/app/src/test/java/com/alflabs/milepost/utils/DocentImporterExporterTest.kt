@@ -58,9 +58,9 @@ class DocentImporterExporterTest {
         )
 
         val audioFiles = mapOf(
-            1L to "audio 1 segment",
-            2L to "audio 2 segment",
-            3L to "audio 3 segment",
+            1L to "audio 1 segment[0:42]",
+            2L to "audio 1 segment[2:24]",
+            3L to "audio 3 segment[0:42]",
         )
 
         docentItems = listOf(
@@ -69,7 +69,7 @@ class DocentImporterExporterTest {
                 audioSegmentId = 1,
                 persistableUri = "Uri-1",
                 docentTrackId = 42L,
-                fileName = audioFiles[1]!!,
+                descriptor = audioFiles[1]!!,
                 playbackTrigger = playbackTriggerMetadata {
                     includeInColdStart = true
                     mpMin = 10f
@@ -82,7 +82,7 @@ class DocentImporterExporterTest {
                 audioSegmentId = 2,
                 persistableUri = "Uri-2",
                 docentTrackId = 42L,
-                fileName = audioFiles[2]!!,
+                descriptor = audioFiles[2]!!,
                 playbackTrigger = playbackTriggerMetadata {
                     includeInColdStart = true
                     mpMin = 20f
@@ -95,7 +95,7 @@ class DocentImporterExporterTest {
                 audioSegmentId = 3,
                 persistableUri = "Uri-3",
                 docentTrackId = 42L,
-                fileName = audioFiles[3]!!,
+                descriptor = audioFiles[3]!!,
                 playbackTrigger = playbackTriggerMetadata {
                     includeInColdStart = false
                     mpMin = 30f
@@ -124,9 +124,9 @@ class DocentImporterExporterTest {
               "lastUsedDateISO" : "2022-03-04T05:06:07Z",
               "gpsTrackUuid" : "test-uuid-1234",
               "gpsTrackName" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
-              "audioFileNames" : [ "audio 1 segment", "audio 2 segment", "audio 3 segment" ],
+              "audioDescriptors" : [ "audio 1 segment[0:42]", "audio 1 segment[2:24]", "audio 3 segment[0:42]" ],
               "triggers" : [ {
-                "audioFileName" : "audio 1 segment",
+                "audioDescriptor" : "audio 1 segment[0:42]",
                 "includeInColdStart" : true,
                 "mpMin" : 10.0,
                 "mpMax" : 11.0,
@@ -134,7 +134,7 @@ class DocentImporterExporterTest {
                   "direction" : "ToHighMP"
                 }
               }, {
-                "audioFileName" : "audio 2 segment",
+                "audioDescriptor" : "audio 1 segment[2:24]",
                 "includeInColdStart" : true,
                 "mpMin" : 20.0,
                 "mpMax" : 22.0,
@@ -142,7 +142,7 @@ class DocentImporterExporterTest {
                   "direction" : "Both"
                 }
               }, {
-                "audioFileName" : "audio 3 segment",
+                "audioDescriptor" : "audio 3 segment[0:42]",
                 "includeInColdStart" : false,
                 "mpMin" : 30.0,
                 "mpMax" : 33.0,
@@ -186,29 +186,29 @@ class DocentImporterExporterTest {
             assertThat(validation.docentTrackUuid).isEqualTo("test-uuid-456")
             assertThat(validation.gpsTrackUuid).isEqualTo("test-uuid-1234")
             assertThat(validation.gpsTrackName).isEqualTo("""  A fairly long Test+!@#$%^&*()!!=\/<>.,;':"[|]?-Track name 42 that is more than 64 characters  """)
-            assertThat(validation.audioFileNames).containsExactly(
-                "audio 1 segment",
-                "audio 2 segment",
-                "audio 3 segment",
+            assertThat(validation.audioDescriptors).containsExactly(
+                "audio 1 segment[0:42]",
+                "audio 1 segment[2:24]",
+                "audio 3 segment[0:42]",
             )
 
             DocentImportValidationResult(
                 canContinue = true,
                 message = "TBD",
                 gpsTrackId = 123L,
-                audioFileNamesToId = mapOf(
-                    "audio 1 segment" to 1L,
-                    "audio 2 segment" to 2L,
-                    "audio 3 segment" to 3L,
-                    "audio 4 segment" to 4L,
-                    "audio 5 segment" to 5L,
+                descriptorsToId = mapOf(
+                    "audio 1 segment[0:42]" to 1L,
+                    "audio 1 segment[2:24]" to 2L,
+                    "audio 3 segment[0:42]" to 3L,
+                    "audio 4 segment[0:42]" to 4L,
+                    "audio 5 segment[0:42]" to 5L,
                 ),
-                audioFileNamesToUri = mapOf(
-                    "audio 1 segment" to "Uri-1",
-                    "audio 2 segment" to "Uri-2",
-                    "audio 3 segment" to "Uri-3",
-                    "audio 4 segment" to "Uri-4",
-                    "audio 5 segment" to "Uri-5",
+                descriptorsToUri = mapOf(
+                    "audio 1 segment[0:42]" to "Uri-1",
+                    "audio 1 segment[2:24]" to "Uri-2",
+                    "audio 3 segment[0:42]" to "Uri-3",
+                    "audio 4 segment[0:42]" to "Uri-4",
+                    "audio 5 segment[0:42]" to "Uri-5",
                 ),
             )
         }

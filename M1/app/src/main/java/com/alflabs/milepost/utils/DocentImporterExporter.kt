@@ -8,6 +8,7 @@ import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import com.alflabs.milepost.trigger.PlaybackTriggerPojo
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -43,7 +44,7 @@ class DocentImporterExporter @Inject constructor(
         }
 
         // Creates a sorted list of unique audio file names used by all triggers.
-        val uniqueAudioFileNames = triggersList.map { it.fileName }.distinct().sorted()
+        val uniqueDescriptors = triggersList.map { it.descriptor }.distinct().sorted()
 
         val exportedTriggers = triggersList.map { PlaybackTriggerPojo(it) }
 
@@ -54,7 +55,7 @@ class DocentImporterExporter @Inject constructor(
             lastUsedDateISO = docentTrackEntity.lastUsedTime,
             gpsTrackUuid = gpsTrackEntity.uuid,
             gpsTrackName = gpsTrackEntity.displayTrackLabel(),
-            audioFileNames = uniqueAudioFileNames,
+            audioDescriptors = uniqueDescriptors,
             triggers = exportedTriggers,
         )
 
@@ -134,8 +135,8 @@ class DocentImporterExporter @Inject constructor(
                             triggerItems = entity.triggers.map {
                                 it.toItem(
                                     docentTrackId = 0,
-                                    audioFileNameToId = validated.audioFileNamesToId,
-                                    audioFileNameToUri = validated.audioFileNamesToUri,
+                                    descriptorsToId = validated.descriptorsToId,
+                                    descriptorsToUri = validated.descriptorsToUri,
                                 )
                             }
                         )
@@ -161,7 +162,7 @@ private data class DocentTrackEntityPojo @JsonCreator constructor(
     @param:JsonProperty("lastUsedDateISO") val lastUsedDateISO: String? = null,
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
     @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
-    @param:JsonProperty("audioFileNames") val audioFileNames: List<String>,
+    @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
     @param:JsonProperty("triggers") val triggers: List<PlaybackTriggerPojo>,
 ) {
     fun toProto(data: DocentImportValidationResult) = DocentTrackEntity(
@@ -178,15 +179,15 @@ data class DocentImportValidationData @JsonCreator constructor(
     @param:JsonProperty("docentTrackUuid") val docentTrackUuid: String,
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
     @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
-    @param:JsonProperty("audioFileNames") val audioFileNames: List<String>,
+    @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
 )
 
 data class DocentImportValidationResult(
     val canContinue: Boolean,
     val message: String,
     val gpsTrackId: Long,
-    val audioFileNamesToId: Map<String, Long>,
-    val audioFileNamesToUri: Map<String, String>,
+    val descriptorsToId: Map<String, Long>,
+    val descriptorsToUri: Map<String, String>,
 )
 
 data class DocentImportResult(

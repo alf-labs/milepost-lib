@@ -310,6 +310,8 @@ class AudioSegmentsFragment : Fragment() {
             return // Exit early so we don't save an invalid URI
         }
 
+        val descriptor = "$fileName[0;$durationMs]"
+
         // One limitation right now is that we use the display filenames to select files,
         // and thus there's no way to differentiate files with the same filename. Thus, we need
         // to reject this new file if it has the same filename as an existing file.
@@ -317,7 +319,7 @@ class AudioSegmentsFragment : Fragment() {
         // if the ID we're updating has the exact same filename.
         val sameNames =
             audioSegmentAdapter?.currentList
-                ?.filter { it.fileName == fileName }
+                ?.filter { it.descriptor == descriptor }
                 ?.map { it.id }
                 ?: emptyList()
 
@@ -326,11 +328,14 @@ class AudioSegmentsFragment : Fragment() {
                 && sameNames.size == 1
                 && sameNames[0] == selectAudioSegmentPendingId) {
                 // That's ok because it's the same entry we're updating
-                logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioSegmentPendingId -> same filename '$fileName'")
+                logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioSegmentPendingId -> same descriptor '$descriptor'")
             } else {
                 AlertDialog.Builder(requireContext())
-                    .setTitle("Duplicate File Name")
-                    .setMessage("There is already an entry for a file named '$fileName'. File names need to be unique. Please choose a different file or rename it first.")
+                    .setTitle("Duplicate File Reference")
+                    // Note: message does not specify that references encode the start/end
+                    // timestamps as this cannot be selected in the UI yet. The message should be
+                    // change if that feature is later added.
+                    .setMessage("There is already an entry for a file named '$fileName'. Segments need to be unique. Please choose a different file or rename it first.")
                     .setPositiveButton("OK", null)
                     .show()
                 selectAudioSegmentPendingId = -1L
@@ -342,14 +347,14 @@ class AudioSegmentsFragment : Fragment() {
         if (selectAudioSegmentPendingId >= 0) {
             viewModel.updatePersistableUri(
                 selectAudioSegmentPendingId,
-                fileName,
+                descriptor,
                 persistableUri)
             logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioSegmentPendingId -> $persistableUri")
             notifyItemIdChanged(selectAudioSegmentPendingId)
             selectAudioSegmentPendingId = -1L
         } else {
             val newAudioSegment = AudioSegmentEntity(
-                fileName = fileName,
+                descriptor = descriptor,
                 lastAccessTime = Instant.now().toString(),
                 persistableUri = persistableUri,
                 metadata = audioSegmentMetadata {
@@ -369,10 +374,10 @@ class AudioSegmentsFragment : Fragment() {
             val count = playTriggerDao.countTriggersForAudioSegment(selected.id)
 
             val msg = when {
-                count > 0 -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
+                count > 0 -> "Are you sure you want to delete the reference to file '${selected.descriptor}'?\n" +
                         "WARNING: This will also delete $count ${count.pluralize("trigger", "triggers")} using this segment.\n" +
                         "This does not delete the actual audio file."
-                else -> "Are you sure you want to delete the reference to file '${selected.fileName}'?\n" +
+                else -> "Are you sure you want to delete the reference to file '${selected.descriptor}'?\n" +
                         "This does not delete the actual audio file."
             }
 
@@ -383,7 +388,7 @@ class AudioSegmentsFragment : Fragment() {
                     viewModel.deleteById(selected.id)
                     Snackbar.make(
                         requireView(),
-                        "Reference to file '${selected.fileName}' deleted",
+                        "Reference to file '${selected.descriptor}' deleted",
                         Snackbar.LENGTH_LONG
                     ).show()
                 }

@@ -16,7 +16,7 @@ data class DocentTriggerItem(
     val docentTrackId: Long,
     val playbackTrigger: PlaybackTriggerMetadata?,
     // Fields from the AudioSegmentEntity
-    val fileName: String,
+    val descriptor: String,
     val persistableUri: String,
     val metadata: AudioSegmentMetadata? = null,
 ) {
@@ -35,6 +35,6 @@ data class DocentTriggerItem(
     }
 
     override fun toString(): String {
-        return "DocentTriggerItem(id=$id, audioSegmentId=$audioSegmentId [$fileName], docentTrackId=$docentTrackId, playbackTrigger=$playbackTrigger)"
+        return "DocentTriggerItem(id=$id, audioSegmentId=$audioSegmentId [$descriptor], docentTrackId=$docentTrackId, playbackTrigger=$playbackTrigger)"
     }
 }

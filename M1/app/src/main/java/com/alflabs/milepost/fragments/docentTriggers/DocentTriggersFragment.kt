@@ -44,7 +44,6 @@ import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.toString
 
 @AndroidEntryPoint
 class DocentTriggersFragment : Fragment() {
@@ -277,8 +276,8 @@ class DocentTriggersFragment : Fragment() {
         val initialMpDirText = mpDirItems.getOrElse(currMpDirIndex) { mpDirItems[0] }
         mpDirectionDropdown.setText(initialMpDirText, /*filter=*/false)
 
-        // Note: this works because we currently impose audio files to have unique filenames.
-        val audioSegmentNames = currentAudioSegments.map { it.fileName }.toList()
+        // Note: this works because we currently impose audio files to have unique descriptors.
+        val audioSegmentNames = currentAudioSegments.map { it.descriptor }.toList()
         val audioSegmentAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentNames)
         audioSegmentDropdown.setAdapter(audioSegmentAdapter)
@@ -358,7 +357,7 @@ class DocentTriggersFragment : Fragment() {
                     newTrigger.setMpDirection(PlaybackTriggerDirection.forNumber(newMpDirIndex))
                 }
 
-                val newAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.fileName == newAudio }
+                val newAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.descriptor == newAudio }
                 if (newAudioSegmentIndex >= 0 && newAudioSegmentIndex != currAudioSegmentIndex) {
                     changed = true
                     newEntity = newEntity.copy(audioSegmentId = currentAudioSegments[newAudioSegmentIndex].id)

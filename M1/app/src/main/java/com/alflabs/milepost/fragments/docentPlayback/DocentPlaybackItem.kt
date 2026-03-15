@@ -12,7 +12,7 @@ data class DocentPlaybackItem(
     val audioSegmentId: Long,
     val playbackTrigger: PlaybackTriggerMetadata?,
     // Fields from the AudioSegmentEntity
-    val fileName: String,
+    val descriptor: String,
     val persistableUri: String,
 ) {
     // These fields are internal and not populated by the DAO.
@@ -25,7 +25,7 @@ data class DocentPlaybackItem(
         triggerId = editorItem.id,
         audioSegmentId = editorItem.audioSegmentId,
         playbackTrigger = editorItem.playbackTrigger,
-        fileName = editorItem.fileName,
+        descriptor = editorItem.descriptor,
         persistableUri = editorItem.persistableUri,
     )
 }

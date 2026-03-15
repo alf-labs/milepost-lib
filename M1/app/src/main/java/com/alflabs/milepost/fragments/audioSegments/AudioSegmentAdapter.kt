@@ -66,7 +66,7 @@ class AudioSegmentAdapter(
                 "Duration: ${Time.formatMillis(data.durationMs)}"
             } ?: ""
 
-            binding.fileName.text = item.fileName
+            binding.fileName.text = item.descriptor
             binding.lastAccessTime.text = item.lastAccessTime
             binding.metadata.text = when (item.uriValid) {
                 false -> "File not found"

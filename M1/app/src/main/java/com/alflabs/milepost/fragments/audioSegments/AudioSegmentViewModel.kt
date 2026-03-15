@@ -22,9 +22,9 @@ class AudioSegmentViewModel @Inject constructor(
         }
     }
 
-    fun updatePersistableUri(id: Long, fileName: String, persistableUri: String) {
+    fun updatePersistableUri(id: Long, descriptor: String, persistableUri: String) {
         viewModelScope.launch {
-            audioSegmentDao.updatePersistableUri(id, fileName, persistableUri)
+            audioSegmentDao.updatePersistableUri(id, descriptor, persistableUri)
         }
     }
 
