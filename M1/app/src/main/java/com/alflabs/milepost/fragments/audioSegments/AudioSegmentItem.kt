@@ -17,4 +17,14 @@ data class AudioSegmentItem(
     // These fields are internal and not populated by the DAO in getItems().
     @Ignore var uriValid: Boolean? = null
     @Ignore var isPlaying: Boolean = false
+
+    companion object {
+        // Regex match:                  .abcd9   ?    [0;12345] ?$
+        val descriptorExtension = """(?:\.\w{0,4})?(?:\[[0-9;]+])?$""".toRegex()
+    }
+
+    /** Returns the base filename of the descriptor, without the extension nor timestamp. */
+    fun displayTitle(): String {
+        return descriptor.replace(descriptorExtension, "")
+    }
 }

@@ -374,10 +374,10 @@ class AudioSegmentsFragment : Fragment() {
             val count = playTriggerDao.countTriggersForAudioSegment(selected.id)
 
             val msg = when {
-                count > 0 -> "Are you sure you want to delete the reference to file '${selected.descriptor}'?\n" +
+                count > 0 -> "Are you sure you want to delete the reference to file '${selected.displayTitle()}'?\n" +
                         "WARNING: This will also delete $count ${count.pluralize("trigger", "triggers")} using this segment.\n" +
                         "This does not delete the actual audio file."
-                else -> "Are you sure you want to delete the reference to file '${selected.descriptor}'?\n" +
+                else -> "Are you sure you want to delete the reference to file '${selected.displayTitle()}'?\n" +
                         "This does not delete the actual audio file."
             }
 
@@ -388,7 +388,7 @@ class AudioSegmentsFragment : Fragment() {
                     viewModel.deleteById(selected.id)
                     Snackbar.make(
                         requireView(),
-                        "Reference to file '${selected.descriptor}' deleted",
+                        "Reference to file '${selected.displayTitle()}' deleted",
                         Snackbar.LENGTH_LONG
                     ).show()
                 }

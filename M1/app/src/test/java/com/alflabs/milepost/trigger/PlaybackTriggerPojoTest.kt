@@ -50,7 +50,7 @@ class PlaybackTriggerPojoTest {
         val item = pojo.toItem(docentTrackId, descriptorsToId, descriptorsToUri)
 
         assertThat(item.id).isEqualTo(0L)
-        assertThat(item.descriptor).isEqualTo("test_audio.mp3")
+        assertThat(item.descriptor).isEqualTo("test_audio.mp3[0:42]")
         assertThat(item.audioSegmentId).isEqualTo(456L)
         assertThat(item.docentTrackId).isEqualTo(docentTrackId)
 
