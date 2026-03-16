@@ -1,5 +1,6 @@
 package com.alflabs.milepost.fragments.docentTracks
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -7,6 +8,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -20,7 +23,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.DocentTracksFragmentBinding
+import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
+import com.alflabs.milepost.fragments.gpsTracks.GpsTracksFragment
+import com.alflabs.milepost.utils.DocentImportValidationData
+import com.alflabs.milepost.utils.DocentImportValidationResult
+import com.alflabs.milepost.utils.DocentImporterExporter
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
@@ -38,6 +46,8 @@ class DocentTracksFragment : Fragment() {
 
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var docentImporterExporter: DocentImporterExporter
+    @Inject lateinit var docentTrackDao: DocentTrackDao
 
     private var _binding: DocentTracksFragmentBinding? = null
     private val binding get() = _binding!!
@@ -45,6 +55,11 @@ class DocentTracksFragment : Fragment() {
     private var docentPlaybackTrackId: Long = -1
 
     private val viewModel: DocentTracksViewModel by viewModels()
+
+    private val selectJsonFileLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { importJsonLoadUri(it) }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -89,6 +104,11 @@ class DocentTracksFragment : Fragment() {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun setupMenu() {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -103,6 +123,12 @@ class DocentTracksFragment : Fragment() {
                         doAddFile()
                         true
                     }
+
+                    R.id.action_import -> {
+                        importJsonSelectFile()
+                        true
+                    }
+
                     else -> false
                 }
             }
@@ -111,13 +137,13 @@ class DocentTracksFragment : Fragment() {
 
     private fun doAddFile() {
         // TBD TESTING ONLY
-            val trackEntity = DocentTrackEntity(
-                userTitle = "New Docent Track",
-                creationTime = Instant.now().toString(),
-                lastUsedTime = Instant.now().toString(),
-                gpsTrackId = 3,
-            )
-            viewModel.insert(trackEntity)
+        val trackEntity = DocentTrackEntity(
+            userTitle = "New Docent Track",
+            creationTime = Instant.now().toString(),
+            lastUsedTime = Instant.now().toString(),
+            gpsTrackId = 3,
+        )
+        viewModel.insert(trackEntity)
         // TODO remove this entirely
         Snackbar.make(requireView(), "TBD Docent track add", Snackbar.LENGTH_LONG).show()
     }
@@ -135,14 +161,59 @@ class DocentTracksFragment : Fragment() {
             .setMessage("Are you sure you want to delete docent track '${item.userTitle}'? This cannot be reversed.")
             .setPositiveButton("Delete") { _, _ ->
                 viewModel.deleteById(item.id)
-                Snackbar.make(requireView(), "Docent track '${item.userTitle}' deleted", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(
+                    requireView(),
+                    "Docent track '${item.userTitle}' deleted",
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun importJsonSelectFile() {
+        logger.d(TAG, "@@ ImportJSON 1 - Select File")
+        // 1- Ask user to select a JSON file using the Storage Access Framework (SAF).
+        selectJsonFileLauncher.launch("application/json")
+    }
+
+    private fun importJsonLoadUri(uri: Uri) {
+        // 2- When a file is selected, load it in memory using the Jackson library for GpsTrackEntity.class
+        logger.d(TAG, "@@ ImportJSON 2 - Load URI: $uri")
+
+        lifecycleScope.launch {
+            val result = docentImporterExporter.loadDocentTrackEntityFromUri(
+                requireContext(),
+                uri,
+                this@DocentTracksFragment::importJsonValidator
+            )
+            if (result == null) {
+                Toast.makeText(requireContext(), "Failed to load JSON", Toast.LENGTH_LONG).show()
+                return@launch
+            } else {
+                Toast.makeText(requireContext(), "Import Result: $result", Toast.LENGTH_LONG).show()
+            }
+        }
+
+    }
+
+    private suspend fun importJsonValidator(data: DocentImportValidationData): DocentImportValidationResult {
+        // TBD
+        logger.d(TAG, "@@ importJsonValidator: $data")
+
+        val docentId = docentTrackDao.getIdByUuid(data.docentTrackUuid)
+
+        logger.d(TAG, "@@ importJsonValidator: docentId = $docentId")
+
+//        data.gpsTrackUuid
+
+
+        return DocentImportValidationResult(
+            canContinue = false,
+            message = "TBD $docentId",
+            gpsTrackId = 0,
+            descriptorsToId = emptyMap(),
+            descriptorsToUri = emptyMap(),
+        )
     }
 }

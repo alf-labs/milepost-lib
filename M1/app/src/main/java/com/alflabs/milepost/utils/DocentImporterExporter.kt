@@ -99,10 +99,10 @@ class DocentImporterExporter @Inject constructor(
      * One thing this does NOT do is allow creating a docent track where the GPS track or the
      * audio files are unresolved, as the prototype's UI currently lacks support for that.
      */
-    fun loadDocentTrackEntityFromUri(
+    suspend fun loadDocentTrackEntityFromUri(
         context: Context,
         uri: Uri,
-        validator: (DocentImportValidationData) -> DocentImportValidationResult,
+        validator: suspend (DocentImportValidationData) -> DocentImportValidationResult,
     ): DocentImportResult? {
         logger.d(TAG, "loadDocentTrackEntityFromUri")
 

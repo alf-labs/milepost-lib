@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <group android:id="@+id/group_track_add">
+    <group android:id="@+id/group_docent_add">
         <item
                 android:id="@+id/action_add"
                 android:title="Add Docent Track"
                 android:icon="@drawable/ic_menu_file_add"
+                app:showAsAction="never" />
+    </group>
+    <group android:id="@+id/group_docent_import">
+        <item
+                android:id="@+id/action_import"
+                android:title="Import JSON"
+                android:icon="@drawable/ic_menu_import"
                 app:showAsAction="never" />
     </group>
 </menu>
