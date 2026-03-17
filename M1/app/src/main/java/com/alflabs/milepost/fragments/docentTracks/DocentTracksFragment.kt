@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -38,6 +39,7 @@ import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.protobuf.descriptorProto
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -213,8 +215,7 @@ class DocentTracksFragment : Fragment() {
         val replaceExistingCheckbox = dialogView.findViewById<CheckBox>(R.id.replace_existing)
         val gpsTrackLabel = dialogView.findViewById<TextInputLayout>(R.id.gps_track_label)
         val gpsTrackDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.gps_track_dropdown)
-        val audioSegmentLabel = dialogView.findViewById<TextInputLayout>(R.id.audio_segment_label)
-        val audioSegmentDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.audio_segment_dropdown)
+        val audioSegmentsContainer = dialogView.findViewById<LinearLayout>(R.id.audio_segments)
 
         userTitleText.setText(data.userTitle)
         gpsTrackLabel.hint = "GPS Track: ${data.gpsTrackName}"
@@ -242,15 +243,22 @@ class DocentTracksFragment : Fragment() {
                 }
         }
 
-        val audioSegments = audioSegmentDao.getItemsAsync()
-        val audioSegmentsNames = audioSegments.map { it.displayTitle() }
-        val audioSegmentsAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentsNames)
-        audioSegmentDropdown.setAdapter(audioSegmentsAdapter)
+        data.audioDescriptors.forEach { desc ->
+            val segmentView = layoutInflater.inflate(R.layout.docent_import_dialog_segment, null)
 
-        data.audioDescriptors.firstOrNull()?.let { desc ->
+            val audioSegmentLabel = segmentView.findViewById<TextInputLayout>(R.id.audio_segment_label)
+            val audioSegmentDropdown = segmentView.findViewById<AutoCompleteTextView>(R.id.audio_segment_dropdown)
+
+            val audioSegments = audioSegmentDao.getItemsAsync()
+            val audioSegmentsNames = audioSegments.map { it.displayTitle() }
+            val audioSegmentsAdapter =
+                ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentsNames)
+            audioSegmentDropdown.setAdapter(audioSegmentsAdapter)
+
             audioSegmentLabel.hint = "Audio Segment: $desc"
             audioSegmentDropdown.setText(desc, /*filter=*/false)
+
+            audioSegmentsContainer.addView(segmentView)
         }
 
 

@@ -1,75 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:orientation="vertical"
-        android:padding="16dp">
+    >
 
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Docent Track Title">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/user_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <CheckBox
-            android:id="@+id/replace_existing"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Replace Existing" />
-
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:text="GPS Track"
-            />
-
-    <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/gps_track_label"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="GPS Track">
-
-        <AutoCompleteTextView
-                android:id="@+id/gps_track_dropdown"
+        <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
+                android:hint="Docent Track Title">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/user_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp"
-            android:textStyle="bold"
-            android:text="Audio Segments"
-            />
+        <CheckBox
+                android:id="@+id/replace_existing"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Replace Existing" />
 
-    <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/audio_segment_label"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Audio Segment">
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="GPS Track"
+                />
 
-        <AutoCompleteTextView
-                android:id="@+id/audio_segment_dropdown"
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/gps_track_label"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
+                android:hint="GPS Track">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <AutoCompleteTextView
+                    android:id="@+id/gps_track_dropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
 
-</LinearLayout>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:textStyle="bold"
+                android:text="Audio Segments"
+                />
+
+        <LinearLayout
+                android:id="@+id/audio_segments"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                />
+
+    </LinearLayout>
+</ScrollView>
