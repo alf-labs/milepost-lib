@@ -34,6 +34,9 @@ interface GpsTrackDao {
     @Query("SELECT id FROM gps_tracks WHERE uuid = :uuid")
     suspend fun getIdByUuid(uuid: String): Long?
 
+    @Query("SELECT * FROM gps_tracks")
+    suspend fun getItemsAsync(): List<GpsTrackEntity>
+
     @Query("""
         SELECT G.* FROM gps_tracks AS G
         INNER JOIN docent_tracks AS D ON G.id = D.gpsTrackId

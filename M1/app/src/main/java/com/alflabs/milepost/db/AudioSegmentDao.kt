@@ -25,6 +25,9 @@ interface AudioSegmentDao {
     @Query("SELECT id, descriptor, lastAccessTime, persistableUri, metadata FROM audio_segments ORDER BY descriptor ASC")
     fun getItems(): Flow<List<AudioSegmentItem>>
 
+    @Query("SELECT id, descriptor, lastAccessTime, persistableUri, metadata FROM audio_segments ORDER BY descriptor ASC")
+    suspend fun getItemsAsync(): List<AudioSegmentItem>
+
     @Query("DELETE FROM audio_segments WHERE id = :id")
     suspend fun deleteById(id: Long)
 }

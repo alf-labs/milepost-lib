@@ -8,6 +8,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.CheckBox
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -23,15 +27,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.DocentTracksFragmentBinding
+import com.alflabs.milepost.db.AudioSegmentDao
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
-import com.alflabs.milepost.fragments.gpsTracks.GpsTracksFragment
+import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.milepost.utils.DocentImportValidationData
 import com.alflabs.milepost.utils.DocentImportValidationResult
 import com.alflabs.milepost.utils.DocentImporterExporter
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -48,6 +54,8 @@ class DocentTracksFragment : Fragment() {
     @Inject lateinit var logger: ILogger
     @Inject lateinit var docentImporterExporter: DocentImporterExporter
     @Inject lateinit var docentTrackDao: DocentTrackDao
+    @Inject lateinit var gpsTrackDao: GpsTrackDao
+    @Inject lateinit var audioSegmentDao: AudioSegmentDao
 
     private var _binding: DocentTracksFragmentBinding? = null
     private val binding get() = _binding!!
@@ -198,14 +206,48 @@ class DocentTracksFragment : Fragment() {
     }
 
     private suspend fun importJsonValidator(data: DocentImportValidationData): DocentImportValidationResult {
-        // TBD
         logger.d(TAG, "@@ importJsonValidator: $data")
 
-        val docentId = docentTrackDao.getIdByUuid(data.docentTrackUuid)
+        val dialogView = layoutInflater.inflate(R.layout.docent_import_dialog, null)
+        val userTitleText = dialogView.findViewById<TextInputEditText>(R.id.user_title)
+        val gpsTrackLabel = dialogView.findViewById<TextView>(R.id.gps_track_label)
+        val replaceExistingCheckbox = dialogView.findViewById<CheckBox>(R.id.replace_existing)
+        val gpsTracksDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.gps_track_dropdown)
+        val audioSegmentsDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.audio_segment_dropdown)
 
+        userTitleText.setText(data.userTitle)
+        gpsTrackLabel.text = data.gpsTrackName
+
+        val docentId = docentTrackDao.getIdByUuid(data.docentTrackUuid)
         logger.d(TAG, "@@ importJsonValidator: docentId = $docentId")
 
-//        data.gpsTrackUuid
+        replaceExistingCheckbox.isChecked = false
+        replaceExistingCheckbox.isEnabled = docentId != null
+
+        val gpsTrackId = gpsTrackDao.getIdByUuid(data.gpsTrackUuid)
+
+        val gpsTracks = gpsTrackDao.getItemsAsync()
+        val gpsTracksNames = gpsTracks.map { it.displayTrackLabel() }
+        val gpsTracksAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, gpsTracksNames)
+        gpsTracksDropdown.setAdapter(gpsTracksAdapter)
+
+        val audioSegments = audioSegmentDao.getItemsAsync()
+        val audioSegmentsNames = audioSegments.map { it.displayTitle() }
+        val audioSegmentsAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentsNames)
+        audioSegmentsDropdown.setAdapter(audioSegmentsAdapter)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Import Docent Track")
+            .setView(dialogView)
+            .setPositiveButton("Import") { _, _ ->
+                // TBD
+            }
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        dialog.show()
 
 
         return DocentImportValidationResult(

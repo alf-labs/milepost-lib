@@ -177,6 +177,7 @@ private data class DocentTrackEntityPojo @JsonCreator constructor(
 
 data class DocentImportValidationData @JsonCreator constructor(
     @param:JsonProperty("docentTrackUuid") val docentTrackUuid: String,
+    @param:JsonProperty("userTitle") val userTitle: String,
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
     @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
     @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
