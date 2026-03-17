@@ -24,30 +24,17 @@
             android:layout_height="wrap_content"
             android:text="Replace Existing" />
 
-    <LinearLayout
-            android:layout_width="match_parent"
+    <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textStyle="bold"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
-            android:orientation="horizontal"
-            >
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:text="GPS Track:"
-                />
-
-        <TextView
-                android:id="@+id/gps_track_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                tools:text="GPS track name"
-                />
-    </LinearLayout>
+            android:text="GPS Track"
+            />
 
     <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/gps_track_label"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -71,6 +58,7 @@
             />
 
     <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/audio_segment_label"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

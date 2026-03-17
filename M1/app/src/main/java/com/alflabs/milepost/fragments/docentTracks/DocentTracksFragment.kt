@@ -11,7 +11,6 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -38,6 +37,7 @@ import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -210,13 +210,14 @@ class DocentTracksFragment : Fragment() {
 
         val dialogView = layoutInflater.inflate(R.layout.docent_import_dialog, null)
         val userTitleText = dialogView.findViewById<TextInputEditText>(R.id.user_title)
-        val gpsTrackLabel = dialogView.findViewById<TextView>(R.id.gps_track_label)
         val replaceExistingCheckbox = dialogView.findViewById<CheckBox>(R.id.replace_existing)
-        val gpsTracksDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.gps_track_dropdown)
-        val audioSegmentsDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.audio_segment_dropdown)
+        val gpsTrackLabel = dialogView.findViewById<TextInputLayout>(R.id.gps_track_label)
+        val gpsTrackDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.gps_track_dropdown)
+        val audioSegmentLabel = dialogView.findViewById<TextInputLayout>(R.id.audio_segment_label)
+        val audioSegmentDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.audio_segment_dropdown)
 
         userTitleText.setText(data.userTitle)
-        gpsTrackLabel.text = data.gpsTrackName
+        gpsTrackLabel.hint = "GPS Track: ${data.gpsTrackName}"
 
         val docentId = docentTrackDao.getIdByUuid(data.docentTrackUuid)
         logger.d(TAG, "@@ importJsonValidator: docentId = $docentId")
@@ -230,13 +231,28 @@ class DocentTracksFragment : Fragment() {
         val gpsTracksNames = gpsTracks.map { it.displayTrackLabel() }
         val gpsTracksAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, gpsTracksNames)
-        gpsTracksDropdown.setAdapter(gpsTracksAdapter)
+        gpsTrackDropdown.setAdapter(gpsTracksAdapter)
+
+        gpsTrackId?.let { id ->
+            gpsTracks
+                .firstOrNull { it.id == id }
+                ?.displayTrackLabel()
+                ?.let { name ->
+                    gpsTrackDropdown.setText(name, /*filter=*/false)
+                }
+        }
 
         val audioSegments = audioSegmentDao.getItemsAsync()
         val audioSegmentsNames = audioSegments.map { it.displayTitle() }
         val audioSegmentsAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentsNames)
-        audioSegmentsDropdown.setAdapter(audioSegmentsAdapter)
+        audioSegmentDropdown.setAdapter(audioSegmentsAdapter)
+
+        data.audioDescriptors.firstOrNull()?.let { desc ->
+            audioSegmentLabel.hint = "Audio Segment: $desc"
+            audioSegmentDropdown.setText(desc, /*filter=*/false)
+        }
+
 
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Import Docent Track")
