@@ -17,6 +17,7 @@ import com.alflabs.milepost.trigger.playbackTriggerMetadata
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -173,7 +174,7 @@ class DocentImporterExporterTest {
     }
 
     @Test
-    fun loadDocentTrackEntityFromUri_loadsCorrect() {
+    fun loadDocentTrackEntityFromUri_loadsCorrect() = runTest {
         val mockUri = mock<Uri>()
         val mockContentResolver = mock<ContentResolver> {
             on { openInputStream(mockUri) } doReturn ByteArrayInputStream(expectedJson.toByteArray())

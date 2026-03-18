@@ -31,6 +31,7 @@ import com.alflabs.milepost.db.AudioSegmentDao
 import com.alflabs.milepost.db.DocentTrackDao
 import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepost.utils.DocentImportValidationData
 import com.alflabs.milepost.utils.DocentImportValidationResult
 import com.alflabs.milepost.utils.DocentImporterExporter
@@ -255,12 +256,11 @@ class DocentTracksFragment : Fragment() {
                 ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentsNames)
             audioSegmentDropdown.setAdapter(audioSegmentsAdapter)
 
-            audioSegmentLabel.hint = "Audio Segment: $desc"
+            audioSegmentLabel.hint = "Audio Segment: ${AudioSegmentItem.toDisplayTitle(desc)}"
             audioSegmentDropdown.setText(desc, /*filter=*/false)
 
             audioSegmentsContainer.addView(segmentView)
         }
-
 
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Import Docent Track")

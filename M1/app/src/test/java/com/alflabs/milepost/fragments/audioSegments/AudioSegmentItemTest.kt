@@ -1,9 +1,14 @@
 package com.alflabs.milepost.fragments.audioSegments
 
+import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
+import org.junit.Rule
 import org.junit.Test
 
+
 class AudioSegmentItemTest {
+    @get:Rule
+    val expect: Expect = Expect.create()
 
     private fun mkItem(descriptor: String) = AudioSegmentItem(
         id = 1L,
@@ -15,9 +20,25 @@ class AudioSegmentItemTest {
 
     @Test
     fun displayTitle() {
-        assertThat(mkItem("filename.ext[0;1234]").displayTitle()).isEqualTo("filename")
-        assertThat(mkItem("filename_no_ext[0;1234]").displayTitle()).isEqualTo("filename_no_ext")
-        assertThat(mkItem("filename_no_timestamp.wav").displayTitle()).isEqualTo("filename_no_timestamp")
-        assertThat(mkItem("filename_plain").displayTitle()).isEqualTo("filename_plain")
+        expect.that(mkItem("filename.ext[0;136000]").displayTitle()).isEqualTo("filename (2m 16s)")
+        expect.that(mkItem("filename_no_ext[0;136000]").displayTitle()).isEqualTo("filename_no_ext (2m 16s)")
+        expect.that(mkItem("filename_no_timestamp.wav").displayTitle()).isEqualTo("filename_no_timestamp")
+        expect.that(mkItem("filename_plain").displayTitle()).isEqualTo("filename_plain")
+    }
+
+    @Test
+    fun toDisplayTitle() {
+        expect.that(AudioSegmentItem.toDisplayTitle("filename.ext[68000;136000]")).isEqualTo("filename (1m 08s - 2m 16s)")
+        expect.that(AudioSegmentItem.toDisplayTitle("filename.ext[68000]")).isEqualTo("filename (1m 08s)")
+        expect.that(AudioSegmentItem.toDisplayTitle("filename.ext[68000;0]")).isEqualTo("filename (1m 08s - 0m 00s)")
+        expect.that(AudioSegmentItem.toDisplayTitle("filename.ext[;136000]")).isEqualTo("filename (2m 16s)")
+        expect.that(AudioSegmentItem.toDisplayTitle("filename.ext[0;136000]")).isEqualTo("filename (2m 16s)")
+
+        expect.that(AudioSegmentItem.toDisplayTitle("filename[0;136000]")).isEqualTo("filename (2m 16s)")
+        expect.that(AudioSegmentItem.toDisplayTitle("filename[68000]")).isEqualTo("filename (1m 08s)")
+        expect.that(AudioSegmentItem.toDisplayTitle("filename[;136000]")).isEqualTo("filename (2m 16s)")
+
+        expect.that(AudioSegmentItem.toDisplayTitle("filename.ext")).isEqualTo("filename")
+        expect.that(AudioSegmentItem.toDisplayTitle("filename")).isEqualTo("filename")
     }
 }

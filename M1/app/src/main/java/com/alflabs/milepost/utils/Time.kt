@@ -11,9 +11,9 @@ object Time {
         val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
 
         return if (hours > 0) {
-            String.format("%02dh %02dm %02ds", hours, minutes, seconds)
+            String.format("%dh %02dm %02ds", hours, minutes, seconds)
         } else {
-            String.format("%02dm %02ds", minutes, seconds)
+            String.format("%dm %02ds", minutes, seconds)
         }
     }
 
