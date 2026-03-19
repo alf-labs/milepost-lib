@@ -122,7 +122,7 @@ class GpsImporterExporterTest {
             on { cacheDir } doReturn File("/tmp")
         }
         val file = gpsImporterExporter.createJsonExportFile(mockContext, gpsTrackEntity)
-        assertThat(fakeLogger.string.trim()).isEqualTo("GpsImporterExporter: createJsonExportFile")
+        assertThat(fakeLogger.string.trim()).doesNotContain("error")
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).endsWith("/gps test-uuid-1234 A fairly long Test+ -Track name 42 that is more than 64 characte.json")

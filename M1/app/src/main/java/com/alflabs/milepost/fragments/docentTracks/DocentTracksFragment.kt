@@ -331,6 +331,11 @@ class DocentTracksFragment : Fragment() {
                             && docentId != null
                             && docentId > 0
 
+                    var newUserTitle = userTitleText.text.toString().trim()
+                    if (newUserTitle == data.userTitle.trim()) {
+                        newUserTitle = ""
+                    }
+
                     val descToId = mutableMapOf<String, Long>()
                     val descToUri = mutableMapOf<String, String>()
                     dropdownToDesc.forEach { (dd, desc) ->
@@ -347,6 +352,7 @@ class DocentTracksFragment : Fragment() {
                         canContinue = valid,
                         message = "OK",
                         replace = replace,
+                        docentUserTitle = newUserTitle,
                         docentTrackId = docentId ?: 0,
                         gpsTrackId = newGpsTrack!!.id,
                         descriptorsToId = descToId,

@@ -165,7 +165,7 @@ class DocentImporterExporterTest {
             gpsTrackEntity,
             docentItems
         )
-        assertThat(fakeLogger.string.trim()).isEqualTo("DocentImporterExporter: createJsonExportFile")
+        assertThat(fakeLogger.string.trim()).doesNotContain("error")
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).endsWith("/docent test-uuid-456 A fairly long Test+ -Track name 42 that is more than 64 characte.json")

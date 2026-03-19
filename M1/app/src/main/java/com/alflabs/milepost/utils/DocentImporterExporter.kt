@@ -171,7 +171,7 @@ private data class DocentTrackEntityPojo @JsonCreator constructor(
     fun toProto(data: DocentImportValidationResult) = DocentTrackEntity(
         id = 0,
         uuid = docentTrackUuid,
-        userTitle = userTitle,
+        userTitle = data.docentUserTitle.ifBlank { userTitle },
         creationTime = createdDateISO,
         lastUsedTime = lastUsedDateISO,
         gpsTrackId = data.gpsTrackId
@@ -192,6 +192,8 @@ data class DocentImportValidationResult(
     val replace: Boolean = false,
     /** Existing track to be replaced */
     val docentTrackId: Long = 0,
+    /** Override imported title, or empty to use existing. */
+    val docentUserTitle: String = "",
     /** Existing gps track to use. */
     val gpsTrackId: Long = 0,
     val descriptorsToId: Map<String, Long> = emptyMap(),
