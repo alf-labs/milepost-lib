@@ -277,7 +277,7 @@ class DocentTriggersFragment : Fragment() {
         mpDirectionDropdown.setText(initialMpDirText, /*filter=*/false)
 
         // Note: this works because we currently impose audio files to have unique descriptors.
-        val audioSegmentNames = currentAudioSegments.map { it.descriptor }.toList()
+        val audioSegmentNames = currentAudioSegments.map { it.displayTitle() }.toList()
         val audioSegmentAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentNames)
         audioSegmentDropdown.setAdapter(audioSegmentAdapter)
@@ -357,7 +357,7 @@ class DocentTriggersFragment : Fragment() {
                     newTrigger.setMpDirection(PlaybackTriggerDirection.forNumber(newMpDirIndex))
                 }
 
-                val newAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.descriptor == newAudio }
+                val newAudioSegmentIndex = currentAudioSegments.indexOfFirst { it.displayTitle() == newAudio }
                 if (newAudioSegmentIndex >= 0 && newAudioSegmentIndex != currAudioSegmentIndex) {
                     changed = true
                     newEntity = newEntity.copy(audioSegmentId = currentAudioSegments[newAudioSegmentIndex].id)

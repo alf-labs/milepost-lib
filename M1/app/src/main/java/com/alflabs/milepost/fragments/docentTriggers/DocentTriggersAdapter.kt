@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentTriggerItemBinding
+import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 
 class DocentTriggersAdapter(
@@ -63,7 +64,11 @@ class DocentTriggersAdapter(
 
         fun bind(item: DocentTriggerItem, isSelected: Boolean) {
             val trigger = item.playbackTrigger
-            binding.triggerTitle.text = "${item.descriptor.ifEmpty { "Unknown Audio ${item.audioSegmentId}" }}"
+            binding.triggerTitle.text = if (item.descriptor.isNotEmpty()) {
+                AudioSegmentItem.toDisplayTitle(item.descriptor)
+            } else {
+                "Unknown Audio ${item.audioSegmentId}"
+            }
             if (trigger != null) {
                 binding.triggerInfo.text =
                     if (trigger.includeInColdStart) "Include in Cold Start"
