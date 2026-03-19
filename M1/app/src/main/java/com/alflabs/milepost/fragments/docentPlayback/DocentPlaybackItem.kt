@@ -17,7 +17,10 @@ data class DocentPlaybackItem(
 ) {
     // These fields are internal and not populated by the DAO.
     // They are also not part of the default adapter equality diff callback.
-    @Ignore var playDisplay: String = ""
+    @Ignore
+    var currentMs: Int = 0
+    @Ignore
+    var durationMs: Int = 0
 
     constructor(editorItem: DocentTriggerItem) : this(
         isPlaying = false,

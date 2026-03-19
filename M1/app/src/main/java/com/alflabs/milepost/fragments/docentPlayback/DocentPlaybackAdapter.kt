@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.databinding.DocentPlaybackItemBinding
 import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
+import com.alflabs.milepost.utils.Time
 
 class DocentPlaybackAdapter :
     ListAdapter<DocentPlaybackItem, DocentPlaybackAdapter.DocentEditorViewHolder>(DocentPlaybackDiffCallback()) {
@@ -62,7 +63,7 @@ class DocentPlaybackAdapter :
             }
 
             if (item.isPlaying) {
-                binding.playRange.text = item.playDisplay
+                binding.playRange.text = "${Time.formatMillis(item.currentMs.toLong())} / ${Time.formatMillis(item.durationMs.toLong())}"
             } else {
                 binding.playRange.text = ""
             }

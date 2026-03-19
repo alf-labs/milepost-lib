@@ -343,12 +343,10 @@ class DocentPlaybackFragment : SensorsFragment() {
         if (currentPlayIndex >= 0) {
             oldList[currentPlayIndex]?.let { current ->
                 if (current.triggerId == status.triggerId) {
-                    if (current.isPlaying != status.isPlaying || current.playDisplay != status.playDisplay) {
+                    if (current.isPlaying != status.isPlaying) {
                         val newList = oldList.map {
                             if (it.triggerId == status.triggerId) {
-                                it.copy(isPlaying = status.isPlaying).apply {
-                                    playDisplay = status.playDisplay
-                                }
+                                it.copy(isPlaying = status.isPlaying)
                             } else {
                                 it
                             }
@@ -357,6 +355,10 @@ class DocentPlaybackFragment : SensorsFragment() {
                         docentPlaybackAdapter?.submitList(newList)
                         docentPlaybackAdapter?.notifyItemChanged(currentPlayIndex)
                         return
+                    } else if (current.isPlaying) {
+                        current.durationMs = status.durationMs
+                        current.currentMs = status.currentMs
+                        docentPlaybackAdapter?.notifyItemChanged(currentPlayIndex)
                     }
                 }
             }

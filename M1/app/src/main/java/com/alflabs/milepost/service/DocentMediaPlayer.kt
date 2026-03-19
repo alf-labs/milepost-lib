@@ -3,6 +3,8 @@ package com.alflabs.milepost.service
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.core.net.toUri
 import com.alflabs.milepost.app.GlobalState
@@ -86,7 +88,6 @@ class DocentMediaPlayer @AssistedInject constructor(
                 sendStatus(AudioPlayingStatus.Type.Pending, pending)
             }
         }
-
     }
 
     private fun sendStatus(type: AudioPlayingStatus.Type, audio: AudioInfo?) {
@@ -94,7 +95,8 @@ class DocentMediaPlayer @AssistedInject constructor(
             type = type,
             isPlaying = audio?.isPlaying ?: false,
             triggerId = audio?.triggerId ?: -1L,
-            playDisplay = audio?.playDisplay ?: "",
+            currentMs = audio?.currentMs ?: 0,
+            durationMs = audio?.durationMs ?: 0,
         )
         audioPlayingStatusPublisher.publish(status)
     }
@@ -103,27 +105,17 @@ class DocentMediaPlayer @AssistedInject constructor(
         stopPlaying()
         try {
             val uri = audio.persistableUri.toUri()
-            val retriever = MediaMetadataRetriever()
-            retriever.setDataSource(context, uri)
-
-            // If the file is not a valid media file, the following call might return null or throw
-            val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            val durationMs = durationStr?.toLong() ?: 0L
-
-            retriever.release()
-
             mediaPlayer = MediaPlayer().apply {
                 logger.d(TAG, "@@ startPlaying: ${audio.triggerId}, $uri")
                 setDataSource(context, uri)
                 prepare()
                 start()
-                current = audio.copy(
-                    isPlaying = true,
-                    playDisplay = Time.formatMillis(durationMs))
+                current = audio.copy(isPlaying = true)
                 sendStatus(AudioPlayingStatus.Type.Current, current)
                 setOnCompletionListener {
                     onCompletion()
                 }
+                progressHandler.post(updateProgressRunnable)
             }
         } catch (e: Exception) {
             logger.d(TAG, "Error playing audio", e)
@@ -144,15 +136,30 @@ class DocentMediaPlayer @AssistedInject constructor(
     }
 
     private fun stopPlaying() {
+        progressHandler.removeCallbacks(updateProgressRunnable)
         mediaPlayer?.release()
         mediaPlayer = null
         current?.let {
-            current = it.copy(
-                isPlaying = false,
-                playDisplay = "")
+            current = it.copy(isPlaying = false)
             sendStatus(AudioPlayingStatus.Type.Current, current)
             logger.d(TAG, "@@ stopPlaying: ${it.triggerId}, ${it.persistableUri}")
             current = null
+        }
+    }
+
+    private val progressHandler = Handler(Looper.getMainLooper())
+    private val updateProgressRunnable = object : Runnable {
+        override fun run() {
+            mediaPlayer?.let { player ->
+                if (player.isPlaying) {
+                    current?.let { info ->
+                        info.currentMs = player.currentPosition
+                        info.durationMs = player.duration
+                        sendStatus(AudioPlayingStatus.Type.Current, info)
+                    }
+                    progressHandler.postDelayed(this, 1000)
+                }
+            }
         }
     }
 }
@@ -161,5 +168,6 @@ private data class AudioInfo(
     val triggerId: Long,
     val persistableUri: String,
     var isPlaying: Boolean = false,
-    val playDisplay: String = "",
+    var currentMs: Int = 0,
+    var durationMs: Int = 0,
 )
