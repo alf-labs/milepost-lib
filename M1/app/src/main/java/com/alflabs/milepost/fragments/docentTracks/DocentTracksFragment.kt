@@ -24,13 +24,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.withTransaction
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.databinding.DocentTracksFragmentBinding
+import com.alflabs.milepost.db.AppDatabase
 import com.alflabs.milepost.db.AudioSegmentDao
 import com.alflabs.milepost.db.DocentTrackDao
-import com.alflabs.milepost.db.DocentTrackEntity
 import com.alflabs.milepost.db.GpsTrackDao
+import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepost.utils.DocentImportValidationData
 import com.alflabs.milepost.utils.DocentImportValidationResult
@@ -43,7 +45,7 @@ import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.time.Instant
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
@@ -54,12 +56,14 @@ class DocentTracksFragment : Fragment() {
         private val TAG = DocentTracksFragment::class.java.simpleName
     }
 
-    @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var docentImporterExporter: DocentImporterExporter
+    @Inject lateinit var audioSegmentDao: AudioSegmentDao
     @Inject lateinit var docentTrackDao: DocentTrackDao
     @Inject lateinit var gpsTrackDao: GpsTrackDao
-    @Inject lateinit var audioSegmentDao: AudioSegmentDao
+    @Inject lateinit var playTriggerDao: PlayTriggerDao
+    @Inject lateinit var appDatabase: AppDatabase
 
     private var _binding: DocentTracksFragmentBinding? = null
     private val binding get() = _binding!!
@@ -131,11 +135,6 @@ class DocentTracksFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
-                    R.id.action_add -> {
-                        doAddFile()
-                        true
-                    }
-
                     R.id.action_import -> {
                         importJsonSelectFile()
                         true
@@ -145,19 +144,6 @@ class DocentTracksFragment : Fragment() {
                 }
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun doAddFile() {
-        // TBD TESTING ONLY
-        val trackEntity = DocentTrackEntity(
-            userTitle = "New Docent Track",
-            creationTime = Instant.now().toString(),
-            lastUsedTime = Instant.now().toString(),
-            gpsTrackId = 3,
-        )
-        viewModel.insert(trackEntity)
-        // TODO remove this entirely
-        Snackbar.make(requireView(), "TBD Docent track add", Snackbar.LENGTH_LONG).show()
     }
 
     private fun showEditDialog(item: DocentTrackItem) {
@@ -205,10 +191,59 @@ class DocentTracksFragment : Fragment() {
                 return@launch
             }
 
+            try {
+                // Note: There are 2 ways to perform Room database transactions.
+                // 1- In the DAO with @Transaction-annotated methods (good within the same table).
+                // 2- Using RoomDb.begin/endTransaction, or the kotlin withTransaction{} wrapper.
+                //    With the latter, do NOT catch exceptions within the block, let them be
+                //    handled by the withTransaction wrapper so that it can cancel the transaction.
 
-            Toast.makeText(requireContext(), "Import Result: $result", Toast.LENGTH_LONG).show()
+                appDatabase.withTransaction {
+                    // Note: on failure, make sure to throw an exception to cancel the transaction.
+                    // If we're "replacing", delete any existing docent track id (this also deletes
+                    // any associated play triggers).
+                    val valResult = result.validatorResult
+                    var docentEntity = result.docentTrackEntity.copy(id = 0)
+                    if (valResult.replace) {
+                        if (valResult.docentTrackId <= 0) {
+                            throw IllegalArgumentException("Invalid docent track ID")
+                        }
+                        logger.d(TAG, "@@ Delete old Docent Track: ${valResult.docentTrackId}")
+                        docentTrackDao.deleteById(valResult.docentTrackId)
+                    } else if (valResult.docentTrackId > 0) {
+                        // If we are not replacing, we need to change the UUID
+                        docentEntity = docentEntity.copy(uuid = UUID.randomUUID().toString())
+                    }
+                    // Validate the imported UUID is valid, or update it
+                    try {
+                        UUID.fromString(docentEntity.uuid)
+                    } catch (_: IllegalArgumentException) {
+                        docentEntity = docentEntity.copy(uuid = UUID.randomUUID().toString())
+                    }
+
+                    val newDocentId = docentTrackDao.insert(docentEntity)
+                    logger.d(TAG, "@@ Insert new Docent Track: $newDocentId, with UUID ${docentEntity.uuid}")
+
+                    result.triggerItems.forEach { item ->
+                        val entity = item.copy(docentTrackId = newDocentId).toEntity()
+                        logger.d(TAG, "@@ Insert new Trigger for audio ${entity.audioSegmentId}")
+                        playTriggerDao.insert(entity)
+                    }
+
+                    // Do this last if everything worked
+                    if (valResult.replace
+                        && appSettings.docentPlaybackTrackId() == valResult.docentTrackId) {
+                        // Choice: either unset the current one, or directly set the new one?
+                        appSettings.setDocentPlaybackTrackId(-1)
+                    }
+                    logger.d(TAG, "@@ Import successful")
+                }
+                Toast.makeText(requireContext(), "Import Successful", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                logger.d(TAG, "@@ Import failed", e)
+                Toast.makeText(requireContext(), "Import Failed: $e", Toast.LENGTH_LONG).show()
+            }
         }
-
     }
 
     private suspend fun importJsonValidator(data: DocentImportValidationData): DocentImportValidationResult {
@@ -273,7 +308,12 @@ class DocentTracksFragment : Fragment() {
                 audioSegmentDropdown.setAdapter(audioSegmentsAdapter)
 
                 audioSegmentLabel.hint = "Audio Segment: ${AudioSegmentItem.toDisplayTitle(desc)}"
-                audioSegmentDropdown.setText(desc, /*filter=*/false)
+
+                audioSegmentsNames.firstOrNull {
+                    it.startsWith(AudioSegmentItem.toDisplayTitle(desc))
+                }?.let {
+                    audioSegmentDropdown.setText(it, /*filter=*/false)
+                }
 
                 audioSegmentsContainer.addView(segmentView)
             }
@@ -287,6 +327,8 @@ class DocentTracksFragment : Fragment() {
                     var valid = newGpsTrack != null
 
                     val replace = replaceExistingCheckbox.isChecked
+                            && docentId != null
+                            && docentId > 0
 
                     val descToId = mutableMapOf<String, Long>()
                     val descToUri = mutableMapOf<String, String>()
@@ -304,6 +346,7 @@ class DocentTracksFragment : Fragment() {
                         canContinue = valid,
                         message = "OK",
                         replace = replace,
+                        docentTrackId = docentId ?: 0,
                         gpsTrackId = newGpsTrack!!.id,
                         descriptorsToId = descToId,
                         descriptorsToUri = descToUri,

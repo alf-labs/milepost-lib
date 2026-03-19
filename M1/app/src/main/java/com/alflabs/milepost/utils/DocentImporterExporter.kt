@@ -189,6 +189,9 @@ data class DocentImportValidationResult(
     val canContinue: Boolean,
     val message: String,
     val replace: Boolean = false,
+    /** Existing track to be replaced */
+    val docentTrackId: Long = 0,
+    /** Existing gps track to use. */
     val gpsTrackId: Long = 0,
     val descriptorsToId: Map<String, Long> = emptyMap(),
     val descriptorsToUri: Map<String, String> = emptyMap(),
