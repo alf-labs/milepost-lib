@@ -69,6 +69,7 @@ class DocentTriggersAdapter(
             } else {
                 "Unknown Audio ${item.audioSegmentId}"
             }
+
             if (trigger != null) {
                 binding.triggerInfo.text =
                     if (trigger.includeInColdStart) "Include in Cold Start"

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.databinding.DocentPlaybackItemBinding
+import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 
 class DocentPlaybackAdapter :
@@ -34,7 +35,12 @@ class DocentPlaybackAdapter :
         fun bind(item: DocentPlaybackItem) {
             val trigger = item.playbackTrigger
 
-            binding.triggerTitle.text = "${item.descriptor.ifEmpty { "Unknown Audio ${item.audioSegmentId}" }}"
+            binding.triggerTitle.text = if (item.descriptor.isNotEmpty()) {
+                AudioSegmentItem.toDisplayTitle(item.descriptor)
+            } else {
+                "Unknown Audio ${item.audioSegmentId}"
+            }
+
             if (trigger != null) {
                 val mpMin = String.format("%.2f", trigger.mpMin)
                 val mpMax = String.format("%.2f", trigger.mpMax)
