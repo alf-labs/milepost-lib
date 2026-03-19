@@ -40,11 +40,12 @@ import com.alflabs.utils.ILogger
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.google.protobuf.descriptorProto
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.time.Instant
 import javax.inject.Inject
+import kotlin.coroutines.resume
 
 @AndroidEntryPoint
 class DocentTracksFragment : Fragment() {
@@ -198,88 +199,156 @@ class DocentTracksFragment : Fragment() {
                 uri,
                 this@DocentTracksFragment::importJsonValidator
             )
+            logger.d(TAG, "@@ result = $result")
             if (result == null) {
                 Toast.makeText(requireContext(), "Failed to load JSON", Toast.LENGTH_LONG).show()
                 return@launch
-            } else {
-                Toast.makeText(requireContext(), "Import Result: $result", Toast.LENGTH_LONG).show()
             }
+
+
+            Toast.makeText(requireContext(), "Import Result: $result", Toast.LENGTH_LONG).show()
         }
 
     }
 
     private suspend fun importJsonValidator(data: DocentImportValidationData): DocentImportValidationResult {
-        logger.d(TAG, "@@ importJsonValidator: $data")
-
-        val dialogView = layoutInflater.inflate(R.layout.docent_import_dialog, null)
-        val userTitleText = dialogView.findViewById<TextInputEditText>(R.id.user_title)
-        val replaceExistingCheckbox = dialogView.findViewById<CheckBox>(R.id.replace_existing)
-        val gpsTrackLabel = dialogView.findViewById<TextInputLayout>(R.id.gps_track_label)
-        val gpsTrackDropdown = dialogView.findViewById<AutoCompleteTextView>(R.id.gps_track_dropdown)
-        val audioSegmentsContainer = dialogView.findViewById<LinearLayout>(R.id.audio_segments)
-
-        userTitleText.setText(data.userTitle)
-        gpsTrackLabel.hint = "GPS Track: ${data.gpsTrackName}"
-
         val docentId = docentTrackDao.getIdByUuid(data.docentTrackUuid)
-        logger.d(TAG, "@@ importJsonValidator: docentId = $docentId")
-
-        replaceExistingCheckbox.isChecked = false
-        replaceExistingCheckbox.isEnabled = docentId != null
-
         val gpsTrackId = gpsTrackDao.getIdByUuid(data.gpsTrackUuid)
-
         val gpsTracks = gpsTrackDao.getItemsAsync()
-        val gpsTracksNames = gpsTracks.map { it.displayTrackLabel() }
-        val gpsTracksAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, gpsTracksNames)
-        gpsTrackDropdown.setAdapter(gpsTracksAdapter)
+        val audioSegments = audioSegmentDao.getItemsAsync()
 
-        gpsTrackId?.let { id ->
-            gpsTracks
-                .firstOrNull { it.id == id }
-                ?.displayTrackLabel()
-                ?.let { name ->
-                    gpsTrackDropdown.setText(name, /*filter=*/false)
-                }
-        }
+        return suspendCancellableCoroutine { continuation ->
+            logger.d(TAG, "@@ importJsonValidator: $data")
 
-        data.audioDescriptors.forEach { desc ->
-            val segmentView = layoutInflater.inflate(R.layout.docent_import_dialog_segment, null)
+            val dialogView = layoutInflater.inflate(R.layout.docent_import_dialog, null)
+            val userTitleText = dialogView.findViewById<TextInputEditText>(R.id.user_title)
+            val replaceExistingCheckbox = dialogView.findViewById<CheckBox>(R.id.replace_existing)
+            val gpsTrackLabel = dialogView.findViewById<TextInputLayout>(R.id.gps_track_label)
+            val gpsTrackDropdown =
+                dialogView.findViewById<AutoCompleteTextView>(R.id.gps_track_dropdown)
+            val audioSegmentsContainer = dialogView.findViewById<LinearLayout>(R.id.audio_segments)
 
-            val audioSegmentLabel = segmentView.findViewById<TextInputLayout>(R.id.audio_segment_label)
-            val audioSegmentDropdown = segmentView.findViewById<AutoCompleteTextView>(R.id.audio_segment_dropdown)
+            userTitleText.setText(data.userTitle)
+            gpsTrackLabel.hint = "GPS Track: ${data.gpsTrackName}"
 
-            val audioSegments = audioSegmentDao.getItemsAsync()
-            val audioSegmentsNames = audioSegments.map { it.displayTitle() }
-            val audioSegmentsAdapter =
-                ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, audioSegmentsNames)
-            audioSegmentDropdown.setAdapter(audioSegmentsAdapter)
+            replaceExistingCheckbox.isChecked = false
+            replaceExistingCheckbox.isEnabled = docentId != null
 
-            audioSegmentLabel.hint = "Audio Segment: ${AudioSegmentItem.toDisplayTitle(desc)}"
-            audioSegmentDropdown.setText(desc, /*filter=*/false)
+            val gpsTracksNames = gpsTracks.map { it.displayTrackLabel() }
+            val labelToGpsTracks = gpsTracks.associateBy { it.displayTrackLabel() }
+            val gpsTracksAdapter =
+                ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, gpsTracksNames)
+            gpsTrackDropdown.setAdapter(gpsTracksAdapter)
 
-            audioSegmentsContainer.addView(segmentView)
-        }
-
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Import Docent Track")
-            .setView(dialogView)
-            .setPositiveButton("Import") { _, _ ->
-                // TBD
+            gpsTrackId?.let { id ->
+                gpsTracks
+                    .firstOrNull { it.id == id }
+                    ?.displayTrackLabel()
+                    ?.let { name ->
+                        gpsTrackDropdown.setText(name, /*filter=*/false)
+                    }
             }
-            .setNegativeButton("Cancel", null)
-            .create()
 
-        dialog.show()
+            val audioSegmentsNames = audioSegments.map { it.displayTitle() }
+            val labelToAudioSegments = audioSegments.associateBy { it.displayTitle() }
+            val dropdownToDesc = mutableMapOf<AutoCompleteTextView, String>()
 
+            data.audioDescriptors.forEach { desc ->
+                val segmentView =
+                    layoutInflater.inflate(R.layout.docent_import_dialog_segment, null)
 
-        return DocentImportValidationResult(
-            canContinue = false,
-            message = "TBD $docentId",
-            gpsTrackId = 0,
-            descriptorsToId = emptyMap(),
-            descriptorsToUri = emptyMap(),
-        )
+                val audioSegmentLabel =
+                    segmentView.findViewById<TextInputLayout>(R.id.audio_segment_label)
+                val audioSegmentDropdown =
+                    segmentView.findViewById<AutoCompleteTextView>(R.id.audio_segment_dropdown)
+
+                dropdownToDesc[audioSegmentDropdown] = desc
+
+                val audioSegmentsAdapter =
+                    ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_list_item_1,
+                        audioSegmentsNames
+                    )
+                audioSegmentDropdown.setAdapter(audioSegmentsAdapter)
+
+                audioSegmentLabel.hint = "Audio Segment: ${AudioSegmentItem.toDisplayTitle(desc)}"
+                audioSegmentDropdown.setText(desc, /*filter=*/false)
+
+                audioSegmentsContainer.addView(segmentView)
+            }
+
+            val dialog = AlertDialog.Builder(requireContext())
+                .setTitle("Import Docent Track")
+                .setView(dialogView)
+                .setPositiveButton("Import") { _, _ ->
+                    // All IDs should be valid since we have a validator function.
+                    val newGpsTrack = labelToGpsTracks[gpsTrackDropdown.text.toString()]
+                    var valid = newGpsTrack != null
+
+                    val replace = replaceExistingCheckbox.isChecked
+
+                    val descToId = mutableMapOf<String, Long>()
+                    val descToUri = mutableMapOf<String, String>()
+                    dropdownToDesc.forEach { (dd, desc) ->
+                        val audioSegment = labelToAudioSegments[dd.text.toString()]
+                        if (audioSegment == null) {
+                            valid = false
+                        } else {
+                            descToId[desc] = audioSegment.id
+                            descToUri[desc] = audioSegment.persistableUri
+                        }
+                    }
+
+                    continuation.resume(DocentImportValidationResult(
+                        canContinue = valid,
+                        message = "OK",
+                        replace = replace,
+                        gpsTrackId = newGpsTrack!!.id,
+                        descriptorsToId = descToId,
+                        descriptorsToUri = descToUri,
+                    ))
+                }
+                .setNegativeButton("Cancel", { _, _ ->
+                    continuation.resume(DocentImportValidationResult(
+                        canContinue = false,
+                        message = "Cancelled",
+                    ))
+                })
+                .setOnCancelListener {
+                    continuation.resume(DocentImportValidationResult(
+                        canContinue = false,
+                        message = "Cancelled",
+                    ))
+                }
+                .create()
+
+            // Handle the "Cancel" state if the coroutine itself is cancelled externally.
+            continuation.invokeOnCancellation {
+                dialog.dismiss()
+            }
+
+            dialog.show()
+
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.isEnabled = false
+
+            val validationFunction = {
+                var valid = labelToGpsTracks.containsKey(gpsTrackDropdown.text.toString())
+
+                dropdownToDesc.keys.forEach { dropdown ->
+                    valid = valid && labelToAudioSegments.containsKey(dropdown.text.toString())
+                }
+
+                positiveButton.isEnabled = valid
+            }
+
+            gpsTrackDropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }
+            dropdownToDesc.keys.forEach { dropdown ->
+                dropdown.setOnItemClickListener { _, _, _, _ -> validationFunction() }
+            }
+
+            validationFunction()
+        }
     }
 }

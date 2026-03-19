@@ -118,6 +118,10 @@ class GpsImporterExporter @Inject constructor(
 
     /**
      * Import a GPS track from JSON.
+     *
+     * Note that this returns an entity but does not add it to the database yet.
+     * The caller shall decide if the entity needs to replace an existing one or
+     * be added as a new entity.
      */
     fun loadGpsTrackEntityFromUri(context: Context, uri: Uri): GpsTrackEntity? {
         logger.d(TAG, "loadGpsTrackEntityFromUri")

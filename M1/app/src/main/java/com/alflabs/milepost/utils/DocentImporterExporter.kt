@@ -8,7 +8,6 @@ import com.alflabs.milepost.fragments.docentTriggers.DocentTriggerItem
 import com.alflabs.milepost.trigger.PlaybackTriggerPojo
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
-import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -94,7 +93,10 @@ class DocentImporterExporter @Inject constructor(
      *   docent track and the triggers.
      *
      * Note that this function makes no database access.
-     * That's the responsibility of the caller, and should be done in a transaction.
+     * The validator can read from the database but not write to it.
+     * The output of this function is a list of entities that need to be added.
+     * Updating the database is the responsibility of the caller, and should be done
+     * in a transaction.
      *
      * One thing this does NOT do is allow creating a docent track where the GPS track or the
      * audio files are unresolved, as the prototype's UI currently lacks support for that.
@@ -129,8 +131,8 @@ class DocentImporterExporter @Inject constructor(
                             bytesStream,
                             DocentTrackEntityPojo::class.java)
 
-                        // TBD convert triggers pojo
                         return DocentImportResult(
+                            validatorResult = validated,
                             docentTrackEntity = entity.toProto(validated),
                             triggerItems = entity.triggers.map {
                                 it.toItem(
@@ -186,12 +188,14 @@ data class DocentImportValidationData @JsonCreator constructor(
 data class DocentImportValidationResult(
     val canContinue: Boolean,
     val message: String,
-    val gpsTrackId: Long,
-    val descriptorsToId: Map<String, Long>,
-    val descriptorsToUri: Map<String, String>,
+    val replace: Boolean = false,
+    val gpsTrackId: Long = 0,
+    val descriptorsToId: Map<String, Long> = emptyMap(),
+    val descriptorsToUri: Map<String, String> = emptyMap(),
 )
 
 data class DocentImportResult(
+    val validatorResult: DocentImportValidationResult,
     val docentTrackEntity: DocentTrackEntity,
     val triggerItems: List<DocentTriggerItem>,
 )
