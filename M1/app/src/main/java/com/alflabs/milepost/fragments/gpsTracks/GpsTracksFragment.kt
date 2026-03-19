@@ -127,13 +127,21 @@ class GpsTracksFragment : Fragment() {
     private fun importJsonLoadUri(uri: Uri) {
         // 2- When a file is selected, load it in memory using the Jackson library for GpsTrackEntity.class
         logger.d(TAG, "@@ ImportJSON 2 - Load URI: $uri")
-        val entity = gpsImporterExporter.loadGpsTrackEntityFromUri(requireContext(), uri)
+        var entity = gpsImporterExporter.loadGpsTrackEntityFromUri(requireContext(), uri)
         if (entity == null) {
             Toast.makeText(requireContext(), "Failed to load JSON", Toast.LENGTH_LONG).show()
             return
         }
 
         val uuid = entity.uuid
+
+        // Validate the imported UUID is valid, or update it in the entity
+        try {
+            UUID.fromString(uuid)
+        } catch (_: IllegalArgumentException) {
+            entity = entity.copy(uuid = UUID.randomUUID().toString())
+        }
+
         // 3- If the uuid already exists in the database, ask the user if they want to override it or create a new record.
         lifecycleScope.launch {
             val existingId = viewModel.getIdByUuid(uuid)

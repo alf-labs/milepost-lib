@@ -225,15 +225,16 @@ class DocentTracksFragment : Fragment() {
                     logger.d(TAG, "@@ Insert new Docent Track: $newDocentId, with UUID ${docentEntity.uuid}")
 
                     result.triggerItems.forEach { item ->
-                        val entity = item.copy(docentTrackId = newDocentId).toEntity()
-                        logger.d(TAG, "@@ Insert new Trigger for audio ${entity.audioSegmentId}")
-                        playTriggerDao.insert(entity)
+                        val entity = item.copy(id = 0, docentTrackId = newDocentId).toEntity()
+                        val triggerId = playTriggerDao.insert(entity)
+                        logger.d(TAG, "@@ Insert new Trigger $triggerId for audio ${entity.audioSegmentId}")
                     }
 
-                    // Do this last if everything worked
+                    // If everything worked, unset the current docent track if it was replaced.
                     if (valResult.replace
                         && appSettings.docentPlaybackTrackId() == valResult.docentTrackId) {
-                        // Choice: either unset the current one, or directly set the new one?
+                        // Note: we purposely don't auto-select the new replaced track.
+                        // Let the user review it first and select it manually.
                         appSettings.setDocentPlaybackTrackId(-1)
                     }
                     logger.d(TAG, "@@ Import successful")

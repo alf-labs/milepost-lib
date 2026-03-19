@@ -62,6 +62,7 @@ class DocentImporterExporter @Inject constructor(
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
             val file = File(cacheDir, "docent ${exported.docentTrackUuid}${sanitizeTitle(docentTrackEntity.userTitle)}.json")
+            logger.d(TAG, "@@ createJsonExportFile: file = ${file.path}")
 
             val objectMapper = ObjectMapper()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)

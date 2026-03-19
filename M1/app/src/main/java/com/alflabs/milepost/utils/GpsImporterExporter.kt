@@ -101,6 +101,7 @@ class GpsImporterExporter @Inject constructor(
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
             val file = File(cacheDir, "gps ${exported.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
+            logger.d(TAG, "@@ createJsonExportFile: file = ${file.path}")
 
             val objectMapper = ObjectMapper()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
