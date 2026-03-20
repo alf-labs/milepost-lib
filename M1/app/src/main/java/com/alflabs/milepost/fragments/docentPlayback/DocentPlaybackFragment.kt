@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
+import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentPlaybackFragmentBinding
 import com.alflabs.milepost.db.DocentTrackDao
@@ -128,7 +129,7 @@ class DocentPlaybackFragment : SensorsFragment() {
         globalState.audioPlayCommandStream.publishWith(audioPlayCommandPublisher)
 
         lifecycleScope.launch {
-            docentPlaybackAdapter = DocentPlaybackAdapter()
+            docentPlaybackAdapter = DocentPlaybackAdapter(onAction = ::onActionBtnClick)
 
             val layoutManager = LinearLayoutManager(requireContext())
             playbackBinding.playTriggerList.adapter = docentPlaybackAdapter
@@ -566,4 +567,37 @@ class DocentPlaybackFragment : SensorsFragment() {
             }
         }
     }
+
+    private fun onActionBtnClick(item: DocentPlaybackItem) {
+        logger.d(TAG, "onActionBtnClick: $item")
+
+        when (item.btnAction) {
+            DocentPlaybackItem.BtnAction.ForcePlay -> {
+                // TBD
+            }
+            DocentPlaybackItem.BtnAction.Pause -> {
+                if (item.isPlaying) {
+                    item.isPaused = true
+                    notifyItemChanged(item)
+                }
+            }
+            DocentPlaybackItem.BtnAction.Unpause -> {
+                if (item.isPlaying) {
+                    item.isPaused = false
+                    notifyItemChanged(item)
+                }
+            }
+        }
+    }
+
+    private fun notifyItemChanged(item: DocentPlaybackItem) {
+        docentPlaybackAdapter?.let { adapter ->
+            val list = adapter.currentList
+            val first = list.indexOfFirst { it.triggerId == item.triggerId }
+            if (first >= 0) {
+                adapter.notifyItemChanged(first)
+            }
+        }
+    }
+
 }

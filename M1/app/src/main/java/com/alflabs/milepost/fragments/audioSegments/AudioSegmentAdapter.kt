@@ -84,7 +84,7 @@ class AudioSegmentAdapter(
 
             binding.playBtn.setImageResource(
                 if (item.isPlaying) R.drawable.ic_btn_pause
-                else R.drawable.ic_btn_play
+                else R.drawable.ic_btn_play_next
             )
             binding.playBtn.isEnabled = item.uriValid == true || item.isPlaying
 

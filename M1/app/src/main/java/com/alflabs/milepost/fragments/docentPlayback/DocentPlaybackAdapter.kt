@@ -1,16 +1,20 @@
 package com.alflabs.milepost.fragments.docentPlayback
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.alflabs.milepost.R
 import com.alflabs.milepost.databinding.DocentPlaybackItemBinding
 import com.alflabs.milepost.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepost.trigger.PlaybackTriggerDirection
 import com.alflabs.milepost.utils.Time
 
-class DocentPlaybackAdapter :
+class DocentPlaybackAdapter(
+    private val onAction: (DocentPlaybackItem) -> Unit
+) :
     ListAdapter<DocentPlaybackItem, DocentPlaybackAdapter.DocentEditorViewHolder>(DocentPlaybackDiffCallback()) {
 
     companion object {
@@ -57,9 +61,25 @@ class DocentPlaybackAdapter :
             }
 
             binding.playStatus.text = when {
-                item.isPlaying -> "Playing"
+                item.isPlaying && item.isPaused -> "Paused"
+                item.isPlaying && !item.isPaused -> "Playing"
                 item.isPending -> "Pending"
                 else -> ""
+            }
+
+            if (item.btnAction != binding.actionBtn.tag) {
+                val iconRes = when(item.btnAction) {
+                    DocentPlaybackItem.BtnAction.ForcePlay -> R.drawable.ic_btn_play_next
+                    DocentPlaybackItem.BtnAction.Pause -> R.drawable.ic_btn_pause
+                    DocentPlaybackItem.BtnAction.Unpause -> R.drawable.ic_btn_unpause
+                }
+
+                binding.actionBtn.setImageResource(iconRes)
+                binding.actionBtn.tag = item.btnAction
+            }
+
+            binding.actionBtn.setOnClickListener {
+                onAction(item)
             }
 
             if (item.isPlaying) {
@@ -68,13 +88,13 @@ class DocentPlaybackAdapter :
                 binding.playRange.text = ""
             }
 
-//            itemView.setBackgroundColor(
-//                if (isSelected) {
-//                    itemView.context.getColor(R.color.list_highlight)
-//                } else {
-//                    Color.TRANSPARENT
-//                }
-//            )
+            binding.triggerTitle.setBackgroundColor(
+                if (item.isPlaying) {
+                    binding.triggerTitle.context.getColor(R.color.list_highlight)
+                } else {
+                    Color.TRANSPARENT
+                }
+            )
         }
     }
 }

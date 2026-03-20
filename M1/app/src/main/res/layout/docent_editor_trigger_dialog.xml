@@ -34,7 +34,7 @@
                 android:padding="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Play Audio File"
-                android:src="@drawable/ic_btn_play"
+                android:src="@drawable/ic_btn_play_next"
                 app:tint="?android:attr/textColorSecondary" />
     </LinearLayout>
 

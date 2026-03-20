@@ -39,10 +39,12 @@
             tools:text="1:23 / 4:56" />
 
     <ImageButton
-            android:id="@+id/play_btn"
+            android:id="@+id/action_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_btn_play"
+            android:scaleX="2"
+            android:scaleY="2"
+            android:src="@drawable/ic_btn_play_next"
             android:padding="8dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
