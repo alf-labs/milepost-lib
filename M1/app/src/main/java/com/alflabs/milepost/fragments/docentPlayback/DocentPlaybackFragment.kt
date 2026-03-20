@@ -404,7 +404,8 @@ class DocentPlaybackFragment : SensorsFragment() {
     }
 
 
-    private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate) {
+    private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate?) {
+        if (mp == null) return
         logger.d(TAG, "onMpEstimate: ${mp.mp}")
         // This may potentially be called outside of the proper binding lifecycle.
         if (!hasBinding) return

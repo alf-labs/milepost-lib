@@ -6,6 +6,7 @@ import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
@@ -39,7 +40,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 
-open abstract class SensorsFragmentBase: Fragment() {
+abstract class SensorsFragmentBase: Fragment() {
 
     companion object {
         private val TAG = SensorsFragmentBase::class.java.simpleName
@@ -222,7 +223,8 @@ open abstract class SensorsFragmentBase: Fragment() {
     protected fun accuracyColor(value: Float?) : Int =
         if (value == null) accuracyColorMissing else accuracyColorPresent
 
-    protected fun onGlobalModeChanged(event: Any?) {
+    @CallSuper
+    protected open fun onGlobalModeChanged(event: Any?) {
         logger.d(TAG, "onGlobalModeChanged: $event")
         // TBD this is temporary, change to a better display
         // This may potentially be called outside of the proper binding lifecycle.
@@ -284,10 +286,10 @@ open abstract class SensorsFragmentBase: Fragment() {
         map: GoogleMap,
     ) {
         // Implementation detail: there is no "load map the first time" function as this can be used
-        // during recording where we start with no map track data. Instead every call to this method
-        // clears the map and fully repopulates it. This is known to not be efficient, and could be
-        // optimized later to only recompute polyline if the list has changed (during recording) or
-        // the fragment has resumed.
+        // during recording where we start with no map track data. Instead, every call to this
+        // method clears the map and fully repopulates it. This is known to not be efficient, and
+        // could be optimized later to only recompute polyline if the list has changed (during
+        // recording) or the fragment has resumed.
         map.clear()
 
         val currentPosition = LatLng(currentLatLong.latitude, currentLatLong.longitude)

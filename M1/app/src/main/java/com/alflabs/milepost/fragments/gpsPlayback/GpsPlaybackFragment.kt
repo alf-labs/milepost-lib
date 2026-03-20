@@ -236,7 +236,8 @@ class GpsPlaybackFragment : SensorsFragment() {
         return super.setupInitialMapZoom(map, position, zoomLevel)
     }
 
-    private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate) {
+    private fun onMpEstimate(map: GoogleMap?, mp: MpEstimate?) {
+        if (mp == null) return
         logger.d(TAG, "onMpEstimate: $mp")
         // This may potentially be called outside of the proper binding lifecycle.
         if (!hasBinding) return
@@ -315,8 +316,9 @@ class GpsPlaybackFragment : SensorsFragment() {
         map: GoogleMap,
     ) {
         // Implementation detail: there is no "load map the first time" function as this can be used
-        // during recording where we start with no map track data. Instead every call to this method
-        // checks if member fields are null and only initializes them once if they are not set yet.
+        // during recording where we start with no map track data. Instead, every call to this
+        // method checks if member fields are null and only initializes them once if they are not
+        // set yet.
 
         val position = LatLng(currentLatLong.latitude, currentLatLong.longitude)
         if (markerPositionCurrent == null) {
