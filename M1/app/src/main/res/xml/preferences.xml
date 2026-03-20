@@ -29,6 +29,16 @@
                 app:useSimpleSummaryProvider="true"
                 />
 
+        <SwitchPreferenceCompat
+                app:key="use_lock_task"
+                app:title="Use Lock Task Mode"
+                />
+
+        <SwitchPreferenceCompat
+                app:key="hide_system_bars"
+                app:title="Hide System Bars"
+                />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

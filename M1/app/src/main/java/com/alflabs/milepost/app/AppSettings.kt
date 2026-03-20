@@ -42,6 +42,8 @@ class AppSettings @Inject constructor(
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
         val SIMULATE_GPS = stringPreferencesKey("simulate_gps")
+        val USE_LOCK_TASK = booleanPreferencesKey("use_lock_task")
+        val HIDE_SYSTEM_BARS = booleanPreferencesKey("hide_system_bars")
         // The following values are only used internally, they can be of any type.
         val GPS_PLAYBACK_TRACK_ID = longPreferencesKey("gps_playback_track_id")
         val DOCENT_PLAYBACK_TRACK_ID = longPreferencesKey("docent_playback_track_id")
@@ -59,6 +61,16 @@ class AppSettings @Inject constructor(
     suspend fun useImperialUnits(): Boolean {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getBoolean(USE_IMPERIAL_UNITS.name, false)
+    }
+
+    suspend fun useLockTask(): Boolean {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getBoolean(USE_LOCK_TASK.name, false)
+    }
+
+    suspend fun hideSystemBars(): Boolean {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getBoolean(HIDE_SYSTEM_BARS.name, false)
     }
 
     suspend fun thresholdDistanceMeters(): Float {
