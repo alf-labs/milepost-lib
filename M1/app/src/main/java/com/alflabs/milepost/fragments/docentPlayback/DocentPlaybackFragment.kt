@@ -292,6 +292,48 @@ class DocentPlaybackFragment : SensorsFragment() {
         }
     }
 
+    private fun onActionBtnClick(item: DocentPlaybackItem) {
+        logger.d(TAG, "onActionBtnClick: $item")
+
+        when (item.btnAction) {
+            DocentPlaybackItem.BtnAction.ForcePlay -> {
+                audioPlayCommandPublisher.publish(AudioPlayCommand(
+                    command = AudioPlayCommand.Command.Force,
+                    triggerId = item.triggerId,
+                    persistableUri = item.persistableUri,
+                ))
+            }
+            DocentPlaybackItem.BtnAction.Pause -> {
+                if (item.isPlaying) {
+                    audioPlayCommandPublisher.publish(AudioPlayCommand(
+                        command = AudioPlayCommand.Command.Pause,
+                        triggerId = item.triggerId,
+                        persistableUri = "",
+                    ))
+                }
+            }
+            DocentPlaybackItem.BtnAction.Unpause -> {
+                if (item.isPlaying) {
+                    audioPlayCommandPublisher.publish(AudioPlayCommand(
+                        command = AudioPlayCommand.Command.Unpause,
+                        triggerId = item.triggerId,
+                        persistableUri = "",
+                    ))
+                }
+            }
+        }
+    }
+
+    private fun notifyItemChanged(item: DocentPlaybackItem) {
+        docentPlaybackAdapter?.let { adapter ->
+            val list = adapter.currentList
+            val first = list.indexOfFirst { it.triggerId == item.triggerId }
+            if (first >= 0) {
+                adapter.notifyItemChanged(first)
+            }
+        }
+    }
+
     override fun setupInitialMapZoom(map: GoogleMap,
                                      position: LatLng,
                                      zoomLevel: Float): CameraUpdate {
@@ -357,6 +399,7 @@ class DocentPlaybackFragment : SensorsFragment() {
                         docentPlaybackAdapter?.notifyItemChanged(currentPlayIndex)
                         return
                     } else if (current.isPlaying) {
+                        current.isPaused = status.isPaused
                         current.durationMs = status.durationMs
                         current.currentMs = status.currentMs
                         docentPlaybackAdapter?.notifyItemChanged(currentPlayIndex)
@@ -564,38 +607,6 @@ class DocentPlaybackFragment : SensorsFragment() {
                 // if it hasn't happened yet because onMpEstimate was called before the map was fully ready
                 // or before polylines were initialized here.
                 viewModel.lastMp?.let { onMpEstimate(map, it) }
-            }
-        }
-    }
-
-    private fun onActionBtnClick(item: DocentPlaybackItem) {
-        logger.d(TAG, "onActionBtnClick: $item")
-
-        when (item.btnAction) {
-            DocentPlaybackItem.BtnAction.ForcePlay -> {
-                // TBD
-            }
-            DocentPlaybackItem.BtnAction.Pause -> {
-                if (item.isPlaying) {
-                    item.isPaused = true
-                    notifyItemChanged(item)
-                }
-            }
-            DocentPlaybackItem.BtnAction.Unpause -> {
-                if (item.isPlaying) {
-                    item.isPaused = false
-                    notifyItemChanged(item)
-                }
-            }
-        }
-    }
-
-    private fun notifyItemChanged(item: DocentPlaybackItem) {
-        docentPlaybackAdapter?.let { adapter ->
-            val list = adapter.currentList
-            val first = list.indexOfFirst { it.triggerId == item.triggerId }
-            if (first >= 0) {
-                adapter.notifyItemChanged(first)
             }
         }
     }

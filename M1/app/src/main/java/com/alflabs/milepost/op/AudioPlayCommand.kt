@@ -17,6 +17,8 @@ data class AudioPlayCommand(
         QueueAdd,
         QueueRemove,
         Force,
+        Pause,
+        Unpause,
         Status,
     }
 }

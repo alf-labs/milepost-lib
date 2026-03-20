@@ -9,6 +9,7 @@ package com.alflabs.milepost.op
 data class AudioPlayingStatus(
     val type: Type,
     val isPlaying: Boolean,
+    val isPaused: Boolean,
     val triggerId: Long,
     val currentMs: Int = 0,
     val durationMs: Int = 0,

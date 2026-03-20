@@ -73,8 +73,15 @@ class DocentPlaybackAdapter(
                     DocentPlaybackItem.BtnAction.Pause -> R.drawable.ic_btn_pause
                     DocentPlaybackItem.BtnAction.Unpause -> R.drawable.ic_btn_unpause
                 }
+                val scale = when(item.btnAction) {
+                    DocentPlaybackItem.BtnAction.Pause,
+                    DocentPlaybackItem.BtnAction.Unpause -> 2
+                    else -> 1
+                }
 
                 binding.actionBtn.setImageResource(iconRes)
+                binding.actionBtn.scaleX = scale.toFloat()
+                binding.actionBtn.scaleY = scale.toFloat()
                 binding.actionBtn.tag = item.btnAction
             }
 

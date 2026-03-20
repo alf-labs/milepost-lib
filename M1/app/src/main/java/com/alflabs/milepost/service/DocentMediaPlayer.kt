@@ -1,7 +1,6 @@
 package com.alflabs.milepost.service
 
 import android.content.Context
-import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
@@ -10,7 +9,6 @@ import androidx.core.net.toUri
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.op.AudioPlayCommand
 import com.alflabs.milepost.op.AudioPlayingStatus
-import com.alflabs.milepost.utils.Time
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Publishers
@@ -83,9 +81,31 @@ class DocentMediaPlayer @AssistedInject constructor(
                     }
                 }
             }
+
             AudioPlayCommand.Command.Status -> {
                 sendStatus(AudioPlayingStatus.Type.Current, current)
                 sendStatus(AudioPlayingStatus.Type.Pending, pending)
+            }
+
+            AudioPlayCommand.Command.Pause -> {
+                current?.let { info ->
+                    if (info.triggerId == command.triggerId) {
+                        mediaPlayer?.pause()
+                        info.isPaused = true
+                        sendStatus(AudioPlayingStatus.Type.Current, info)
+                    }
+                }
+            }
+
+            AudioPlayCommand.Command.Unpause -> {
+                current?.let { info ->
+                    if (info.triggerId == command.triggerId) {
+                        mediaPlayer?.start()
+                        info.isPaused = false
+                        // updateProgressRunnable will send a status immediately
+                        progressHandler.post(updateProgressRunnable)
+                    }
+                }
             }
         }
     }
@@ -94,6 +114,7 @@ class DocentMediaPlayer @AssistedInject constructor(
         val status = AudioPlayingStatus(
             type = type,
             isPlaying = audio?.isPlaying ?: false,
+            isPaused = audio?.isPaused ?: false,
             triggerId = audio?.triggerId ?: -1L,
             currentMs = audio?.currentMs ?: 0,
             durationMs = audio?.durationMs ?: 0,
@@ -168,6 +189,7 @@ private data class AudioInfo(
     val triggerId: Long,
     val persistableUri: String,
     var isPlaying: Boolean = false,
+    var isPaused: Boolean = false,
     var currentMs: Int = 0,
     var durationMs: Int = 0,
 )
