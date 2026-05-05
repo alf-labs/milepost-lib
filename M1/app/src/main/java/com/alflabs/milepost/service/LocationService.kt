@@ -14,15 +14,13 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import com.alflabs.milepost.R
+import com.alflabs.milepost.activity.MpActivity
+import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.fragments.PermissionsFragment
 import com.alflabs.milepost.location.LocationData
 import com.alflabs.milepost.location.latLongData
 import com.alflabs.milepost.location.locationData
 import com.alflabs.milepost.location.speedData
-import com.alflabs.milepost.app.AppSettings
-import com.alflabs.milepost.app.GlobalState
-import com.alflabs.milepost.activity.MpActivity
-import com.alflabs.milepost.db.GpsTrackDao
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -59,13 +57,11 @@ class LocationService : Service() {
         }
     }
 
-    @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
-    @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    @Inject lateinit var locationRequest: LocationRequest
     @Inject lateinit var logger: ILogger
     @Inject lateinit var globalState: GlobalState
-    @Inject lateinit var gpsTrackDao: GpsTrackDao
-    @Inject lateinit var appSettings: AppSettings
+    @Inject lateinit var locationRequest: LocationRequest
+    @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
+    @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     private lateinit var locationCallback: LocationCallback
     private lateinit var docentMediaPlayer: DocentMediaPlayer

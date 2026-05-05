@@ -145,6 +145,7 @@ class OpDocentPlayback @AssistedInject constructor(
                     command = AudioPlayCommand.Command.QueueAdd,
                     triggerId = it.triggerId,
                     persistableUri = it.persistableUri,
+                    startIfPaused = true,
                 ))
         }
 

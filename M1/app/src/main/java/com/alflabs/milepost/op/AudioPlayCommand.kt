@@ -12,6 +12,7 @@ data class AudioPlayCommand(
     val command: Command,
     val triggerId: Long,
     val persistableUri: String,
+    val startIfPaused: Boolean = false,
 ) {
     enum class Command {
         QueueAdd,

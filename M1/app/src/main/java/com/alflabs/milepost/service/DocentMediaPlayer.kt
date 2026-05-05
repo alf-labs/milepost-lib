@@ -18,6 +18,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
+
 class DocentMediaPlayer @AssistedInject constructor(
     @Assisted val context: Context,
     private val logger: ILogger,
@@ -60,7 +61,7 @@ class DocentMediaPlayer @AssistedInject constructor(
                 val audio = AudioInfo(
                     triggerId = command.triggerId,
                     persistableUri = command.persistableUri)
-                if (current == null) {
+                if (current == null || (command.startIfPaused && (current?.isPaused ?: false) )) {
                     startPlaying(audio)
                 } else {
                     pending = audio
