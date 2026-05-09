@@ -2,6 +2,10 @@ package com.alflabs.milepost.service
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.media.audiofx.DynamicsProcessing
+import android.media.audiofx.DynamicsProcessing.Config
+import android.media.audiofx.DynamicsProcessing.Limiter
+import android.media.audiofx.LoudnessEnhancer
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
@@ -131,6 +135,35 @@ class DocentMediaPlayer @AssistedInject constructor(
                 logger.d(TAG, "@@ startPlaying: ${audio.triggerId}, $uri")
                 setDataSource(context, uri)
                 prepare()
+
+//                // Create the LoudnessEnhancer using the MediaPlayer's AudioSessionId (API 19+)
+//                val loudnessEnhancer = LoudnessEnhancer(audioSessionId)
+//                // Boost by 8.0 dB (800 mB). Adjust this value as needed.
+//                loudnessEnhancer.setTargetGain(800)
+//                loudnessEnhancer.enabled = true
+//
+//                // Add a DynamicsProcessing with a Limiter Config (API 28+)
+//                // The DynamicsProcessing Limiter is a single-band compressor located at the
+//                // final stage of the Android DynamicsProcessing audio effect chain. It is
+//                // primarily used to prevent audio clipping, overloading, and distortion by
+//                // ensuring the signal does not exceed a defined threshold.
+//                val limiter = Limiter(
+//                    /*inUse=*/ true,
+//                    /*enabled=*/ true,
+//                    /*linkGroup=*/ 0,
+//                    /*attackTime=*/ 10.0f,
+//                    /*releaseTime=*/ 10.0f,
+//                    /*ratio=*/ 1.0f,
+//                    /*threshold=*/ 10.0f,
+//                    /*postGain=*/ 10.0f)
+//
+//                val config = Config.Builder()
+//                    .setPreferredFrameDuration(10.0f)
+//                    .setLimiterAllChannelsTo(limiter)
+//                    .build()
+//                val dp = DynamicsProcessing(0, audioSessionId, config)
+//                dp.enabled = true
+
                 start()
                 current = audio.copy(isPlaying = true)
                 sendStatus(AudioPlayingStatus.Type.Current, current)
