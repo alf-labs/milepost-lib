@@ -111,7 +111,7 @@ class DocentImporterExporter @Inject constructor(
 
         return try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val bytes = inputStream.readAllBytes()
+                val bytes = inputStream.readBytes()
 
                 val validated = bytes.inputStream().use { bytesStream ->
                     // This mapper is special and must ignore a bunch of fields not present
