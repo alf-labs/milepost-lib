@@ -24,10 +24,11 @@ object LocationModule {
 
     @Provides
     fun provideLocationRequest(): LocationRequest {
-        return LocationRequest.create().apply {
-            priority = Priority.PRIORITY_HIGH_ACCURACY
-            interval = 5000
-            fastestInterval = 2000
-        }
+        return LocationRequest.Builder(
+            /*priority=*/ Priority.PRIORITY_HIGH_ACCURACY,
+            /*intervalMillis=*/ 1000).apply {
+            setIntervalMillis(1000)
+            setMinUpdateIntervalMillis(500)
+        }.build()
     }
 }

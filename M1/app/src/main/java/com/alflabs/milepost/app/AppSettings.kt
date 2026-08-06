@@ -47,6 +47,8 @@ class AppSettings @Inject constructor(
         val USE_LOCK_TASK = booleanPreferencesKey("use_lock_task")
         val HIDE_SYSTEM_BARS = booleanPreferencesKey("hide_system_bars")
 
+        val USE_EXTERNAL_GPS = booleanPreferencesKey("use_external_gps")
+
         val USE_USB_AUDIO = booleanPreferencesKey("use_usb_audio")
         val USE_LOUDNESS_ENHANCER = booleanPreferencesKey("use_loudness_enhancer")
         val USE_SOUND_LIMITER = booleanPreferencesKey("use_sound_limiter")
@@ -140,6 +142,11 @@ class AppSettings @Inject constructor(
     suspend fun useSoundLimiter(): Boolean {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getBoolean(USE_SOUND_LIMITER.name, false)
+    }
+
+    suspend fun useExternalGps(): Boolean {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getBoolean(USE_EXTERNAL_GPS.name, false)
     }
 
     // ------

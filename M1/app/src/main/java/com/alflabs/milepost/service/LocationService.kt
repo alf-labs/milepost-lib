@@ -8,7 +8,6 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.location.Location
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
@@ -16,6 +15,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.alflabs.milepost.R
 import com.alflabs.milepost.activity.MpActivity
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.fragments.PermissionsFragment
 import com.alflabs.milepost.location.LocationData
@@ -25,11 +25,10 @@ import com.alflabs.milepost.location.speedData
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -59,13 +58,15 @@ class LocationService : LifecycleService() {
     }
 
     @Inject lateinit var logger: ILogger
+    @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var globalState: GlobalState
-    @Inject lateinit var locationRequest: LocationRequest
+    @Inject lateinit var internalGpsProvider: InternalGpsProvider
     @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
-    @Inject lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    @Inject lateinit var externalGpsProviderFactory: ExternalGpsProvider.Factory
 
     private lateinit var locationCallback: LocationCallback
     private lateinit var docentMediaPlayer: DocentMediaPlayer
+    private lateinit var externalGpsProvider: ExternalGpsProvider
     private val serviceModePublisher: IPublisher<ServiceMode?> = Publishers.latest()
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
 
@@ -79,6 +80,7 @@ class LocationService : LifecycleService() {
         logger.d(TAG, "onStartCommand: $intent")
 
         docentMediaPlayer = docentMediaPlayerFactory.create(this, lifecycleScope)
+        externalGpsProvider = externalGpsProviderFactory.create(this)
         globalState.serviceModeStream.publishWith(serviceModePublisher)
         globalState.locationStream.publishWith(locationPublisher)
 
@@ -132,11 +134,16 @@ class LocationService : LifecycleService() {
             }
         }
 
-        fusedLocationProviderClient.requestLocationUpdates(
-            locationRequest,
-            locationCallback,
-            Looper.getMainLooper()
-        )
+        lifecycleScope.launch {
+            var started = false
+            if (appSettings.useExternalGps()) {
+                started = externalGpsProvider.start(locationCallback)
+            }
+            if (!started) {
+                started = internalGpsProvider.start(locationCallback)
+            }
+            logger.d(TAG, "@@ GPS Provider started: $started")
+        }
 
         logger.d(TAG, "Started")
         return START_NOT_STICKY
@@ -152,7 +159,8 @@ class LocationService : LifecycleService() {
         super.onDestroy()
         logger.d(TAG, "onDestroy")
         docentMediaPlayer.onDestroy()
-        fusedLocationProviderClient.removeLocationUpdates(locationCallback)
+        internalGpsProvider.onDestroy()
+        externalGpsProvider.onDestroy()
         serviceMode = ServiceMode.STOPPED
         serviceModePublisher.publish(serviceMode)
         globalState.locationStream.remove(locationPublisher)

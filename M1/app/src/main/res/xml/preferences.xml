@@ -37,9 +37,18 @@
                 app:title="Use Single-band Compressor Limiter"
                 />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="GPS">
+
+        <SwitchPreferenceCompat
+                app:key="use_external_gps"
+                app:title="Use External GPS"
+                />
+
         <ListPreference
                 app:key="simulate_gps"
-                app:title="Simulate GPS"
+                app:title="Simulate GPS (for testing)"
                 app:entries="@array/pref_simulate_gps_entries"
                 app:entryValues="@array/pref_simulate_gps_values"
                 app:defaultValue="none"
@@ -60,19 +69,6 @@
                 app:key="threshold_speed_mps"
                 app:title="Threshold Speed (m/s)"
                 app:dialogTitle="Set threshold speed in meters per second"
-                />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="Testing">
-
-        <ListPreference
-                app:key="simulate_gps"
-                app:title="Simulate GPS"
-                app:entries="@array/pref_simulate_gps_entries"
-                app:entryValues="@array/pref_simulate_gps_values"
-                app:defaultValue="none"
-                app:useSimpleSummaryProvider="true"
                 />
 
     </PreferenceCategory>
