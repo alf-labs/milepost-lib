@@ -23,6 +23,11 @@
     <PreferenceCategory app:title="Sound">
 
         <SwitchPreferenceCompat
+                app:key="use_usb_audio"
+                app:title="Use USB Audio Device"
+                />
+
+        <SwitchPreferenceCompat
                 app:key="use_loudness_enhancer"
                 app:title="Use Loudness Enhancer"
                 />

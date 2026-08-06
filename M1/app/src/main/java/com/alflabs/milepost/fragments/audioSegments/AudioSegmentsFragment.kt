@@ -203,16 +203,19 @@ class AudioSegmentsFragment : Fragment() {
             }
         }
 
-        // Start playing the new item
-        mediaPlayerWrapper.startPlaying(
-            item.persistableUri.toUri(),
-            completionCallback = ::stopCurrentPlaying,
-            stopCallback = ::stopCurrentPlaying)
+        lifecycleScope.launch {
+            // Start playing the new item
+            mediaPlayerWrapper.startPlaying(
+                item.persistableUri.toUri(),
+                completionCallback = ::stopCurrentPlaying,
+                stopCallback = ::stopCurrentPlaying
+            )
 
-        item.isPlaying = true
-        itemPlaying = item
-        val position = notifyItemIdChanged(item.id)
-        logger.d(TAG, "@@ onPlayItem: $position")
+            item.isPlaying = true
+            itemPlaying = item
+            val position = notifyItemIdChanged(item.id)
+            logger.d(TAG, "@@ onPlayItem: $position")
+        }
     }
 
     private fun stopCurrentPlaying() {

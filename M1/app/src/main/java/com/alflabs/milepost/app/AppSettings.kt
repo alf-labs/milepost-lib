@@ -41,9 +41,16 @@ class AppSettings @Inject constructor(
         val USE_IMPERIAL_UNITS = booleanPreferencesKey("use_imperial_units")
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
+
         val SIMULATE_GPS = stringPreferencesKey("simulate_gps")
+
         val USE_LOCK_TASK = booleanPreferencesKey("use_lock_task")
         val HIDE_SYSTEM_BARS = booleanPreferencesKey("hide_system_bars")
+
+        val USE_USB_AUDIO = booleanPreferencesKey("use_usb_audio")
+        val USE_LOUDNESS_ENHANCER = booleanPreferencesKey("use_loudness_enhancer")
+        val USE_SOUND_LIMITER = booleanPreferencesKey("use_sound_limiter")
+
         // The following values are only used internally, they can be of any type.
         val GPS_PLAYBACK_TRACK_ID = longPreferencesKey("gps_playback_track_id")
         val DOCENT_PLAYBACK_TRACK_ID = longPreferencesKey("docent_playback_track_id")
@@ -118,6 +125,21 @@ class AppSettings @Inject constructor(
     suspend fun simulateGps(): String {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getString(SIMULATE_GPS.name, "none")
+    }
+
+    suspend fun useUsbAudio(): Boolean {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getBoolean(USE_USB_AUDIO.name, false)
+    }
+
+    suspend fun useLoundnessEnhancer(): Boolean {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getBoolean(USE_LOUDNESS_ENHANCER.name, false)
+    }
+
+    suspend fun useSoundLimiter(): Boolean {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getBoolean(USE_SOUND_LIMITER.name, false)
     }
 
     // ------

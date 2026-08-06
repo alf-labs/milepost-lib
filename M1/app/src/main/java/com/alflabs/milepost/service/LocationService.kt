@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Intent
 import android.location.Location
 import android.os.IBinder
@@ -13,6 +12,8 @@ import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.alflabs.milepost.R
 import com.alflabs.milepost.activity.MpActivity
 import com.alflabs.milepost.app.GlobalState
@@ -33,7 +34,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class LocationService : Service() {
+class LocationService : LifecycleService() {
 
     companion object {
         private val TAG = LocationService::class.java.simpleName
@@ -74,9 +75,10 @@ class LocationService : Service() {
             Manifest.permission.ACCESS_COARSE_LOCATION]
     )
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         logger.d(TAG, "onStartCommand: $intent")
 
-        docentMediaPlayer = docentMediaPlayerFactory.create(this)
+        docentMediaPlayer = docentMediaPlayerFactory.create(this, lifecycleScope)
         globalState.serviceModeStream.publishWith(serviceModePublisher)
         globalState.locationStream.publishWith(locationPublisher)
 
@@ -140,7 +142,8 @@ class LocationService : Service() {
         return START_NOT_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
+    override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
         logger.d(TAG, "onBind")
         return null
     }

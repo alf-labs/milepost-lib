@@ -16,17 +16,20 @@ import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 
 class DocentMediaPlayer @AssistedInject constructor(
-    @Assisted val context: Context,
+    @Assisted private val context: Context,
+    @Assisted private val scope: CoroutineScope,
     private val logger: ILogger,
     private val globalState: GlobalState,
     private val mediaPlayerWrapperFactory: MediaPlayerWrapper.Factory,
 ) {
     @AssistedFactory
     interface Factory {
-        fun create(context: Context): DocentMediaPlayer
+        fun create(context: Context, scope: CoroutineScope): DocentMediaPlayer
     }
 
     companion object {
@@ -62,17 +65,21 @@ class DocentMediaPlayer @AssistedInject constructor(
                     triggerId = command.triggerId,
                     persistableUri = command.persistableUri)
                 if (current == null || (command.startIfPaused && (current?.isPaused ?: false) )) {
-                    startPlaying(audio)
+                    scope.launch {
+                        startPlaying(audio)
+                    }
                 } else {
                     pending = audio
                     sendStatus(AudioPlayingStatus.Type.Pending, pending)
                 }
             }
             AudioPlayCommand.Command.Force -> {
-                val audio = AudioInfo(
-                    triggerId = command.triggerId,
-                    persistableUri = command.persistableUri)
-                startPlaying(audio)
+                scope.launch {
+                    val audio = AudioInfo(
+                        triggerId = command.triggerId,
+                        persistableUri = command.persistableUri)
+                    startPlaying(audio)
+                }
             }
             AudioPlayCommand.Command.QueueRemove -> {
                 pending?.let {
@@ -123,7 +130,7 @@ class DocentMediaPlayer @AssistedInject constructor(
         audioPlayingStatusPublisher.publish(status)
     }
 
-    private fun startPlaying(audio: AudioInfo) {
+    private suspend fun startPlaying(audio: AudioInfo) {
         stopPlaying()
         try {
             val uri = audio.persistableUri.toUri()
@@ -147,7 +154,9 @@ class DocentMediaPlayer @AssistedInject constructor(
             pending = null
             sendStatus(AudioPlayingStatus.Type.Pending, pending)
             logger.d(TAG, "@@ start Pending: ${it.triggerId}, ${it.persistableUri}")
-            startPlaying(it)
+            scope.launch {
+                startPlaying(it)
+            }
         }
     }
 
