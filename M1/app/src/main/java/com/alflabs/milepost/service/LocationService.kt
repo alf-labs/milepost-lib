@@ -9,6 +9,7 @@ import android.content.Intent
 import android.location.Location
 import android.os.IBinder
 import android.util.Log
+import androidx.annotation.Nullable
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -29,6 +30,7 @@ import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Optional
 import javax.inject.Inject
 
 
@@ -63,6 +65,7 @@ class LocationService : LifecycleService() {
     @Inject lateinit var internalGpsProvider: InternalGpsProvider
     @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
     @Inject lateinit var externalGpsProviderFactory: ExternalGpsProvider.Factory
+    @Inject lateinit var notificationManager: Optional<NotificationManager>
 
     private lateinit var locationCallback: LocationCallback
     private lateinit var docentMediaPlayer: DocentMediaPlayer
@@ -102,34 +105,36 @@ class LocationService : LifecycleService() {
             .setOngoing(true)
             .setContentIntent(pendingIntent)
 
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        if (notificationManager == null) {
+        if (notificationManager.isEmpty) {
             logger.d(TAG, "onStartCommand: NotificationManager not found")
             return START_NOT_STICKY
         }
-        notificationManager.createNotificationChannel(
-            NotificationChannel(
-                "location",
-                "Location",
-                NotificationManager.IMPORTANCE_LOW
+
+        notificationManager.ifPresent { notifManager ->
+            notifManager.createNotificationChannel(
+                NotificationChannel(
+                    "location",
+                    "Location",
+                    NotificationManager.IMPORTANCE_LOW
+                )
             )
-        )
 
-        startForeground(NOTIFICATION_ID, notification.build())
+            startForeground(NOTIFICATION_ID, notification.build())
 
-        setNotification(notification, notificationManager)
+            setNotification(notification, notifManager)
 
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                for (location in locationResult.locations) {
-                    // Publish (synchronous)
-                    val ld = toLocationData(location)
-                    locationPublisher.publish(ld)
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    for (location in locationResult.locations) {
+                        // Publish (synchronous)
+                        val ld = toLocationData(location)
+                        locationPublisher.publish(ld)
 
-                    // Update notification text
-                    val msg = "Location: ${location.latitude}, ${location.longitude}"
-                    val updatedNotification = notification.setContentText(msg)
-                    notificationManager.notify(NOTIFICATION_ID, updatedNotification.build())
+                        // Update notification text
+                        val msg = "Location: ${location.latitude}, ${location.longitude}"
+                        val updatedNotification = notification.setContentText(msg)
+                        notifManager.notify(NOTIFICATION_ID, updatedNotification.build())
+                    }
                 }
             }
         }

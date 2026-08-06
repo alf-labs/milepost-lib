@@ -15,12 +15,14 @@ import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.util.Optional
 
 
 class MediaPlayerWrapper @AssistedInject constructor(
     @Assisted private val context: Context,
     private val logger: ILogger,
     private val appSettings: AppSettings,
+    private val audioManager: Optional<AudioManager>,
 ) {
     @AssistedFactory
     interface Factory {
@@ -136,23 +138,29 @@ class MediaPlayerWrapper @AssistedInject constructor(
     }
 
     fun routeAudioToUsbDac(mediaPlayer: MediaPlayer) {
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.ifPresent { manager ->
+            // Fetch all available audio output devices
+            val outputDevices = manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
 
-        // Fetch all available audio output devices
-        val outputDevices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            // Find the USB-C DAC / Headset (vs Built-in, Bluetooth, or Wired)
+            val usbDacDevice = outputDevices.firstOrNull { device ->
+                device.type == AudioDeviceInfo.TYPE_USB_HEADSET ||
+                        device.type == AudioDeviceInfo.TYPE_USB_DEVICE
+            }
 
-        // Find the USB-C DAC / Headset (vs Built-in, Bluetooth, or Wired)
-        val usbDacDevice = outputDevices.firstOrNull { device ->
-            device.type == AudioDeviceInfo.TYPE_USB_HEADSET ||
-            device.type == AudioDeviceInfo.TYPE_USB_DEVICE
-        }
-
-        if (usbDacDevice != null) {
-            // Explicitly bind MediaPlayer playback to the USB DAC
-            val success = mediaPlayer.setPreferredDevice(usbDacDevice)
-            logger.d(TAG, "@@ Routing USB DAC: ${outputDevices.size} devices found, success = $success, device = $usbDacDevice")
-        } else {
-            logger.d(TAG, "@@ Routing USB DAC: No USB device found among ${outputDevices.size} devices")
+            if (usbDacDevice != null) {
+                // Explicitly bind MediaPlayer playback to the USB DAC
+                val success = mediaPlayer.setPreferredDevice(usbDacDevice)
+                logger.d(
+                    TAG,
+                    "@@ Routing USB DAC: ${outputDevices.size} devices found, success = $success, device = $usbDacDevice"
+                )
+            } else {
+                logger.d(
+                    TAG,
+                    "@@ Routing USB DAC: No USB device found among ${outputDevices.size} devices"
+                )
+            }
         }
     }
 
