@@ -1,11 +1,6 @@
 package com.alflabs.milepost.service
 
 import android.content.Context
-import android.media.MediaPlayer
-import android.media.audiofx.DynamicsProcessing
-import android.media.audiofx.DynamicsProcessing.Config
-import android.media.audiofx.DynamicsProcessing.Limiter
-import android.media.audiofx.LoudnessEnhancer
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
@@ -27,6 +22,7 @@ class DocentMediaPlayer @AssistedInject constructor(
     @Assisted val context: Context,
     private val logger: ILogger,
     private val globalState: GlobalState,
+    private val mediaPlayerWrapperFactory: MediaPlayerWrapper.Factory,
 ) {
     @AssistedFactory
     interface Factory {
@@ -41,9 +37,9 @@ class DocentMediaPlayer @AssistedInject constructor(
         ISubscriber<AudioPlayCommand?> { _, event -> onAudioPlayCommand(event) }
     private val audioPlayingStatusPublisher: IPublisher<AudioPlayingStatus?> = Publishers.latest()
 
+    private val mediaPlayerWrapper = mediaPlayerWrapperFactory.create(context)
     private var current: AudioInfo? = null
     private var pending: AudioInfo? = null
-    private var mediaPlayer: MediaPlayer? = null
 
     init {
         globalState.audioPlayCommandStream.subscribe(Schedulers.sync(), audioPlayCommandSubscriber)
@@ -95,7 +91,7 @@ class DocentMediaPlayer @AssistedInject constructor(
             AudioPlayCommand.Command.Pause -> {
                 current?.let { info ->
                     if (info.triggerId == command.triggerId) {
-                        mediaPlayer?.pause()
+                        mediaPlayerWrapper.pausePlayer()
                         info.isPaused = true
                         sendStatus(AudioPlayingStatus.Type.Current, info)
                     }
@@ -105,7 +101,7 @@ class DocentMediaPlayer @AssistedInject constructor(
             AudioPlayCommand.Command.Unpause -> {
                 current?.let { info ->
                     if (info.triggerId == command.triggerId) {
-                        mediaPlayer?.start()
+                        mediaPlayerWrapper.resumePlayer()
                         info.isPaused = false
                         // updateProgressRunnable will send a status immediately
                         progressHandler.post(updateProgressRunnable)
@@ -131,53 +127,18 @@ class DocentMediaPlayer @AssistedInject constructor(
         stopPlaying()
         try {
             val uri = audio.persistableUri.toUri()
-            mediaPlayer = MediaPlayer().apply {
-                logger.d(TAG, "@@ startPlaying: ${audio.triggerId}, $uri")
-                setDataSource(context, uri)
-                prepare()
-
-//                // Create the LoudnessEnhancer using the MediaPlayer's AudioSessionId (API 19+)
-//                val loudnessEnhancer = LoudnessEnhancer(audioSessionId)
-//                // Boost by 8.0 dB (800 mB). Adjust this value as needed.
-//                loudnessEnhancer.setTargetGain(800)
-//                loudnessEnhancer.enabled = true
-//
-//                // Add a DynamicsProcessing with a Limiter Config (API 28+)
-//                // The DynamicsProcessing Limiter is a single-band compressor located at the
-//                // final stage of the Android DynamicsProcessing audio effect chain. It is
-//                // primarily used to prevent audio clipping, overloading, and distortion by
-//                // ensuring the signal does not exceed a defined threshold.
-//                val limiter = Limiter(
-//                    /*inUse=*/ true,
-//                    /*enabled=*/ true,
-//                    /*linkGroup=*/ 0,
-//                    /*attackTime=*/ 10.0f,
-//                    /*releaseTime=*/ 10.0f,
-//                    /*ratio=*/ 1.0f,
-//                    /*threshold=*/ 10.0f,
-//                    /*postGain=*/ 10.0f)
-//
-//                val config = Config.Builder()
-//                    .setPreferredFrameDuration(10.0f)
-//                    .setLimiterAllChannelsTo(limiter)
-//                    .build()
-//                val dp = DynamicsProcessing(0, audioSessionId, config)
-//                dp.enabled = true
-
-                start()
-                current = audio.copy(isPlaying = true)
-                sendStatus(AudioPlayingStatus.Type.Current, current)
-                setOnCompletionListener {
-                    onCompletion()
-                }
-                progressHandler.post(updateProgressRunnable)
-            }
+            mediaPlayerWrapper.startPlaying(uri,
+                completionCallback = ::onCompletion,
+                stopCallback = ::stopPlaying)
+            logger.d(TAG, "@@ startPlaying: ${audio.triggerId}, $uri")
+            current = audio.copy(isPlaying = true)
+            sendStatus(AudioPlayingStatus.Type.Current, current)
+            progressHandler.post(updateProgressRunnable)
         } catch (e: Exception) {
             logger.d(TAG, "Error playing audio", e)
             Toast.makeText(context, "Error playing audio file", Toast.LENGTH_LONG).show()
             stopPlaying()
         }
-
     }
 
     private fun onCompletion() {
@@ -192,8 +153,7 @@ class DocentMediaPlayer @AssistedInject constructor(
 
     private fun stopPlaying() {
         progressHandler.removeCallbacks(updateProgressRunnable)
-        mediaPlayer?.release()
-        mediaPlayer = null
+        mediaPlayerWrapper.stopPlaying()
         current?.let {
             current = it.copy(isPlaying = false)
             sendStatus(AudioPlayingStatus.Type.Current, current)
@@ -205,7 +165,7 @@ class DocentMediaPlayer @AssistedInject constructor(
     private val progressHandler = Handler(Looper.getMainLooper())
     private val updateProgressRunnable = object : Runnable {
         override fun run() {
-            mediaPlayer?.let { player ->
+            mediaPlayerWrapper.player()?.let { player ->
                 if (player.isPlaying) {
                     current?.let { info ->
                         info.currentMs = player.currentPosition

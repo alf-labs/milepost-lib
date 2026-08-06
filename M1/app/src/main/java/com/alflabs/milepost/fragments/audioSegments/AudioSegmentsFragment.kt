@@ -3,7 +3,6 @@ package com.alflabs.milepost.fragments.audioSegments
 import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadataRetriever
-import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -30,6 +29,7 @@ import com.alflabs.milepost.databinding.AudioSegmentsFragmentBinding
 import com.alflabs.milepost.db.AudioSegmentEntity
 import com.alflabs.milepost.db.PlayTriggerDao
 import com.alflabs.milepost.db.audioSegmentMetadata
+import com.alflabs.milepost.service.MediaPlayerWrapper
 import com.alflabs.milepost.utils.pluralize
 import com.alflabs.utils.ApiHelper
 import com.alflabs.utils.ILogger
@@ -50,13 +50,14 @@ class AudioSegmentsFragment : Fragment() {
 
     @Inject lateinit var logger: ILogger
     @Inject lateinit var playTriggerDao: PlayTriggerDao
+    @Inject lateinit var mediaPlayerWrapperFactory: MediaPlayerWrapper.Factory
 
     private var _binding: AudioSegmentsFragmentBinding? = null
     private val binding get() = _binding!!
     private var audioSegmentAdapter: AudioSegmentAdapter? = null
     private var itemPlaying: AudioSegmentItem? = null
-    private var mediaPlayer: MediaPlayer? = null
     private var selectAudioSegmentPendingId: Long = -1L
+    private lateinit var mediaPlayerWrapper: MediaPlayerWrapper
 
     private val viewModel: AudioSegmentViewModel by viewModels()
 
@@ -70,11 +71,13 @@ class AudioSegmentsFragment : Fragment() {
             }
         }
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = AudioSegmentsFragmentBinding.inflate(inflater, container, false)
+        mediaPlayerWrapper = mediaPlayerWrapperFactory.create(requireContext())
         return binding.root
     }
 
@@ -188,7 +191,10 @@ class AudioSegmentsFragment : Fragment() {
 
     private fun onPlayStopItem(item: AudioSegmentItem) {
         // This toggles play/stop. Only one item can play at a time.
+        logger.d(TAG, "@@ onPlayStopItem: CURRENT $itemPlaying")
+
         itemPlaying?.let { current ->
+            logger.d(TAG, "@@ onPlayStopItem: ${current.id} == ${item.id} ?")
             val isSame = current.id == item.id
             stopCurrentPlaying()
             if (isSame) {
@@ -196,31 +202,23 @@ class AudioSegmentsFragment : Fragment() {
                 return
             }
         }
+
         // Start playing the new item
+        mediaPlayerWrapper.startPlaying(
+            item.persistableUri.toUri(),
+            completionCallback = ::stopCurrentPlaying,
+            stopCallback = ::stopCurrentPlaying)
+
         item.isPlaying = true
         itemPlaying = item
         val position = notifyItemIdChanged(item.id)
         logger.d(TAG, "@@ onPlayItem: $position")
-
-        try {
-            mediaPlayer = MediaPlayer().apply {
-                setDataSource(requireContext(), item.persistableUri.toUri())
-                prepare()
-                start()
-                setOnCompletionListener {
-                    stopCurrentPlaying()
-                }
-            }
-        } catch (e: Exception) {
-            logger.d(TAG, "Error playing audio", e)
-            Snackbar.make(requireView(), "Error playing audio file", Snackbar.LENGTH_LONG).show()
-            stopCurrentPlaying()
-        }
     }
 
     private fun stopCurrentPlaying() {
-        mediaPlayer?.release()
-        mediaPlayer = null
+        logger.d(TAG, "@@ stopCurrentPlaying: with current id ${itemPlaying?.id}")
+        mediaPlayerWrapper.stopPlaying()
+
         itemPlaying?.let { item ->
             itemPlaying = null
             item.isPlaying = false
@@ -234,6 +232,7 @@ class AudioSegmentsFragment : Fragment() {
             val list = adapter.currentList
             val first = list.indexOfFirst { it.id == id }
             if (first >= 0) {
+                logger.d(TAG, "@@ notifyItemIdChanged: id $id -> pos $first")
                 adapter.notifyItemChanged(first)
                 return@notifyItemIdChanged first
             }

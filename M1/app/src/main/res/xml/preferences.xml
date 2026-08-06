@@ -1,12 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="Location Settings">
+    <PreferenceCategory app:title="UI">
 
         <SwitchPreferenceCompat
                 app:key="use_imperial_units"
                 app:title="Use Imperial Units"
                 />
+
+        <SwitchPreferenceCompat
+                app:key="use_lock_task"
+                app:title="Use Lock Task Mode"
+                />
+
+        <SwitchPreferenceCompat
+                app:key="hide_system_bars"
+                app:title="Hide System Bars"
+                />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Sound">
+
+        <SwitchPreferenceCompat
+                app:key="use_loudness_enhancer"
+                app:title="Use Loudness Enhancer"
+                />
+
+        <SwitchPreferenceCompat
+                app:key="use_sound_limiter"
+                app:title="Use Single-band Compressor Limiter"
+                />
+
+        <ListPreference
+                app:key="simulate_gps"
+                app:title="Simulate GPS"
+                app:entries="@array/pref_simulate_gps_entries"
+                app:entryValues="@array/pref_simulate_gps_values"
+                app:defaultValue="none"
+                app:useSimpleSummaryProvider="true"
+                />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="GPS Track Recording">
 
         <com.alflabs.milepost.fragments.ImperialEditTextPreference
                 app:key="threshold_distance_meters"
@@ -20,6 +57,10 @@
                 app:dialogTitle="Set threshold speed in meters per second"
                 />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Testing">
+
         <ListPreference
                 app:key="simulate_gps"
                 app:title="Simulate GPS"
@@ -27,16 +68,6 @@
                 app:entryValues="@array/pref_simulate_gps_values"
                 app:defaultValue="none"
                 app:useSimpleSummaryProvider="true"
-                />
-
-        <SwitchPreferenceCompat
-                app:key="use_lock_task"
-                app:title="Use Lock Task Mode"
-                />
-
-        <SwitchPreferenceCompat
-                app:key="hide_system_bars"
-                app:title="Hide System Bars"
                 />
 
     </PreferenceCategory>

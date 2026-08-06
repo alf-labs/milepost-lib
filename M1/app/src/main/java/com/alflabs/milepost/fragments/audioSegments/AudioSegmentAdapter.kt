@@ -3,6 +3,7 @@ package com.alflabs.milepost.fragments.audioSegments
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -88,6 +89,7 @@ class AudioSegmentAdapter(
             )
             binding.playBtn.isEnabled = item.uriValid == true || item.isPlaying
 
+            Log.d(TAG, "@@ item id ${item.id} isPlaying: ${item.isPlaying}")
             if (item.isPlaying) {
                 val tintColor = ContextCompat.getColor(
                     binding.root.context,
