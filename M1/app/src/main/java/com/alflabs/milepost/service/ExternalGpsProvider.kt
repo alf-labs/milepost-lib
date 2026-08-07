@@ -1,16 +1,20 @@
 package com.alflabs.milepost.service
 
 import android.content.Context
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import com.alflabs.utils.ILogger
 import com.google.android.gms.location.LocationCallback
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.util.Optional
 
 
 class ExternalGpsProvider @AssistedInject constructor(
     @Assisted private val context: Context,
     private val logger: ILogger,
+    private val usbManager: Optional<UsbManager>,
 ) {
     @AssistedFactory
     interface Factory {
@@ -19,6 +23,18 @@ class ExternalGpsProvider @AssistedInject constructor(
 
     companion object {
         private val TAG = ExternalGpsProvider::class.java.simpleName
+        private const val ACTION_USB_PERMISSION = "com.alflabs.milepost.USB_PERMISSION"
+        private const val BAUD_RATE = 4800 // standard NMEA baud rate
+
+        // TBD change this to a preference string e.g. "1659:9123" (or hex, etc).
+        // There's a long list of USB serial ids here:
+        // https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml
+        // We can also filter on manufacturer name or product name.
+        private const val VENDOR_ID = 1659 // Prolific
+        //        private const val PRODUCT_ID = 8963 // BU-353N5
+        private const val PRODUCT_ID = 9123 // PL2303GC (for the BU-353N5)
+        private const val MANUFACTURER_NAME = "Prolific"
+        private const val PRODUCT_NAME = "USB-Serial"
     }
 
     suspend fun start(locationCallback: LocationCallback): Boolean {
@@ -48,10 +64,27 @@ class ExternalGpsProvider @AssistedInject constructor(
         // connected via a USB hub to the android tablet. We'll need a
         // USB Serial Driver of some kind (library or implemented here).
 
+        val device = findUsbGpsDevice() ?: return false
+
+        logger.d(TAG, "@@ USB GPS Device: $device")
+
         return false
     }
 
     fun onDestroy() {
         // TBD: Request looper or coroutine to stop as needed and free resources.
     }
+
+    private fun findUsbGpsDevice(): UsbDevice? {
+        if (usbManager.isEmpty) return null
+        val deviceList = usbManager.get().deviceList
+        logger.d(TAG, "@@ USB Devices: $deviceList")
+        return deviceList.values.firstOrNull {
+            it.vendorId == VENDOR_ID
+                    && it.productId == PRODUCT_ID
+                    && it.manufacturerName?.contains(MANUFACTURER_NAME, ignoreCase = true) == true
+                    && it.productName?.contains(PRODUCT_NAME, ignoreCase = true) == true
+        }
+    }
+
 }
