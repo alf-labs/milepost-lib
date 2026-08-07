@@ -1,7 +1,6 @@
 package com.alflabs.milepost.fragments.audioSegments
 
 import com.google.common.truth.Expect
-import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 
