@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.os.Build
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.utils.ILogger
 import com.google.android.gms.location.LocationCallback
@@ -22,7 +23,7 @@ class ExternalGpsProvider @Inject constructor(
 ) {
     companion object {
         private val TAG = ExternalGpsProvider::class.java.simpleName
-        private const val ACTION_USB_PERMISSION = "com.alflabs.milepost.USB_PERMISSION"
+        const val ACTION_USB_PERMISSION = "com.alflabs.milepost.USB_PERMISSION"
         private const val BAUD_RATE = 4800 // standard NMEA baud rate
 
         // TBD change this to a preference string e.g. "1659:9123" (or hex, etc).
@@ -85,15 +86,15 @@ class ExternalGpsProvider @Inject constructor(
         // connected via a USB hub to the android tablet. We'll need a
         // USB Serial Driver of some kind (library or implemented here).
 
-//        val usbManager = usbManagerOpt.getOrNull() ?: return false
-//
-//        val device: UsbDevice = findUsbGpsDevice(usbManager) ?: return false
-//
-//
-//        if (!usbManager.hasPermission(device)) {
-//            logger.d(TAG, "Requesting USB permission...")
-////            requestUsbPermission(usbManager, device)
-//        }
+        if (device == null) {
+            setupDevice()
+        }
+        val usbManager = usbManagerOpt.getOrNull() ?: return false
+        val usbDevice = device ?: return false
+        if (!usbManager.hasPermission(usbDevice)) {
+            logger.d(TAG, "@@ Missing USB Permission")
+            return false
+        }
 
         return false
     }
@@ -113,21 +114,24 @@ class ExternalGpsProvider @Inject constructor(
         }
     }
 
-//    private fun requestUsbPermission(usbManager: UsbManager, device: UsbDevice) {
-//        val intent = Intent(ACTION_USB_PERMISSION).apply {
-//            setPackage(context.packageName)
-//        }
-//        val permissionIntent = PendingIntent.getBroadcast(
-//            context, 0, intent,
-//            PendingIntent.FLAG_MUTABLE
-//        )
-////        val filter = IntentFilter(ACTION_USB_PERMISSION)
-////        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-////            context.registerReceiver(usbReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-////        } else {
-////            context.registerReceiver(usbReceiver, filter)
-////        }
-//        usbManager.requestPermission(device, permissionIntent)
-//    }
+    suspend fun requestUsbPermission(context: Context) {
+        if (device == null) {
+            setupDevice()
+        }
+        val usbManager = usbManagerOpt.getOrNull() ?: return
+        val usbDevice = device ?: return
+
+        val intent = Intent(ACTION_USB_PERMISSION).apply {
+            setPackage(context.packageName)
+        }
+        val permissionIntent = PendingIntent.getBroadcast(
+            context,
+            /*requestCode=*/0,
+            intent,
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        usbManager.requestPermission(usbDevice, permissionIntent)
+    }
 
 }

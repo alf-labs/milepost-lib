@@ -43,12 +43,12 @@
 
         <SwitchPreferenceCompat
                 app:key="use_external_gps"
-                app:title="Use External GPS"
+                app:title="Use USB GPS Receiver"
                 />
 
         <ListPreference
                 app:key="simulate_gps"
-                app:title="Simulate GPS (for testing)"
+                app:title="Simulate GPS for testing"
                 app:entries="@array/pref_simulate_gps_entries"
                 app:entryValues="@array/pref_simulate_gps_values"
                 app:defaultValue="none"
