@@ -16,13 +16,16 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.fragment.navArgs
 import com.alflabs.milepost.databinding.PermissionsFragmentBinding
+import com.alflabs.milepost.service.ExternalGpsProvider
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class PermissionsFragment : DialogFragment() {
     private val TAG = PermissionsFragment::class.java.simpleName
     private val fragmentArgs: PermissionsFragmentArgs by navArgs()
 
+    @Inject lateinit var externalGpsProvider: ExternalGpsProvider
 
     // This property is only valid between onCreateView and onDestroyView.
     private var _binding: PermissionsFragmentBinding? = null
@@ -41,8 +44,11 @@ class PermissionsFragment : DialogFragment() {
                 context,
                 Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
-        fun allPermissionsGranted(context: Context): Boolean =
-            isGpsGranted(context) && isNotificationGranted(context)
+        suspend fun isUsbGpsPermissionGranted(externalGpsProvider: ExternalGpsProvider): Boolean =
+            externalGpsProvider.isUsbPermissionNeeded() && externalGpsProvider.isUsbPermissionGranted()
+
+        suspend fun allPermissionsGranted(context: Context, externalGpsProvider: ExternalGpsProvider): Boolean =
+            isGpsGranted(context) && isNotificationGranted(context) && isUsbGpsPermissionGranted(externalGpsProvider)
     }
 
     override fun onCreateView(

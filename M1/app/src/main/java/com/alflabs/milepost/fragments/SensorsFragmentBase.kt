@@ -18,6 +18,7 @@ import com.alflabs.milepost.app.AppSettings
 import com.alflabs.milepost.app.GlobalState
 import com.alflabs.milepost.op.Operator
 import com.alflabs.milepost.op.OperatorMode
+import com.alflabs.milepost.service.ExternalGpsProvider
 import com.alflabs.milepost.service.LocationService
 import com.alflabs.milepost.service.ServiceMode
 import com.alflabs.milepost.utils.MapStyle
@@ -60,6 +61,7 @@ abstract class SensorsFragmentBase: Fragment() {
     @Inject lateinit var globalState: GlobalState
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var operator: Operator
+    @Inject lateinit var externalGpsProvider: ExternalGpsProvider
 
     private var setInitialMapZoom = true
     protected  var googleMap: GoogleMap? = null
@@ -104,15 +106,21 @@ abstract class SensorsFragmentBase: Fragment() {
         }
 
         startButton.setOnClickListener {
-            logger.d(TAG, "On click START button")
-            if (!PermissionsFragment.allPermissionsGranted(requireContext())) {
-                logger.d(TAG, "START --> request permissions")
-                findNavController().navigate(actionToPermissionsDlg())
-            } else {
-                setInitialMapZoom = true
-                LocationService.startService(requireActivity())
-                requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                onStartButton()
+            lifecycleScope.launch {
+                logger.d(TAG, "On click START button")
+                if (!PermissionsFragment.allPermissionsGranted(
+                        requireContext(),
+                        externalGpsProvider
+                    )
+                ) {
+                    logger.d(TAG, "START --> request permissions")
+                    findNavController().navigate(actionToPermissionsDlg())
+                } else {
+                    setInitialMapZoom = true
+                    LocationService.startService(requireActivity())
+                    requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    onStartButton()
+                }
             }
         }
 
@@ -154,7 +162,7 @@ abstract class SensorsFragmentBase: Fragment() {
         globalState.operatorModeStream.subscribe(AndroidSchedulers.mainThread(), operatorModeSubscriber)
 
         lifecycleScope.launch {
-            if (PermissionsFragment.allPermissionsGranted(requireContext())
+            if (PermissionsFragment.allPermissionsGranted(requireContext(), externalGpsProvider)
                 && globalState.serviceMode != ServiceMode.RUNNING) {
                 serviceStartedAutomatically = true
                 LocationService.startService(requireActivity())

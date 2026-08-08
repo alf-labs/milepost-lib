@@ -22,7 +22,7 @@ class MediaPlayerWrapper @AssistedInject constructor(
     @Assisted private val context: Context,
     private val logger: ILogger,
     private val appSettings: AppSettings,
-    private val audioManager: Optional<AudioManager>,
+    private val audioManagerOpt: Optional<AudioManager>,
 ) {
     @AssistedFactory
     interface Factory {
@@ -138,7 +138,7 @@ class MediaPlayerWrapper @AssistedInject constructor(
     }
 
     fun routeAudioToUsbDac(mediaPlayer: MediaPlayer) {
-        audioManager.ifPresent { manager ->
+        audioManagerOpt.ifPresent { manager ->
             // Fetch all available audio output devices
             val outputDevices = manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
 

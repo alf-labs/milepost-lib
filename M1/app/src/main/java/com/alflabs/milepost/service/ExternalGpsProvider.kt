@@ -1,26 +1,25 @@
 package com.alflabs.milepost.service
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import com.alflabs.milepost.app.AppSettings
 import com.alflabs.utils.ILogger
 import com.google.android.gms.location.LocationCallback
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import jakarta.inject.Inject
 import java.util.Optional
+import javax.inject.Singleton
+import kotlin.jvm.optionals.getOrNull
 
 
-class ExternalGpsProvider @AssistedInject constructor(
-    @Assisted private val context: Context,
+@Singleton
+class ExternalGpsProvider @Inject constructor(
     private val logger: ILogger,
-    private val usbManager: Optional<UsbManager>,
+    private val appSettings: AppSettings,
+    private val usbManagerOpt: Optional<UsbManager>,
 ) {
-    @AssistedFactory
-    interface Factory {
-        fun create(context: Context): ExternalGpsProvider
-    }
-
     companion object {
         private val TAG = ExternalGpsProvider::class.java.simpleName
         private const val ACTION_USB_PERMISSION = "com.alflabs.milepost.USB_PERMISSION"
@@ -35,6 +34,28 @@ class ExternalGpsProvider @AssistedInject constructor(
         private const val PRODUCT_ID = 9123 // PL2303GC (for the BU-353N5)
         private const val MANUFACTURER_NAME = "Prolific"
         private const val PRODUCT_NAME = "USB-Serial"
+    }
+
+    private var device: UsbDevice? = null
+
+    suspend fun isUsbPermissionNeeded() : Boolean {
+        setupDevice()
+        return device != null
+    }
+
+    fun isUsbPermissionGranted() : Boolean {
+        val granted = device != null && usbManagerOpt.getOrNull()?.hasPermission(device) ?: false
+        logger.d(TAG, "@@ isUsbPermissionGranted = $granted")
+        return granted
+    }
+
+    private suspend fun setupDevice() {
+        if (appSettings.useExternalGps() && usbManagerOpt.isPresent()) {
+            device = findUsbGpsDevice(usbManagerOpt.get())
+            logger.d(TAG, "@@ USB GPS Device: $device")
+        } else {
+            device = null
+        }
     }
 
     suspend fun start(locationCallback: LocationCallback): Boolean {
@@ -64,9 +85,15 @@ class ExternalGpsProvider @AssistedInject constructor(
         // connected via a USB hub to the android tablet. We'll need a
         // USB Serial Driver of some kind (library or implemented here).
 
-        val device = findUsbGpsDevice() ?: return false
-
-        logger.d(TAG, "@@ USB GPS Device: $device")
+//        val usbManager = usbManagerOpt.getOrNull() ?: return false
+//
+//        val device: UsbDevice = findUsbGpsDevice(usbManager) ?: return false
+//
+//
+//        if (!usbManager.hasPermission(device)) {
+//            logger.d(TAG, "Requesting USB permission...")
+////            requestUsbPermission(usbManager, device)
+//        }
 
         return false
     }
@@ -75,9 +102,8 @@ class ExternalGpsProvider @AssistedInject constructor(
         // TBD: Request looper or coroutine to stop as needed and free resources.
     }
 
-    private fun findUsbGpsDevice(): UsbDevice? {
-        if (usbManager.isEmpty) return null
-        val deviceList = usbManager.get().deviceList
+    private fun findUsbGpsDevice(usbManager: UsbManager): UsbDevice? {
+        val deviceList = usbManager.deviceList
         logger.d(TAG, "@@ USB Devices: $deviceList")
         return deviceList.values.firstOrNull {
             it.vendorId == VENDOR_ID
@@ -86,5 +112,22 @@ class ExternalGpsProvider @AssistedInject constructor(
                     && it.productName?.contains(PRODUCT_NAME, ignoreCase = true) == true
         }
     }
+
+//    private fun requestUsbPermission(usbManager: UsbManager, device: UsbDevice) {
+//        val intent = Intent(ACTION_USB_PERMISSION).apply {
+//            setPackage(context.packageName)
+//        }
+//        val permissionIntent = PendingIntent.getBroadcast(
+//            context, 0, intent,
+//            PendingIntent.FLAG_MUTABLE
+//        )
+////        val filter = IntentFilter(ACTION_USB_PERMISSION)
+////        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+////            context.registerReceiver(usbReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+////        } else {
+////            context.registerReceiver(usbReceiver, filter)
+////        }
+//        usbManager.requestPermission(device, permissionIntent)
+//    }
 
 }

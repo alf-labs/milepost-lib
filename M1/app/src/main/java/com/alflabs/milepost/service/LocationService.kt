@@ -9,7 +9,6 @@ import android.content.Intent
 import android.location.Location
 import android.os.IBinder
 import android.util.Log
-import androidx.annotation.Nullable
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
@@ -64,12 +63,11 @@ class LocationService : LifecycleService() {
     @Inject lateinit var globalState: GlobalState
     @Inject lateinit var internalGpsProvider: InternalGpsProvider
     @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
-    @Inject lateinit var externalGpsProviderFactory: ExternalGpsProvider.Factory
-    @Inject lateinit var notificationManager: Optional<NotificationManager>
+    @Inject lateinit var externalGpsProvider: ExternalGpsProvider
+    @Inject lateinit var notificationManagerOpt: Optional<NotificationManager>
 
     private lateinit var locationCallback: LocationCallback
     private lateinit var docentMediaPlayer: DocentMediaPlayer
-    private lateinit var externalGpsProvider: ExternalGpsProvider
     private val serviceModePublisher: IPublisher<ServiceMode?> = Publishers.latest()
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
 
@@ -83,17 +81,11 @@ class LocationService : LifecycleService() {
         logger.d(TAG, "onStartCommand: $intent")
 
         docentMediaPlayer = docentMediaPlayerFactory.create(this, lifecycleScope)
-        externalGpsProvider = externalGpsProviderFactory.create(this)
         globalState.serviceModeStream.publishWith(serviceModePublisher)
         globalState.locationStream.publishWith(locationPublisher)
 
         serviceMode = ServiceMode.RUNNING
         serviceModePublisher.publish(serviceMode)
-
-        if (!PermissionsFragment.allPermissionsGranted(this)) {
-            logger.d(TAG, "onStartCommand: No permission")
-            return START_NOT_STICKY
-        }
 
         val mpActivityIntent = Intent(this, MpActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, mpActivityIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -105,12 +97,12 @@ class LocationService : LifecycleService() {
             .setOngoing(true)
             .setContentIntent(pendingIntent)
 
-        if (notificationManager.isEmpty) {
+        if (notificationManagerOpt.isEmpty) {
             logger.d(TAG, "onStartCommand: NotificationManager not found")
             return START_NOT_STICKY
         }
 
-        notificationManager.ifPresent { notifManager ->
+        notificationManagerOpt.ifPresent { notifManager ->
             notifManager.createNotificationChannel(
                 NotificationChannel(
                     "location",
@@ -140,14 +132,18 @@ class LocationService : LifecycleService() {
         }
 
         lifecycleScope.launch {
-            var started = false
-            if (appSettings.useExternalGps()) {
-                started = externalGpsProvider.start(locationCallback)
+            if (!PermissionsFragment.allPermissionsGranted(this@LocationService, externalGpsProvider)) {
+                logger.d(TAG, "onStartCommand: No permission")
+            } else {
+                var started = false
+                if (appSettings.useExternalGps()) {
+                    started = externalGpsProvider.start(locationCallback)
+                }
+                if (!started) {
+                    started = internalGpsProvider.start(locationCallback)
+                }
+                logger.d(TAG, "@@ GPS Provider started: $started")
             }
-            if (!started) {
-                started = internalGpsProvider.start(locationCallback)
-            }
-            logger.d(TAG, "@@ GPS Provider started: $started")
         }
 
         logger.d(TAG, "Started")
