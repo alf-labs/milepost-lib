@@ -33,47 +33,53 @@ class ExternalGpsProviderTest {
     }
 
     @Inject lateinit var logger: ILogger
-    @Inject lateinit var externalGpsProviderFactory: ExternalGpsProvider.Factory
-    @Inject @ApplicationContext lateinit var appContext: Context
+    @Inject lateinit var provider: ExternalGpsProvider
 
-    private lateinit var provider : ExternalGpsProvider
+    private val locationResults = mutableListOf<LocationResult>()
+
 
     @Before
     fun setup() {
         hiltRule.inject()
-        provider = externalGpsProviderFactory.create(appContext)
     }
 
+    val nmeaParser = NMEAParser(object : NMEAHandler {
+        override fun onStart() {}
+        override fun onFinish() {}
+        override fun onLocation(location: Location) {
+            location.provider = "ExternalGps"
+            logger.d(TAG, "NMEA : $location")
+            locationResults.add(LocationResult.create(listOf(location)))
+        }
+
+        override fun onSatellites(satellites: MutableList<GpsSatellite>?) {}
+        override fun onUnrecognized(sentence: String?) {}
+        override fun onBadChecksum(expected: Int, actual: Int) {
+            logger.d(TAG, "NMEA Bad checksum: expected $expected, actual $actual")
+        }
+
+        override fun onException(e: Exception?) {
+            logger.d(TAG, "NMEA Parse exception: ${e?.message}")
+        }
+    })
+
     @Test
-    fun testNmeaParser() {
-        var expectedResult : LocationResult? = null
-
-        val nmeaParser = NMEAParser(object : NMEAHandler {
-            override fun onStart() {}
-            override fun onFinish() {}
-            override fun onLocation(location: Location) {
-                location.provider = "ExternalGps"
-                logger.d(TAG, "NMEA : $location")
-                expectedResult = LocationResult.create(listOf(location))
-            }
-
-            override fun onSatellites(satellites: MutableList<GpsSatellite>?) {}
-            override fun onUnrecognized(sentence: String?) {}
-            override fun onBadChecksum(expected: Int, actual: Int) {
-                logger.d(TAG, "NMEA Bad checksum: expected $expected, actual $actual")
-            }
-
-            override fun onException(e: Exception?) {
-                logger.d(TAG, "NMEA Parse exception: ${e?.message}")
-            }
-        })
-
+    fun testNmeaParser_GPdata() {
         // Parse test example from
         // https://github.com/petr-s/android-nmea-parser/blob/master/src/test/java/com/github/petr_s/nmea/NMEAParserTest.java
         nmeaParser.parse($$"$GPRMC,163407.000,A,5004.7485,N,01423.8956,E,0.04,36.97,180416,,*38")
         nmeaParser.parse($$"$GPGGA,163407.000,5004.7485,N,01423.8956,E,1,07,1.7,285.7,M,45.5,M,,0000*5F")
-        assertThat(expectedResult).isNotNull()
-        assertThat(expectedResult.toString().replace(Regex("ert=[0-9: .-]+"), "ert=TEST")).isEqualTo(
+        assertThat(locationResults).hasSize(1)
+        assertThat(locationResults.first().toString().replace(Regex("ert=[0-9: .-]+"), "ert=TEST")).isEqualTo(
+            "LocationResult[{ExternalGps, 50.079142,14.398260±6.8m, alt=240.2m, spd=.02m/s, brg=36.97°, ert=TEST}]")
+    }
+
+    @Test
+    fun testNmeaParser_GNdata() {
+        nmeaParser.parse($$"$GNRMC,163407.000,A,5004.7485,N,01423.8956,E,0.04,36.97,180416,,*26")
+        nmeaParser.parse($$"$GNGGA,163407.000,5004.7485,N,01423.8956,E,1,07,1.7,285.7,M,45.5,M,,0000*41")
+        assertThat(locationResults).hasSize(1)
+        assertThat(locationResults.first().toString().replace(Regex("ert=[0-9: .-]+"), "ert=TEST")).isEqualTo(
             "LocationResult[{ExternalGps, 50.079142,14.398260±6.8m, alt=240.2m, spd=.02m/s, brg=36.97°, ert=TEST}]")
     }
 
