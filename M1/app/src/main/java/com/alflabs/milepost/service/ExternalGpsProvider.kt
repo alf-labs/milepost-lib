@@ -5,11 +5,21 @@ import android.content.Context
 import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
-import android.os.Build
+import android.location.Location
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.utils.ILogger
+import com.github.petr_s.nmea.GpsSatellite
+import com.github.petr_s.nmea.NMEAHandler
+import com.github.petr_s.nmea.NMEAParser
 import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.hoho.android.usbserial.driver.UsbSerialPort
+import com.hoho.android.usbserial.driver.UsbSerialProber
+import com.hoho.android.usbserial.util.SerialInputOutputManager
 import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.util.Optional
 import javax.inject.Singleton
 import kotlin.jvm.optionals.getOrNull
@@ -38,6 +48,9 @@ class ExternalGpsProvider @Inject constructor(
     }
 
     private var device: UsbDevice? = null
+    private var usbSerialPort: UsbSerialPort? = null
+    private var usbIoManager: SerialInputOutputManager? = null
+
 
     suspend fun isUsbPermissionNeeded() : Boolean {
         setupDevice()
@@ -96,11 +109,10 @@ class ExternalGpsProvider @Inject constructor(
             return false
         }
 
-        return false
-    }
-
-    fun onDestroy() {
-        // TBD: Request looper or coroutine to stop as needed and free resources.
+        logger.d(TAG, "@@ BEFORE connectAndRead --------- ")
+        connectAndRead(usbManager, usbDevice, locationCallback)
+        logger.d(TAG, "@@ AFTER connectAndRead --------- ")
+        return true
     }
 
     private fun findUsbGpsDevice(usbManager: UsbManager): UsbDevice? {
@@ -134,4 +146,96 @@ class ExternalGpsProvider @Inject constructor(
         usbManager.requestPermission(usbDevice, permissionIntent)
     }
 
+
+    private suspend fun connectAndRead(
+        usbManager: UsbManager,
+        device: UsbDevice,
+        locationCallback: LocationCallback
+    ) = withContext(Dispatchers.IO) {
+        val driver = UsbSerialProber.getDefaultProber().probeDevice(device)
+        if (driver == null) {
+            logger.d(TAG, "@@ No driver found for device")
+            return@withContext
+        }
+
+        val connection = usbManager.openDevice(driver.device)
+        if (connection == null) {
+            logger.d(TAG, "@@ Could not open USB connection")
+            return@withContext
+        }
+
+        val port = driver.ports[0]
+        try {
+            port.open(connection)
+            port.setParameters(BAUD_RATE, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE)
+            usbSerialPort = port
+            logger.d(TAG, "@@ USB GPS Port open")
+
+            val nmeaParser = NMEAParser(object : NMEAHandler {
+                override fun onStart() {}
+                override fun onFinish() {}
+                override fun onLocation(location: Location) {
+                    location.provider = "ExternalGps"
+                    logger.d(TAG, "@@ NMEA Parse location: $location")
+                    locationCallback.onLocationResult(LocationResult.create(listOf(location)))
+                }
+
+                override fun onSatellites(satellites: MutableList<GpsSatellite>?) {}
+                override fun onUnrecognized(sentence: String?) {}
+                override fun onBadChecksum(expected: Int, actual: Int) {
+                    logger.d(TAG, "@@ NMEA Bad checksum: expected $expected, actual $actual")
+                }
+
+                override fun onException(e: Exception?) {
+                    logger.d(TAG, "@@ NMEA Parse exception: ${e?.message}")
+                }
+            })
+
+            usbIoManager =
+                SerialInputOutputManager(port, object : SerialInputOutputManager.Listener {
+                    private val lineBuffer = StringBuilder()
+
+                    override fun onNewData(data: ByteArray) {
+                        val str = String(data)
+                        for (char in str) {
+                            if (char == '\n' || char == '\r') {
+                                if (lineBuffer.isNotEmpty()) {
+                                    val line = lineBuffer.toString()
+                                    lineBuffer.setLength(0)
+                                    try {
+                                        logger.d(TAG, "@@ NMEA Parse line: $line")
+                                        nmeaParser.parse(line)
+                                    } catch (e: Exception) {
+                                         logger.d(TAG, "@@ NMEA Parse error: ${e.message}")
+                                    }
+                                }
+                            } else {
+                                lineBuffer.append(char)
+                            }
+                        }
+                    }
+
+                    override fun onRunError(e: Exception) {
+                        logger.d(TAG, "@@ USB IO Error: ${e.message}")
+                    }
+                })
+            usbIoManager?.start()
+            logger.d(TAG, "@@ USB GPS connected and reading...")
+
+        } catch (e: IOException) {
+            logger.d(TAG, "@@ Error opening USB port: ${e.message}")
+        }
+    }
+
+    fun onDestroy() {
+        logger.d(TAG, "@@ USB GPS closing...")
+        usbIoManager?.stop()
+        usbIoManager = null
+        try {
+            usbSerialPort?.close()
+        } catch (e: IOException) {
+            // ignore
+        }
+        usbSerialPort = null
+    }
 }
