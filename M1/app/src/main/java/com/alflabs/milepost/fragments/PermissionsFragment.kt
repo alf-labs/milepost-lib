@@ -58,7 +58,7 @@ class PermissionsFragment : DialogFragment() {
                 Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
         suspend fun isUsbGpsPermissionGranted(externalGpsProvider: ExternalGpsProvider): Boolean =
-            externalGpsProvider.isUsbPermissionNeeded() && externalGpsProvider.isUsbPermissionGranted()
+            !externalGpsProvider.isUsbPermissionNeeded() || externalGpsProvider.isUsbPermissionGranted()
 
         suspend fun allPermissionsGranted(context: Context, externalGpsProvider: ExternalGpsProvider): Boolean =
             isGpsGranted(context) && isNotificationGranted(context) && isUsbGpsPermissionGranted(externalGpsProvider)
