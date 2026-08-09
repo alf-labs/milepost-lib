@@ -46,6 +46,12 @@
                 app:title="Use USB GPS Receiver"
                 />
 
+        <Preference
+                app:key="usb_otg_info"
+                app:title=""
+                app:selectable="false"
+                />
+
         <ListPreference
                 app:key="simulate_gps"
                 app:title="Simulate GPS for testing"

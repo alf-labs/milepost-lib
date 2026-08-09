@@ -1,6 +1,7 @@
 package com.alflabs.milepost.fragments
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -33,6 +34,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.preferenceDataStore = appSettings.createAdapter(lifecycleScope)
         setPreferencesFromResource(R.xml.preferences, rootKey)
+
+        val hasUsbHost = requireContext().packageManager?.hasSystemFeature(PackageManager.FEATURE_USB_HOST) ?: false
+        findPreference<androidx.preference.Preference>("usb_otg_info")?.summary =
+            if (hasUsbHost)
+                "Device supports USB OTG"
+            else
+                "Device does NOT support USB OTG"
 
         thresholdDistancePref =
             findPreference<ImperialEditTextPreference>(AppSettings.THRESHOLD_DISTANCE_METERS.name)
