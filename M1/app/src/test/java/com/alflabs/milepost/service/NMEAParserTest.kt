@@ -66,7 +66,8 @@ class NMEAParserTest {
 
     @Test
     fun testNmeaParser_GNdata_v4_10() {
-        // Parse data from a BU-353N5 with the NMEA 0183 4.10+ MRC format
+        // Parse data from a BU-353N5 with the NMEA 0183 4.10+ GNMRC extra field 14.
+        // Properly parse the GNGGA alt and sep when they are negative.
         nmeaParser.parse($$"$GNGGA,081330.000,4851.4858,N,00217.6816,E,2,24,0.61,193.0,M,-25.6,M,,*5A")
         nmeaParser.parse($$"$GNRMC,081330.000,A,4851.4858,N,00217.6816,E,0.03,180.02,080826,,,D,V*0E")
         assertThat(logger.string).contains("NMEA : Location[ExternalGps")
