@@ -6,6 +6,7 @@ import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.location.Location
+import androidx.annotation.VisibleForTesting
 import com.alflabs.milepost.app.AppSettings
 import com.alflabs.utils.ILogger
 import com.github.petr_s.nmea.GpsSatellite
@@ -93,11 +94,17 @@ class ExternalGpsProvider @Inject constructor(
     private fun findUsbGpsDevice(usbManager: UsbManager): UsbDevice? {
         val deviceList = usbManager.deviceList
         logger.d(TAG, "@@ USB Devices: $deviceList")
-        return deviceList.values.firstOrNull {
-            it.vendorId == VENDOR_ID
-                    && it.productId == PRODUCT_ID
-                    && it.manufacturerName?.contains(MANUFACTURER_NAME, ignoreCase = true) == true
-                    && it.productName?.contains(PRODUCT_NAME, ignoreCase = true) == true
+        return filterUsbDevices(deviceList.values)
+    }
+
+    @VisibleForTesting
+    internal fun filterUsbDevices(deviceList: Collection<UsbDevice?>): UsbDevice? {
+        return deviceList.firstOrNull {
+            it != null
+            && it.vendorId == VENDOR_ID
+            && it.productId == PRODUCT_ID
+            && it.manufacturerName?.contains(MANUFACTURER_NAME, ignoreCase = true) == true
+            && it.productName?.contains(PRODUCT_NAME, ignoreCase = true) == true
         }
     }
 
