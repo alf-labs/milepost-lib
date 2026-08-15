@@ -41,12 +41,9 @@ class ExternalGpsProvider @Inject constructor(
         // There's a long list of USB serial ids here:
         // https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml
         // We can also filter on manufacturer name or product name.
-        // Specs: our hardware is a "GlobalSat BU-353N5 USB GNSS Receiver"
-        private const val VENDOR_ID = 1659 // Prolific
-        //        private const val PRODUCT_ID = 8963 // BU-353N5
-        private const val PRODUCT_ID = 9123 // PL2303GC (for the BU-353N5)
-        private const val MANUFACTURER_NAME = "Prolific"
-        private const val PRODUCT_NAME = "USB-Serial"
+        // Specs: our hardware is a "GlobalSat BU-353N5 USB GNSS Receiver" w/ a Prolific PL2303GC.
+
+        private const val GLOBAL_SAT_BU353N5 = "1659:9123 Prolific USB-Serial"
     }
 
     private var device: UsbDevice? = null
@@ -94,17 +91,75 @@ class ExternalGpsProvider @Inject constructor(
     private fun findUsbGpsDevice(usbManager: UsbManager): UsbDevice? {
         val deviceList = usbManager.deviceList
         logger.d(TAG, "@@ USB Devices: $deviceList")
-        return filterUsbDevices(deviceList.values)
+        return filterUsbDevices(GLOBAL_SAT_BU353N5, deviceList.values)
     }
 
+    /**
+     * Selects a USB device.
+     * "filterStr" is a space-separated of parameters to match:
+     * - DDDD:DDDD or HHHH:HHHH = VendorID:ProductID pairs (decimal or hex, 4 digits each).
+     *   If multiple VID:PID are provided, accept the first one that matches.
+     * - Any word without : is a case-insensitive keyword to match against ManufacturerName
+     *   or ProductName, in any order.
+     * - All filter fields must match.
+     */
     @VisibleForTesting
-    internal fun filterUsbDevices(deviceList: Collection<UsbDevice?>): UsbDevice? {
-        return deviceList.firstOrNull {
-            it != null
-            && it.vendorId == VENDOR_ID
-            && it.productId == PRODUCT_ID
-            && it.manufacturerName?.contains(MANUFACTURER_NAME, ignoreCase = true) == true
-            && it.productName?.contains(PRODUCT_NAME, ignoreCase = true) == true
+    internal fun filterUsbDevices(
+        filterStr: String,
+        deviceList: Collection<UsbDevice?>): UsbDevice? {
+        val parts = filterStr.split("\\s+".toRegex()).filter { it.isNotBlank() }
+        val idFilters = mutableListOf<Pair<Int, Int>>()
+        val keywords = mutableListOf<String>()
+
+        for (part in parts) {
+            if (part.contains(":")) {
+                val subParts = part.split(":")
+                if (subParts.size == 2) {
+                    val vid = parseUsbId(part, subParts[0])
+                    val pid = parseUsbId(part, subParts[1])
+                    if (vid != null && pid != null) {
+                        idFilters.add(vid to pid)
+                    }
+                }
+            } else {
+                keywords.add(part.lowercase())
+            }
+        }
+
+        return deviceList.firstOrNull { device ->
+            if (device == null) return@firstOrNull false
+
+            // Check VID:PID filters: if any provided, at least one must match.
+            val idMatch = if (idFilters.isEmpty()) {
+                true
+            } else {
+                idFilters.any { (vid, pid) ->
+                    device.vendorId == vid && device.productId == pid
+                }
+            }
+
+            // Check keywords: all must match against ManufacturerName or ProductName.
+            val keywordMatch = keywords.all { keyword ->
+                (device.manufacturerName?.contains(keyword, ignoreCase = true) == true) ||
+                        (device.productName?.contains(keyword, ignoreCase = true) == true)
+            }
+
+            idMatch && keywordMatch
+        }
+    }
+
+    private fun parseUsbId(full: String, sid: String): Int? {
+        // Full string is either "DDDD:DDDD", "HHHH:HHHH", or "0xHHHH:0xHHHH".
+        // If we find 0x or A-F, we assume it's all hexadecimal (for both ids).
+        // Otherwise, we assume both ids are in decimal.
+        return try {
+            when {
+                full.contains("0x", ignoreCase = true) -> sid.replace("0x", "").toInt(16)
+                full.any { it.uppercaseChar() in 'A'..'F' } -> sid.toInt(16)
+                else -> sid.toInt(10)
+            }
+        } catch (_: NumberFormatException) {
+            null
         }
     }
 
