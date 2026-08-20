@@ -48,6 +48,7 @@ class AppSettings @Inject constructor(
         val HIDE_SYSTEM_BARS = booleanPreferencesKey("hide_system_bars")
 
         val USE_EXTERNAL_GPS = booleanPreferencesKey("use_external_gps")
+        val USB_GPS_FILTER = stringPreferencesKey("usb_gps_filter")
 
         val USE_USB_AUDIO = booleanPreferencesKey("use_usb_audio")
         val USE_LOUDNESS_ENHANCER = booleanPreferencesKey("use_loudness_enhancer")
@@ -147,6 +148,11 @@ class AppSettings @Inject constructor(
     suspend fun useExternalGps(): Boolean {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getBoolean(USE_EXTERNAL_GPS.name, false)
+    }
+
+    suspend fun usbGpsFilter(): String {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getString(USB_GPS_FILTER.name, "")
     }
 
     // ------

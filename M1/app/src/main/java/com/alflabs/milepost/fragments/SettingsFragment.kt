@@ -3,6 +3,7 @@ package com.alflabs.milepost.fragments
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.InputType
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -10,9 +11,11 @@ import android.view.ViewGroup
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.EditTextPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.alflabs.milepost.R
 import com.alflabs.milepost.app.AppSettings
+import com.alflabs.milepost.service.ExternalGpsProvider
 import com.alflabs.milepost.utils.Units
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -38,9 +41,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val hasUsbHost = requireContext().packageManager?.hasSystemFeature(PackageManager.FEATURE_USB_HOST) ?: false
         findPreference<androidx.preference.Preference>("usb_otg_info")?.summary =
             if (hasUsbHost)
-                "Device supports USB OTG"
+                "This device supports USB OTG"
             else
-                "Device does NOT support USB OTG"
+                "This Android device does NOT support USB OTG"
 
         thresholdDistancePref =
             findPreference<ImperialEditTextPreference>(AppSettings.THRESHOLD_DISTANCE_METERS.name)
@@ -69,6 +72,22 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     "${prettyFloat(value, 3)} m/s (${prettyFloat(Units.mpsToUnit(value, useImperialUnits), 3)} ${Units.mpsUnitName(useImperialUnits)})"
                 }
             }
+
+        val usbGpsFilterPref = findPreference<EditTextPreference>(AppSettings.USB_GPS_FILTER.name)
+        usbGpsFilterPref?.setOnBindEditTextListener { editText ->
+                editText.hint = "VID:PID Manufacturer or Product Name keywords"
+                editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+                editText.maxLines = 1
+                editText.isSingleLine = true
+            }
+        usbGpsFilterPref?.summaryProvider = Preference.SummaryProvider<EditTextPreference> { preference ->
+            val text = preference.text
+            if (text.isNullOrBlank()) {
+                ExternalGpsProvider.GLOBAL_SAT_BU353N5
+            } else {
+                text
+            }
+        }
     }
 
     override fun onCreateView(

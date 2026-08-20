@@ -43,7 +43,7 @@ class ExternalGpsProvider @Inject constructor(
         // We can also filter on manufacturer name or product name.
         // Specs: our hardware is a "GlobalSat BU-353N5 USB GNSS Receiver" w/ a Prolific PL2303GC.
 
-        private const val GLOBAL_SAT_BU353N5 = "1659:9123 Prolific USB-Serial"
+        const val GLOBAL_SAT_BU353N5 = "1659:9123 Prolific USB-Serial GlobalSat BU-353N5"
     }
 
     private var device: UsbDevice? = null
@@ -64,7 +64,8 @@ class ExternalGpsProvider @Inject constructor(
 
     private suspend fun setupDevice() {
         if (appSettings.useExternalGps() && usbManagerOpt.isPresent()) {
-            device = findUsbGpsDevice(usbManagerOpt.get())
+            val filter = appSettings.usbGpsFilter().trim().ifBlank { GLOBAL_SAT_BU353N5 }
+            device = findUsbGpsDevice(filter, usbManagerOpt.get())
             logger.d(TAG, "@@ USB GPS Device: $device")
         } else {
             device = null
@@ -88,10 +89,10 @@ class ExternalGpsProvider @Inject constructor(
         return true
     }
 
-    private fun findUsbGpsDevice(usbManager: UsbManager): UsbDevice? {
+    private fun findUsbGpsDevice(filter: String, usbManager: UsbManager): UsbDevice? {
         val deviceList = usbManager.deviceList
         logger.d(TAG, "@@ USB Devices: $deviceList")
-        return filterUsbDevices(GLOBAL_SAT_BU353N5, deviceList.values)
+        return filterUsbDevices(filter, deviceList.values)
     }
 
     /**
