@@ -1,8 +1,8 @@
 <resources>
     <string-array name="pref_simulate_gps_entries">
-        <item>None</item>
-        <item>From Start</item>
-        <item>From End</item>
+        <item>Use Real GPS Position</item>
+        <item>Simulate from Track Start</item>
+        <item>Simulate from Track End</item>
     </string-array>
 
     <string-array name="pref_simulate_gps_values">
