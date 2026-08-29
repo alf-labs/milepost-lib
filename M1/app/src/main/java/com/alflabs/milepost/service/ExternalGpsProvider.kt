@@ -37,12 +37,11 @@ class ExternalGpsProvider @Inject constructor(
         const val ACTION_USB_PERMISSION = "com.alflabs.milepost.USB_PERMISSION"
         private const val BAUD_RATE = 4800 // standard NMEA baud rate
 
-        // TBD change this to a preference string e.g. "1659:9123" (or hex, etc).
         // There's a long list of USB serial ids here:
         // https://github.com/mik3y/usb-serial-for-android/blob/master/usbSerialExamples/src/main/res/xml/device_filter.xml
         // We can also filter on manufacturer name or product name.
-        // Specs: our hardware is a "GlobalSat BU-353N5 USB GNSS Receiver" w/ a Prolific PL2303GC.
-
+        // Specs: our hardware is a "GlobalSat BU-353N5 USB GNSS Receiver" w/ a Prolific PL2303GC
+        // so that's going to be our default USB filter string.
         const val GLOBAL_SAT_BU353N5 = "1659:9123 Prolific USB-Serial GlobalSat BU-353N5"
     }
 
