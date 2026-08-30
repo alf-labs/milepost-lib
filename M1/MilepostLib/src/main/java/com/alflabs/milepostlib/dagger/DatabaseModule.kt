@@ -24,7 +24,9 @@ class DatabaseModule {
             appContext,
             LibDatabase::class.java,
             "tracks"
-        ).build()
+        )
+        .addMigrations(LibDatabase.TEMP_MIGRATION_10_1) // special downgrade from test-#10 to final-#1
+        .build()
     }
 
     @Provides
