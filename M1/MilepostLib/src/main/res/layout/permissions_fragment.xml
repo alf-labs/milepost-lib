@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        tools:context=".fragments.PermissionsFragment"
+        >
+
+    <TextView
+            android:id="@+id/description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="The following permissions are required for the application to work properly:"
+            android:layout_marginTop="16dp"
+            android:layout_alignParentTop="true"
+            tools:ignore="HardcodedText"/>
+
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/gps_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@id/description"
+            android:text="GPS"
+            tools:ignore="HardcodedText"
+            />
+
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/notification_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@id/gps_switch"
+            android:text="Notifications"
+            tools:ignore="HardcodedText"
+            />
+
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/usb_gps_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_below="@id/notification_switch"
+            android:text="External USB GPS Receiver"
+            tools:ignore="HardcodedText"
+            />
+
+    <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorAccent"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/usb_gps_switch"
+            />
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/divider"
+            android:layout_above="@+id/close_button"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            >
+
+        <WebView
+                android:id="@+id/webview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                />
+
+    </ScrollView>
+
+    <Button
+            android:id="@+id/close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            />
+
+
+</RelativeLayout>

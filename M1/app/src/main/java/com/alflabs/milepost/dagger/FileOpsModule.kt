@@ -7,13 +7,14 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-@Module
-@InstallIn(SingletonComponent::class)
+//RM TEMP moved to Lib
+//@Module
+//@InstallIn(SingletonComponent::class)
 object FileOpsModule {
 
-    @Singleton
-    @Provides
-    fun providesFileOps(): FileOps {
-        return FileOps()
-    }
+//    @Singleton
+//    @Provides
+//    fun providesFileOps(): FileOps {
+//        return FileOps()
+//    }
 }

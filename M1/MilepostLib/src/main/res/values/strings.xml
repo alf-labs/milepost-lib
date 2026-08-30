@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Milepost Docent</string>
+    <!-- Strings used for fragments for navigation -->
+
+    <string name="lorem_ipsum">
+        Lorem ipsum dolor sit amet.
+    </string>
+
+</resources>

@@ -1,0 +1,39 @@
+package com.alflabs.milepostlib.app
+
+import com.alflabs.milepostlib.location.LocationData
+import com.alflabs.milepostlib.op.MpEstimate
+import com.alflabs.milepostlib.op.Operator
+import com.alflabs.milepostlib.op.OperatorMode
+import com.alflabs.milepostlib.op.AudioPlayCommand
+import com.alflabs.milepostlib.op.AudioPlayingStatus
+import com.alflabs.milepostlib.service.LocationService
+import com.alflabs.milepostlib.service.ServiceMode
+import com.alflabs.rx.IStream
+import com.alflabs.rx.Schedulers
+import com.alflabs.rx.Streams
+import com.alflabs.utils.ILogger
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class GlobalState @Inject constructor(
+    val logger: ILogger
+) {
+    companion object {
+        private val TAG = GlobalState::class.java.simpleName
+    }
+
+    val locationStream: IStream<LocationData?> = Streams.stream<LocationData?>().on(Schedulers.sync())
+    val mpEstimateStream: IStream<MpEstimate?> = Streams.stream<MpEstimate?>().on(Schedulers.sync())
+    val audioPlayCommandStream: IStream<AudioPlayCommand?> = Streams.stream<AudioPlayCommand?>().on(Schedulers.sync())
+    val audioPlayingStatusStream: IStream<AudioPlayingStatus?> = Streams.stream<AudioPlayingStatus?>().on(Schedulers.sync())
+    val serviceModeStream: IStream<ServiceMode?> = Streams.stream<ServiceMode?>().on(Schedulers.sync())
+    val operatorModeStream: IStream<OperatorMode?> = Streams.stream<OperatorMode?>().on(Schedulers.sync())
+
+    val serviceMode: ServiceMode get() = LocationService.serviceMode
+    val operatorMode: OperatorMode get() = Operator.operatorMode
+
+    init {
+        logger.d(TAG, "GlobalState initialized: $this")
+    }
+}

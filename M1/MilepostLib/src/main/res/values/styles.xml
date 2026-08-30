@@ -1,0 +1,26 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Milepost" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="Theme.Milepost" parent="Base.Theme.Milepost">
+        <!-- Transparent system bars for edge-to-edge. -->
+        <!-- This is API values-v23 -->
+<!--        <item name="android:navigationBarColor">@android:color/transparent</item>-->
+<!--        <item name="android:statusBarColor">@android:color/transparent</item>-->
+<!--        <item name="android:windowLightStatusBar">?attr/isLightTheme</item>-->
+    </style>
+
+    <style name="ToolbarTheme" parent="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        <!-- This customizes MaterialToolbar in the activity_main.xml -->
+        <!-- android:textColorPrimary is defined by the Dark.ActionBar to be a light one. -->
+    </style>
+
+    <style name="PopupTheme" parent="@style/ThemeOverlay.MaterialComponents.Light">
+        <!-- This customizes MaterialToolbar's popup in the activity_main.xml -->
+    </style>
+
+</resources>

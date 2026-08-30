@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package com.alflabs.milepostlib.location;
+
+option java_multiple_files = true;
+
+message LocationDataList {
+  repeated LocationData locations = 1;
+}
+
+message LocationData {
+  LatLongData lat_long = 1;
+  optional SpeedData speed = 2;
+  optional float mp = 3;
+  int32 flags = 4;
+  optional string poi_label = 5;
+}
+
+message LatLongData {
+  int64 timestamp_millis = 1;
+  double latitude = 2;
+  double longitude = 3;
+  optional float accuracy = 4;
+}
+
+message SpeedData {
+  float speed_mps = 1;
+  optional float speed_acc = 3;
+
+  reserved 2; reserved "bearing_deg";
+  reserved 4; reserved "bearing_acc";
+}

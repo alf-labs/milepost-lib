@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:showIn="navigation_view">
+
+    <!-- Notes:
+        - All item ids here should match nav_graph_mp.xml destination ids.
+     -->
+
+    <group> <!-- android:checkableBehavior="single" -->
+        <item
+                android:id="@+id/nav_about"
+                android:icon="@drawable/ic_nav_menu_about"
+                android:title="About" />
+    </group>
+
+    <item android:title="Audio Tracks">
+        <menu>
+            <item
+                    android:id="@+id/nav_audio_segment_list"
+                    android:icon="@drawable/ic_nav_menu_list"
+                    android:title="Audio Segments" />
+
+            <item
+                    android:id="@+id/nav_docent_track_list"
+                    android:icon="@drawable/ic_nav_menu_list"
+                    android:title="Docent Tracks"  />
+
+            <item
+                    android:id="@+id/nav_docent_track_play"
+                    android:icon="@drawable/ic_nav_menu_play"
+                    android:title="Playback Docent Track"  />
+        </menu>
+    </item>
+
+    <item android:title="GPS Tracks">
+        <menu>
+            <item
+                    android:id="@+id/nav_gps_track_list"
+                    android:icon="@drawable/ic_nav_menu_list"
+                    android:title="Milepost GPS Tracks" />
+            <item
+                    android:id="@+id/nav_gps_track_record"
+                    android:icon="@drawable/ic_nav_menu_record"
+                    android:title="Record GPS Track" />
+            <item
+                    android:id="@+id/nav_gps_track_play"
+                    android:icon="@drawable/ic_nav_menu_play"
+                    android:title="Playback GPS Track"  />
+        </menu>
+    </item>
+
+    <item android:title="More">
+        <menu>
+            <item
+                    android:id="@+id/nav_sensors"
+                    android:icon="@drawable/ic_nav_menu_sensors"
+                    android:title="Test Sensors" />
+            <item
+                    android:id="@+id/nav_permissions"
+                    android:icon="@drawable/ic_nav_menu_permissions"
+                    android:title="Permissions" />
+            <item
+                    android:id="@+id/nav_settings"
+                    android:icon="@drawable/ic_nav_menu_settings"
+                    android:title="Settings" />
+        </menu>
+    </item>
+
+</menu>

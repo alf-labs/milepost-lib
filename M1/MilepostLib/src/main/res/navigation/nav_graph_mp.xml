@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/nav_graph"
+        app:startDestination="@id/nav_about">
+
+    <!-- Notes:
+        - All fragment destination ids here should match drawer_mp.xml item ids.
+        - The labels automatically become AppBar/Toolbar titles.
+
+        As usual with Android, there's no clearly defined XML schema.
+        Doc:
+          https://developer.android.com/guide/navigation/use-graph/pass-data
+        The XML parser is here:
+          https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/NavInflater.kt
+        and
+          https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-appcompat-release/navigation/navigation-runtime/src/main/java/androidx/navigation/ActivityNavigator.kt#264
+     -->
+
+    <fragment
+            android:id="@+id/nav_about"
+            android:name="com.alflabs.milepostlib.fragments.AboutFragment"
+            android:label="About"
+            tools:layout="@layout/about_fragment">
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_audio_segment_list"
+            android:name="com.alflabs.milepostlib.fragments.audioSegments.AudioSegmentsFragment"
+            android:label="Audio Segments"
+            tools:layout="@layout/audio_segments_fragment">
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_docent_track_list"
+            android:name="com.alflabs.milepostlib.fragments.docentTracks.DocentTracksFragment"
+            android:label="Docent Tracks"
+            tools:layout="@layout/docent_tracks_fragment">
+        <action
+                android:id="@+id/action_edit_docent_track"
+                app:destination="@id/nav_docent_trigger_list">
+            <argument
+                    android:name="docentTrackId"
+                    app:argType="long" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_docent_trigger_list"
+            android:name="com.alflabs.milepostlib.fragments.docentTriggers.DocentTriggersFragment"
+            android:label="Docent Triggers"
+            tools:layout="@layout/docent_triggers_fragment">
+        <argument
+                android:name="docentTrackId"
+                app:argType="long" />
+        <action
+                android:id="@+id/action_review_to_play"
+                app:destination="@id/nav_docent_track_play">
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_docent_track_play"
+            android:name="com.alflabs.milepostlib.fragments.docentPlayback.DocentPlaybackFragment"
+            android:label="Playback Docent Track"
+            tools:layout="@layout/docent_playback_fragment">
+        <action
+                android:id="@+id/action_play_to_permissions_dlg"
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showClose"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_gps_track_list"
+            android:name="com.alflabs.milepostlib.fragments.gpsTracks.GpsTracksFragment"
+            android:label="GPS Tracks"
+            tools:layout="@layout/gps_tracks_fragment">
+        <action
+                android:id="@+id/action_list_to_review"
+                app:destination="@id/nav_gps_track_review">
+            <argument
+                    android:name="gpsTrackId"
+                    app:argType="long" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_gps_track_review"
+            android:name="com.alflabs.milepostlib.fragments.gpsReview.GpsReviewFragment"
+            android:label="Review GPS Track"
+            tools:layout="@layout/gps_review_fragment">
+        <argument
+                android:name="gpsTrackId"
+                app:argType="long" />
+        <action
+                android:id="@+id/action_review_to_play"
+                app:destination="@id/nav_gps_track_play">
+        </action>
+        <action
+                android:id="@+id/action_new_docent_track"
+                app:destination="@id/nav_docent_trigger_list">
+            <argument
+                    android:name="docentTrackId"
+                    app:argType="long" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_gps_track_record"
+            android:name="com.alflabs.milepostlib.fragments.gpsRecord.GpsRecordFragment"
+            android:label="Record GPS Track"
+            tools:layout="@layout/sensors_fragment">
+        <action
+                android:id="@+id/action_record_to_permissions_dlg"
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showClose"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
+        <action
+                android:id="@+id/action_record_to_review"
+                app:destination="@id/nav_gps_track_review">
+            <argument
+                    android:name="gpsTrackId"
+                    app:argType="long" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_gps_track_play"
+            android:name="com.alflabs.milepostlib.fragments.gpsPlayback.GpsPlaybackFragment"
+            android:label="Playback GPS Track"
+            tools:layout="@layout/gps_playback_fragment">
+        <action
+                android:id="@+id/action_play_to_permissions_dlg"
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showClose"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_sensors"
+            android:name="com.alflabs.milepostlib.fragments.SensorsFragment"
+            android:label="Test Sensors"
+            tools:layout="@layout/sensors_fragment">
+        <action
+                android:id="@+id/action_sensors_to_permissions_dlg"
+                app:destination="@id/nav_permissions_dlg">
+            <argument
+                    android:name="showClose"
+                    app:argType="boolean"
+                    android:defaultValue="true" />
+        </action>
+    </fragment>
+
+    <fragment
+            android:id="@+id/nav_permissions"
+            android:name="com.alflabs.milepostlib.fragments.PermissionsFragment"
+            android:label="Permissions"
+            tools:layout="@layout/permissions_fragment">
+        <argument
+                android:name="showClose"
+                app:argType="boolean"
+                android:defaultValue="false" />
+    </fragment>
+
+    <!-- Same as nav_permission but as a dialog -->
+    <dialog
+            android:id="@+id/nav_permissions_dlg"
+            android:name="com.alflabs.milepostlib.fragments.PermissionsFragment"
+            android:label="Permissions"
+            tools:layout="@layout/permissions_fragment">
+        <argument
+                android:name="showClose"
+                app:argType="boolean"
+                android:defaultValue="true" />
+    </dialog>
+
+    <fragment
+            android:id="@+id/nav_settings"
+            android:name="com.alflabs.milepostlib.fragments.SettingsFragment"
+            android:label="Settings" >
+    </fragment>
+
+</navigation>

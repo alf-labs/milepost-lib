@@ -1,0 +1,30 @@
+package com.alflabs.milepostlib.fragments
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.alflabs.milepostlib.databinding.PlaceholderFragmentBinding
+import dagger.hilt.android.AndroidEntryPoint
+
+@AndroidEntryPoint
+class PlaceholderFragment : Fragment() {
+    private val TAG = PlaceholderFragment::class.java.simpleName
+
+    private var _binding: PlaceholderFragmentBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = PlaceholderFragmentBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}

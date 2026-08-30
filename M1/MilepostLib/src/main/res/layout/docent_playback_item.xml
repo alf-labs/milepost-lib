@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:padding="8dp">
+
+    <TextView
+            android:id="@+id/trigger_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            tools:text="Title Text" />
+
+    <TextView
+            android:id="@+id/trigger_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/trigger_title"
+            tools:text="Title Text" />
+
+    <TextView
+            android:id="@+id/play_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textAllCaps="true"
+            android:layout_below="@id/trigger_range"
+            tools:text="Playing" />
+
+    <TextView
+            android:id="@+id/play_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/play_status"
+            android:layout_toEndOf="@id/play_status"
+            android:layout_marginStart="16dp"
+            tools:text="1:23 / 4:56" />
+
+    <ImageButton
+            android:id="@+id/action_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_btn_play_next"
+            android:padding="8dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@color/item_play_btn_background"
+            android:contentDescription="Play or Pause button" />
+
+</RelativeLayout>

@@ -1,4 +1,4 @@
-package com.alflabs.milepostlib
+package com.alflabs.milepost
 
 import org.junit.Test
 

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package com.alflabs.milepostlib.db;
+
+option java_multiple_files = true;
+
+message GpsTrackSummary {
+  optional float mp_min = 1;
+  optional float mp_max = 2;
+  optional float length_m = 3;
+  optional float duration_s = 4;
+}
+

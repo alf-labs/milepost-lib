@@ -12,27 +12,28 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.Optional
 
-@Module
-@InstallIn(SingletonComponent::class)
+//RM TEMP moved to Lib
+//@Module
+//@InstallIn(SingletonComponent::class)
 object SystemServicesModule {
 
-    @Provides
-    fun provideAudioManager(@ApplicationContext context: Context): Optional<AudioManager> {
-        return Optional.ofNullable(context.getSystemService(AudioManager::class.java))
-    }
-
-    @Provides
-    fun provideNotificationManager(@ApplicationContext context: Context): Optional<NotificationManager> {
-        return Optional.ofNullable(context.getSystemService(NotificationManager::class.java))
-    }
-
-    @Provides
-    fun provideActivityManager(@ApplicationContext context: Context): Optional<ActivityManager> {
-        return Optional.ofNullable(context.getSystemService(ActivityManager::class.java))
-    }
-
-    @Provides
-    fun provideUsbManager(@ApplicationContext context: Context): Optional<UsbManager> {
-        return Optional.ofNullable(context.getSystemService(UsbManager::class.java))
-    }
+//    @Provides
+//    fun provideAudioManager(@ApplicationContext context: Context): Optional<AudioManager> {
+//        return Optional.ofNullable(context.getSystemService(AudioManager::class.java))
+//    }
+//
+//    @Provides
+//    fun provideNotificationManager(@ApplicationContext context: Context): Optional<NotificationManager> {
+//        return Optional.ofNullable(context.getSystemService(NotificationManager::class.java))
+//    }
+//
+//    @Provides
+//    fun provideActivityManager(@ApplicationContext context: Context): Optional<ActivityManager> {
+//        return Optional.ofNullable(context.getSystemService(ActivityManager::class.java))
+//    }
+//
+//    @Provides
+//    fun provideUsbManager(@ApplicationContext context: Context): Optional<UsbManager> {
+//        return Optional.ofNullable(context.getSystemService(UsbManager::class.java))
+//    }
 }

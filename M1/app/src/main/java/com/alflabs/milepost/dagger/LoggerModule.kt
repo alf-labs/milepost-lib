@@ -8,13 +8,14 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-@Module
-@InstallIn(SingletonComponent::class)
+//RM TEMP moved to Lib
+//@Module
+//@InstallIn(SingletonComponent::class)
 object LoggerModule {
 
-    @Singleton
-    @Provides
-    fun providesLogger(): ILogger {
-        return AndroidLogger()
-    }
+//    @Singleton
+//    @Provides
+//    fun providesLogger(): ILogger {
+//        return AndroidLogger()
+//    }
 }

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        303F9F
+        008577 00574B
+    https://material.io/tools/color/#!/?view.left=0&view.right=0&primary.color=3949AB
+    3949ab 00227b 6f74dd
+    -->
+    <color name="colorPrimary">#3949ab</color>
+    <color name="colorPrimaryDark">#00227b</color>
+    <color name="colorAccent">#6f74dd</color>
+    <color name="colorAccentDark">#5255A6</color>
+
+    <color name="map_track">#4010E0</color>
+    <color name="map_track_prev">#808080</color>
+    <color name="gps_value">#000</color>
+    <color name="acc_missing">#F00</color>
+    <color name="acc_present">#444</color>
+
+    <color name="linear_line">#F444</color>
+    <color name="linear_station">#C888</color>
+    <color name="linear_text">@android:color/black</color>
+    <color name="linear_segment">@color/colorAccent</color>
+    <color name="linear_segment_curr">#FF60</color>
+    <color name="linear_segment_next">#FFF0</color>
+
+    <color name="list_highlight">#AFB1D8</color>
+
+    <color name="menu_icon_fill">@android:color/black</color>
+    <color name="item_play_btn_background">@null</color>
+    <color name="item_play_btn_tint">@android:color/holo_blue_dark</color>
+
+</resources>

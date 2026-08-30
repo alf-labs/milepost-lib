@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+        xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="UI">
+
+        <SwitchPreferenceCompat
+                app:key="use_imperial_units"
+                app:title="Use Imperial Units"
+                />
+
+        <SwitchPreferenceCompat
+                app:key="use_lock_task"
+                app:title="Use Lock Task Mode"
+                />
+
+        <SwitchPreferenceCompat
+                app:key="hide_system_bars"
+                app:title="Hide System Bars"
+                />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Sound">
+
+        <SwitchPreferenceCompat
+                app:key="use_usb_audio"
+                app:title="Use USB Audio Device"
+                />
+
+        <SwitchPreferenceCompat
+                app:key="use_loudness_enhancer"
+                app:title="Use Loudness Enhancer"
+                />
+
+        <SwitchPreferenceCompat
+                app:key="use_sound_limiter"
+                app:title="Use Single-band Compressor Limiter"
+                />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="GPS">
+
+        <SwitchPreferenceCompat
+                app:key="use_external_gps"
+                app:title="Use USB GPS Receiver"
+                app:summaryOff="Use internal GPS Receiver"
+                android:summaryOn="Use external GPS Receiver (if detected by the USB filter string)"
+                />
+
+        <EditTextPreference
+                app:key="usb_gps_filter"
+                app:title="USB ID Filter for GPS Receiver"
+                app:dependency="use_external_gps"
+                />
+
+        <Preference
+                app:key="usb_otg_info"
+                app:title=""
+                app:selectable="false"
+                />
+
+        <ListPreference
+                app:key="simulate_gps"
+                app:title="Simulate GPS for testing"
+                app:entries="@array/pref_simulate_gps_entries"
+                app:entryValues="@array/pref_simulate_gps_values"
+                app:defaultValue="none"
+                app:useSimpleSummaryProvider="true"
+                />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="GPS Track Recording">
+
+        <com.alflabs.milepostlib.fragments.ImperialEditTextPreference
+                app:key="threshold_distance_meters"
+                app:title="Threshold Distance (meters)"
+                app:dialogTitle="Set threshold distance in meters"
+                />
+
+        <com.alflabs.milepostlib.fragments.ImperialEditTextPreference
+                app:key="threshold_speed_mps"
+                app:title="Threshold Speed (m/s)"
+                app:dialogTitle="Set threshold speed in meters per second"
+                />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
