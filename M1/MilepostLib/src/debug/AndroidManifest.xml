@@ -23,7 +23,8 @@
     <application>
         <activity
                 android:name=".dagger.HiltTestLibActivity"
-                android:exported="false"  />
+                android:theme="@style/Theme.Milepost"
+                android:exported="true"  />
     </application>
 
 </manifest>

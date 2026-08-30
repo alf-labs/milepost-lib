@@ -29,6 +29,6 @@ class RobolectricSampleTest {
     @Test
     fun packageName_shouldBeCorrect() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        assertThat(context.packageName).isEqualTo("com.alflabs.milepost")
+        assertThat(context.packageName).isEqualTo("com.alflabs.milepostlib.test")
     }
 }
