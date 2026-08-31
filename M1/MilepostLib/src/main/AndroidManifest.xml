@@ -15,7 +15,6 @@
                 android:name="com.alflabs.milepostlib.activity.MpActivity"
                 android:exported="true"
                 android:theme="@style/Theme.Milepost"
-                android:roundIcon="@mipmap/ic_launcher_mp"
                 android:label="Milepost">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

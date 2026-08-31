@@ -96,7 +96,7 @@ private class JSAppData(val context: Context) {
 
     @JavascriptInterface
     fun getAppIcon(): String {
-        val drawableId = R.mipmap.ic_launcher_mp
+        val drawableId = R.mipmap.ic_launcher_lib
         val drawable = ContextCompat.getDrawable(context, drawableId) ?: return ""
 
         val density = context.resources.displayMetrics.density

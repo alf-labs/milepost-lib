@@ -93,7 +93,7 @@ class LocationService : LifecycleService() {
         val notification = NotificationCompat.Builder(this, "location")
             .setContentTitle("Tracking location...")
             .setContentText("Location: Waiting for first fix")
-            .setSmallIcon(R.mipmap.ic_launcher_mp)
+            .setSmallIcon(R.mipmap.ic_launcher_lib)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
 
