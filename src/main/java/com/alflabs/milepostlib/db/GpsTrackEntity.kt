@@ -9,6 +9,10 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import java.util.UUID
 
 
@@ -94,3 +98,19 @@ data class GpsTrackEntityPojo @JsonCreator constructor(
     )
 }
 
+class GpsTrackEntityDeserializer : StdDeserializer<GpsTrackEntity>(GpsTrackEntity::class.java) {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): GpsTrackEntity {
+        val node: JsonNode = p.codec.readTree(p)
+        return GpsTrackEntity(
+            id = if (node.hasNonNull("id")) node.get("id").asLong() else 0L,
+            uuid = if (node.hasNonNull("uuid")) node.get("uuid").asText() else "",
+            createdDateISO = if (node.hasNonNull("createdDateISO")) node.get("createdDateISO").asText() else "",
+            updatedDateISO = if (node.hasNonNull("updatedDateISO")) node.get("updatedDateISO").asText() else null,
+            trackLabel = if (node.hasNonNull("trackLabel")) node.get("trackLabel").asText() else null,
+            startLabel = if (node.hasNonNull("startLabel")) node.get("startLabel").asText() else null,
+            endLabel = if (node.hasNonNull("endLabel")) node.get("endLabel").asText() else null,
+            summary = if (node.hasNonNull("summary")) ctxt.readTreeAsValue(node.get("summary"), GpsTrackSummary::class.java) else null,
+            locationList = if (node.hasNonNull("locationList")) ctxt.readTreeAsValue(node.get("locationList"), LocationDataList::class.java) else null
+        )
+    }
+}
