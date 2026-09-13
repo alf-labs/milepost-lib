@@ -5,6 +5,8 @@ import com.alflabs.milepostlib.location.latLongData
 import com.alflabs.milepostlib.location.locationData
 import com.alflabs.milepostlib.location.locationDataList
 import com.alflabs.milepostlib.location.speedData
+import com.alflabs.milepostlib.utils.diffIsEqualTo
+import com.alflabs.milepostlib.utils.toTestString
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -71,11 +73,11 @@ class ExportToJsonTest {
               } ]
             }
             """.trimIndent().toTestString()
-        assertThat(exported).isEqualTo(expected)
+        assertThat(exported).diffIsEqualTo(expected)
 
         val importMapper = ObjectMapper().importProtobuf()
         val imported = importMapper.readValue(exported, LocationDataList::class.java)
-        assertThat(imported.toTestString()).isEqualTo(originalList.toTestString())
+        assertThat(imported.toTestString()).diffIsEqualTo(originalList.toTestString())
     }
 
     @Test
@@ -168,13 +170,10 @@ class ExportToJsonTest {
               "uuid" : "test-uuid-1234"
             }
             """.trimIndent().toTestString()
-        assertThat(exported).isEqualTo(expected)
+        assertThat(exported).diffIsEqualTo(expected)
 
         val importMapper = ObjectMapper().importProtobuf()
         val imported = importMapper.readValue(exported, GpsTrackEntity::class.java)
-        assertThat(imported.toTestString()).isEqualTo(gpsTrackEntity.toTestString())
+        assertThat(imported.toTestString()).diffIsEqualTo(gpsTrackEntity.toTestString())
     }
 }
-
-private fun Any.toTestString() =
-    this.toString().replace("\r\n", "\n")

@@ -3,7 +3,8 @@ package com.alflabs.milepostlib.utils
 import android.content.Context
 import android.net.Uri
 import com.alflabs.milepostlib.db.GpsTrackEntity
-import com.alflabs.milepostlib.db.GpsTrackEntityPojo
+import com.alflabs.milepostlib.db.exportProtobuf
+import com.alflabs.milepostlib.db.importProtobuf
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -95,18 +96,15 @@ class GpsImporterExporter @Inject constructor(
             return null
         }
 
-        val exported = gpsTrackEntity.toPojo()
-
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "gps ${exported.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
+            val file = File(cacheDir, "gps ${gpsTrackEntity.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
             logger.d(TAG, "@@ createJsonExportFile: file = ${file.path}")
 
-            val objectMapper = ObjectMapper()
-            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            val objectMapper = ObjectMapper().exportProtobuf()
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, exported)
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, gpsTrackEntity)
             }
 
             file // Return the created file
@@ -129,9 +127,8 @@ class GpsImporterExporter @Inject constructor(
 
         return try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val objectMapper = ObjectMapper()
-                val imported = objectMapper.readValue(inputStream, GpsTrackEntityPojo::class.java)
-                return imported.toProto()
+                val objectMapper = ObjectMapper().importProtobuf()
+                return objectMapper.readValue(inputStream, GpsTrackEntity::class.java)
             }
         } catch (e: Exception) {
             logger.d(TAG, "loadGpsTrackEntityFromUri: error", e)

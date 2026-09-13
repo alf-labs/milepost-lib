@@ -6,12 +6,12 @@ import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.alflabs.milepostlib.dagger.FakeFileOpsModule
 import com.alflabs.milepostlib.dagger.FakeLoggerModule
+import com.alflabs.milepostlib.db.GpsTrackEntity
+import com.alflabs.milepostlib.db.gpsTrackSummary
 import com.alflabs.milepostlib.location.latLongData
 import com.alflabs.milepostlib.location.locationData
 import com.alflabs.milepostlib.location.locationDataList
 import com.alflabs.milepostlib.location.speedData
-import com.alflabs.milepostlib.db.GpsTrackEntity
-import com.alflabs.milepostlib.db.gpsTrackSummary
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat
@@ -126,7 +126,7 @@ class GpsImporterExporterTest {
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).endsWith("/gps test-uuid-1234 A fairly long Test+ -Track name 42 that is more than 64 characte.json")
-        assertThat(fakeFileOps.toString(file, Charsets.UTF_8).replace("\r\n", "\n")).isEqualTo(
+        assertThat(fakeFileOps.toString(file, Charsets.UTF_8).toTestString()).diffIsEqualTo(
             """
             {
               "uuid" : "test-uuid-1234",
@@ -171,7 +171,7 @@ class GpsImporterExporterTest {
                 } ]
               }
             }
-        """.trimIndent().replace("\r\n", "\n"))
+        """.trimIndent().toTestString())
     }
 
     @Test
@@ -240,7 +240,7 @@ class GpsImporterExporterTest {
         loadedTrackEntity!!
         // The summary is not part of the JSON, so copy it from the original for comparison.
         val expectedTrackEntity = gpsTrackEntity.copy(summary = loadedTrackEntity.summary)
-        assertThat(loadedTrackEntity).isEqualTo(expectedTrackEntity)
+        assertThat(loadedTrackEntity).diffIsEqualTo(expectedTrackEntity)
     }
 
     @Test
@@ -307,6 +307,6 @@ class GpsImporterExporterTest {
         loadedTrackEntity!!
         // The summary is not part of the JSON, so copy it from the original for comparison.
         val expectedTrackEntity = gpsTrackEntity.copy(summary = loadedTrackEntity.summary)
-        assertThat(loadedTrackEntity).isEqualTo(expectedTrackEntity)
+        assertThat(loadedTrackEntity).diffIsEqualTo(expectedTrackEntity)
     }
 }
