@@ -79,7 +79,10 @@ fun ObjectMapper.exportProtobuf() : ObjectMapper {
         override fun hasIgnoreMarker(m: AnnotatedMember): Boolean {
             // We avoid *OrBuilder() and *OrBuilderList() getters.
             // We also remove the "listCount" getters.
-            if (m.name.contains("OrBuilder") or m.name.endsWith("Count")) {
+            // We also remove the "stringBytes" getters.
+            if (m.name.contains("OrBuilder")
+                or m.name.endsWith("Count")
+                or m.name.endsWith("Bytes")) {
                 return true
             }
             return super.hasIgnoreMarker(m)
@@ -96,7 +99,6 @@ fun ObjectMapper.importProtobuf() : ObjectMapper {
         addDeserializer(LatLongData::class.java, LatLongDataDeserializer())
         addDeserializer(SpeedData::class.java, SpeedDataDeserializer())
         addDeserializer(GpsTrackEntity::class.java, GpsTrackEntityDeserializer())
-        addDeserializer(GpsTrackSummary::class.java, GpsTrackSummaryDeserializer())
     }
     registerModule(protoDeserializerModule)
 

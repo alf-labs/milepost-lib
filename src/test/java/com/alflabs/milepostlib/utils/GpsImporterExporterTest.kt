@@ -129,47 +129,47 @@ class GpsImporterExporterTest {
         assertThat(fakeFileOps.toString(file, Charsets.UTF_8).toTestString()).diffIsEqualTo(
             """
             {
-              "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
-              "updatedDateISO" : "2022-03-04T05:06:07Z",
-              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
-              "startLabel" : "Start Here",
               "endLabel" : "End There",
               "locationList" : {
-                "locations" : [ {
+                "locationsList" : [ {
+                  "flags" : 0,
                   "latLong" : {
-                    "timestampMillis" : 1577934245000,
                     "latitude" : 37.592879,
-                    "longitude" : -121.88799
-                  },
-                  "speed" : {
-                    "speedMps" : 4.4704
+                    "longitude" : -121.88799,
+                    "timestampMillis" : 1577934245000
                   },
                   "mp" : 35.63,
+                  "poiLabel" : "Sunol",
+                  "speed" : {
+                    "speedMps" : 4.4704
+                  }
+                }, {
                   "flags" : 0,
-                  "poiLabel" : "Sunol"
-                }, {
                   "latLong" : {
-                    "timestampMillis" : 1577934845000,
                     "latitude" : 37.598261,
-                    "longitude" : -121.921506
-                  },
-                  "flags" : 0
+                    "longitude" : -121.921506,
+                    "timestampMillis" : 1577934845000
+                  }
                 }, {
+                  "flags" : 1,
                   "latLong" : {
-                    "timestampMillis" : 1577935445000,
+                    "accuracy" : 2.44,
                     "latitude" : 37.578987,
                     "longitude" : -121.981725,
-                    "accuracy" : 2.44
-                  },
-                  "speed" : {
-                    "speedMps" : 8.9408
+                    "timestampMillis" : 1577935445000
                   },
                   "mp" : 29.0,
-                  "flags" : 1,
-                  "poiLabel" : "Niles"
+                  "poiLabel" : "Niles",
+                  "speed" : {
+                    "speedMps" : 8.9408
+                  }
                 } ]
-              }
+              },
+              "startLabel" : "Start Here",
+              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
+              "updatedDateISO" : "2022-03-04T05:06:07Z",
+              "uuid" : "test-uuid-1234"
             }
         """.trimIndent().toTestString())
     }
@@ -250,45 +250,45 @@ class GpsImporterExporterTest {
               "id" : 0,
               "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
-              "updatedDateISO" : "2022-03-04T05:06:07Z",
-              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
-              "startLabel" : "Start Here",
               "endLabel" : "End There",
               "locationList" : {
-                "locations" : [ {
+                "locationsList" : [ {
+                  "flags" : 0,
                   "latLong" : {
-                    "timestampMillis" : 1577934245000,
                     "latitude" : 37.592879,
-                    "longitude" : -121.88799
-                  },
-                  "speed" : {
-                    "speedMps" : 4.4704
+                    "longitude" : -121.88799,
+                    "timestampMillis" : 1577934245000
                   },
                   "mp" : 35.63,
+                  "poiLabel" : "Sunol",
+                  "speed" : {
+                    "speedMps" : 4.4704
+                  }
+                }, {
                   "flags" : 0,
-                  "poiLabel" : "Sunol"
-                }, {
                   "latLong" : {
-                    "timestampMillis" : 1577934845000,
                     "latitude" : 37.598261,
-                    "longitude" : -121.921506
-                  },
-                  "flags" : 0
+                    "longitude" : -121.921506,
+                    "timestampMillis" : 1577934845000
+                  }
                 }, {
+                  "flags" : 1,
                   "latLong" : {
                     "timestampMillis" : 1577935445000,
                     "latitude" : 37.578987,
                     "longitude" : -121.981725,
                     "accuracy" : 2.44
                   },
+                  "mp" : 29.0,
+                  "poiLabel" : "Niles",
                   "speed" : {
                     "speedMps" : 8.9408
-                  },
-                  "mp" : 29.0,
-                  "flags" : 1,
-                  "poiLabel" : "Niles"
+                  }
                 } ]
-              }
+              },
+              "updatedDateISO" : "2022-03-04T05:06:07Z",
+              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
+              "startLabel" : "Start Here"
             }
         """.trimIndent()
         val mockUri = mock<Uri>()

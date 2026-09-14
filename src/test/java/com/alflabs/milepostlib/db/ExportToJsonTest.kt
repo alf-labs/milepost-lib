@@ -40,10 +40,6 @@ class ExportToJsonTest {
                   "latitude" : 1.0,
                   "longitude" : 1.0,
                   "timestampMillis" : 0
-                },
-                "poiLabelBytes" : {
-                  "empty" : true,
-                  "validUtf8" : true
                 }
               }, {
                 "flags" : 0,
@@ -51,10 +47,6 @@ class ExportToJsonTest {
                   "latitude" : 2.0,
                   "longitude" : 2.0,
                   "timestampMillis" : 0
-                },
-                "poiLabelBytes" : {
-                  "empty" : true,
-                  "validUtf8" : true
                 }
               }, {
                 "flags" : 0,
@@ -62,10 +54,6 @@ class ExportToJsonTest {
                   "latitude" : 3.0,
                   "longitude" : 3.0,
                   "timestampMillis" : 0
-                },
-                "poiLabelBytes" : {
-                  "empty" : true,
-                  "validUtf8" : true
                 },
                 "speed" : {
                   "speedMps" : 1.0
@@ -118,7 +106,6 @@ class ExportToJsonTest {
             {
               "createdDateISO" : "2021-02-03T04:05:06Z",
               "endLabel" : "End There",
-              "id" : 123,
               "locationList" : {
                 "locationsList" : [ {
                   "flags" : 0,
@@ -126,10 +113,6 @@ class ExportToJsonTest {
                     "latitude" : 1.0,
                     "longitude" : 1.0,
                     "timestampMillis" : 0
-                  },
-                  "poiLabelBytes" : {
-                    "empty" : true,
-                    "validUtf8" : true
                   }
                 }, {
                   "flags" : 0,
@@ -137,10 +120,6 @@ class ExportToJsonTest {
                     "latitude" : 2.0,
                     "longitude" : 2.0,
                     "timestampMillis" : 0
-                  },
-                  "poiLabelBytes" : {
-                    "empty" : true,
-                    "validUtf8" : true
                   }
                 }, {
                   "flags" : 0,
@@ -149,22 +128,12 @@ class ExportToJsonTest {
                     "longitude" : 3.0,
                     "timestampMillis" : 0
                   },
-                  "poiLabelBytes" : {
-                    "empty" : true,
-                    "validUtf8" : true
-                  },
                   "speed" : {
                     "speedMps" : 1.0
                   }
                 } ]
               },
               "startLabel" : "Start Here",
-              "summary" : {
-                "durationS" : 1800.0,
-                "lengthM" : 2400.0,
-                "mpMax" : 42.0,
-                "mpMin" : 10.0
-              },
               "trackLabel" : "Track name",
               "updatedDateISO" : "2022-03-04T05:06:07Z",
               "uuid" : "test-uuid-1234"
@@ -174,6 +143,9 @@ class ExportToJsonTest {
 
         val importMapper = ObjectMapper().importProtobuf()
         val imported = importMapper.readValue(exported, GpsTrackEntity::class.java)
-        assertThat(imported.toTestString()).diffIsEqualTo(gpsTrackEntity.toTestString())
+        assertThat(imported.toTestString()).diffIsEqualTo(
+            gpsTrackEntity
+                .copy(id = 0, summary = null)
+                .toTestString())
     }
 }

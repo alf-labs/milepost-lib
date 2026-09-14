@@ -7,6 +7,7 @@ import com.alflabs.milepostlib.location.LocationDataList
 import com.alflabs.milepostlib.location.LocationDataListPojo
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonParser
@@ -22,6 +23,7 @@ import java.util.UUID
 data class GpsTrackEntity(
     // Note: according to the autoGenerate doc, setting the value to 0 forces it to be generated.
     @PrimaryKey(autoGenerate = true)
+    @JsonIgnore
     val id: Long = 0,
 
     // Mandatory UUID for this track.
@@ -48,6 +50,7 @@ data class GpsTrackEntity(
 
     // Optional summary info for list tracks fragment.
     @ColumnInfo
+    @JsonIgnore
     val summary: GpsTrackSummary? = null,
 
     // Actual location data (empty before first gps fix).

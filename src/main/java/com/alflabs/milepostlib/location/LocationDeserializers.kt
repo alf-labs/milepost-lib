@@ -10,8 +10,15 @@ class LocationDataListDeserializer : StdDeserializer<LocationDataList>(LocationD
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): LocationDataList {
         val node: JsonNode = p.codec.readTree(p)
         return locationDataList {
-            node.get("locationsList")?.forEach { elem ->
-                locations.add(ctxt.readTreeAsValue(elem, LocationData::class.java))
+            if (node.hasNonNull("locationsList")) {
+                node.get("locationsList")?.forEach { elem ->
+                    locations.add(ctxt.readTreeAsValue(elem, LocationData::class.java))
+                }
+            } else {
+                // "locations" is the legacy name for "locationsList"
+                node.get("locations")?.forEach { elem ->
+                    locations.add(ctxt.readTreeAsValue(elem, LocationData::class.java))
+                }
             }
         }
     }
@@ -26,6 +33,9 @@ class LocationDataDeserializer : StdDeserializer<LocationData>(LocationData::cla
             }
             if (node.hasNonNull("speed")) {
                 speed = ctxt.readTreeAsValue(node.get("speed"), SpeedData::class.java)
+            } else if (node.hasNonNull("speedBearing")) {
+                // "speedBearing" is the legacy name for "speed"
+                speed = ctxt.readTreeAsValue(node.get("speedBearing"), SpeedData::class.java)
             }
             if (node.hasNonNull("flags")) flags = node.get("flags").intValue()
             if (node.hasNonNull("mp")) {
