@@ -4,10 +4,6 @@ import android.os.Debug
 import android.os.SystemClock
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.alflabs.milepostlib.location.LatLongDataPojo
-import com.alflabs.milepostlib.location.LocationDataListPojo
-import com.alflabs.milepostlib.location.LocationDataPojo
-import com.alflabs.milepostlib.location.SpeedDataPojo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -129,7 +125,7 @@ class PojoPerformanceTest {
         assertThat(locCounter).isEqualTo(NUM_ENT * NUM_LOC)
     }
 
-    fun createLocList(numLoc: Int): LocationDataListPojo {
+    private fun createLocList(numLoc: Int): LocationDataListPojo {
         // Note: the code here is made to vaguely look like the one in LocationService.
         val locationList = mutableListOf<LocationDataPojo>()
 
@@ -158,3 +154,29 @@ class PojoPerformanceTest {
     }
 
 }
+
+private data class LocationDataListPojo(
+    val locations: List<LocationDataPojo>,
+)
+
+private data class LocationDataPojo(
+    val latLong: LatLongDataPojo,
+
+    val speed: SpeedDataPojo? = null,
+    val mp: Float? = null,
+    val flags: Int = 0,
+    val poiLabel: String? = null,
+)
+
+private data class LatLongDataPojo(
+    val timestampMillis: Long? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null,
+    val accuracy: Float? = null,
+)
+
+private data class SpeedDataPojo(
+    val speedMps: Float? = null,
+    val speedAcc: Float? = null,
+)
+

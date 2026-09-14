@@ -182,7 +182,7 @@ class GpsImporterExporterTest {
               "uuid" : "test-uuid-1234",
               "createdDateISO" : "2021-02-03T04:05:06Z",
               "updatedDateISO" : "2022-03-04T05:06:07Z",
-              "trackLabel" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
+              "label" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
               "startLabel" : "Start Here",
               "endLabel" : "End There",
               "locationList" : {

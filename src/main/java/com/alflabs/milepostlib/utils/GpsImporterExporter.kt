@@ -7,7 +7,6 @@ import com.alflabs.milepostlib.db.exportProtobuf
 import com.alflabs.milepostlib.db.importProtobuf
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.time.Instant

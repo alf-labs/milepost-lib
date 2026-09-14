@@ -4,12 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.alflabs.milepostlib.location.LocationDataList
-import com.alflabs.milepostlib.location.LocationDataListPojo
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonNode
@@ -40,6 +36,7 @@ data class GpsTrackEntity(
 
     // User label. Can be empty in which case we'll display "Track #id" as a label.
     @ColumnInfo
+    @param:JsonAlias("label")
     val trackLabel: String? = null,
 
     // Start and end labels.
@@ -64,52 +61,24 @@ data class GpsTrackEntity(
         }
         return trackLabel
     }
-
-    fun toPojo() = GpsTrackEntityPojo(
-        uuid = uuid,
-        createdDateISO = createdDateISO,
-        updatedDateISO = updatedDateISO,
-        trackLabel = trackLabel,
-        startLabel = startLabel,
-        endLabel = endLabel,
-        locationList = locationList?.let { LocationDataListPojo(it) },
-    )
-}
-
-/** A mirror of [GpsTrackEntity] for JSON import/export. */
-@JsonIgnoreProperties(value = ["id"])
-data class GpsTrackEntityPojo @JsonCreator constructor(
-    @param:JsonProperty("uuid")             val uuid: String,
-    @param:JsonProperty("createdDateISO")   val createdDateISO: String,
-    @param:JsonProperty("updatedDateISO")   val updatedDateISO: String? = null,
-    @param:JsonAlias("label")
-    @param:JsonProperty("trackLabel")       val trackLabel: String? = null,
-    @param:JsonProperty("startLabel")       val startLabel: String? = null,
-    @param:JsonProperty("endLabel")         val endLabel: String? = null,
-    @param:JsonProperty("locationList")     val locationList: LocationDataListPojo? = null,
-) {
-    fun toProto() = GpsTrackEntity(
-        id = 0,
-        uuid = uuid,
-        createdDateISO = createdDateISO,
-        updatedDateISO = updatedDateISO,
-        trackLabel = trackLabel,
-        startLabel = startLabel,
-        endLabel = endLabel,
-        summary = null,
-        locationList = locationList?.toProto(),
-    )
 }
 
 class GpsTrackEntityDeserializer : StdDeserializer<GpsTrackEntity>(GpsTrackEntity::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext): GpsTrackEntity {
         val node: JsonNode = p.codec.readTree(p)
         return GpsTrackEntity(
-            id = if (node.hasNonNull("id")) node.get("id").asLong() else 0L,
+            id = 0L, // "id" property is ignored, it's internal and should not be loaded.
             uuid = if (node.hasNonNull("uuid")) node.get("uuid").asText() else "",
             createdDateISO = if (node.hasNonNull("createdDateISO")) node.get("createdDateISO").asText() else "",
             updatedDateISO = if (node.hasNonNull("updatedDateISO")) node.get("updatedDateISO").asText() else null,
-            trackLabel = if (node.hasNonNull("trackLabel")) node.get("trackLabel").asText() else null,
+            trackLabel = if (node.hasNonNull("trackLabel")) {
+                node.get("trackLabel").asText()
+            } else  if (node.hasNonNull("label")) {
+                // legacy name for trackLabel
+                node.get("label").asText()
+            } else {
+                null
+            },
             startLabel = if (node.hasNonNull("startLabel")) node.get("startLabel").asText() else null,
             endLabel = if (node.hasNonNull("endLabel")) node.get("endLabel").asText() else null,
             summary = if (node.hasNonNull("summary")) ctxt.readTreeAsValue(node.get("summary"), GpsTrackSummary::class.java) else null,

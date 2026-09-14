@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertThat(appContext.packageName).isEqualTo("com.alflabs.milepost")
+        assertThat(appContext.packageName).isEqualTo("com.alflabs.milepostlib.test")
     }
 }
