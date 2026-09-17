@@ -119,37 +119,39 @@ class DocentImporterExporterTest {
 
     private val expectedJson = """
             {
-              "docentTrackUuid" : "test-uuid-456",
-              "userTitle" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
-              "createdDateISO" : "2021-02-03T04:05:06Z",
-              "lastUsedDateISO" : "2022-03-04T05:06:07Z",
-              "gpsTrackUuid" : "test-uuid-1234",
-              "gpsTrackName" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
               "audioDescriptors" : [ "audio 1 segment[0:42]", "audio 1 segment[2:24]", "audio 3 segment[0:42]" ],
+              "docentTrack" : {
+                "creationTime" : "2021-02-03T04:05:06Z",
+                "lastUsedTime" : "2022-03-04T05:06:07Z",
+                "userTitle" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
+                "uuid" : "test-uuid-456"
+              },
+              "gpsTrackName" : "  A fairly long Test+!@#$%^&*()!!=\\/<>.,;':\"[|]?-Track name 42 that is more than 64 characters  ",
+              "gpsTrackUuid" : "test-uuid-1234",
               "triggers" : [ {
                 "audioDescriptor" : "audio 1 segment[0:42]",
                 "includeInColdStart" : true,
-                "mpMin" : 10.0,
-                "mpMax" : 11.0,
                 "mpDirection" : {
                   "direction" : "ToHighMP"
-                }
+                },
+                "mpMax" : 11.0,
+                "mpMin" : 10.0
               }, {
                 "audioDescriptor" : "audio 1 segment[2:24]",
                 "includeInColdStart" : true,
-                "mpMin" : 20.0,
-                "mpMax" : 22.0,
                 "mpDirection" : {
                   "direction" : "Both"
-                }
+                },
+                "mpMax" : 22.0,
+                "mpMin" : 20.0
               }, {
                 "audioDescriptor" : "audio 3 segment[0:42]",
                 "includeInColdStart" : false,
-                "mpMin" : 30.0,
-                "mpMax" : 33.0,
                 "mpDirection" : {
                   "direction" : "ToLowMP"
-                }
+                },
+                "mpMax" : 33.0,
+                "mpMin" : 30.0
               } ]
             }
             """
@@ -169,8 +171,9 @@ class DocentImporterExporterTest {
         assertThat(file).isNotNull()
         file!!
         assertThat(file.path.replace('\\', '/')).endsWith("/docent test-uuid-456 A fairly long Test+ -Track name 42 that is more than 64 characte.json")
-        assertThat(fakeFileOps.toString(file, Charsets.UTF_8).replace("\r\n", "\n")).isEqualTo(
-            expectedJson.trimIndent().replace("\r\n", "\n"))
+        val actualJson = fakeFileOps.toString(file, Charsets.UTF_8)
+        assertThat(actualJson.toTestString()).diffIsEqualTo(
+            expectedJson.trimIndent().toTestString())
     }
 
     @Test
@@ -183,8 +186,8 @@ class DocentImporterExporterTest {
             on { contentResolver } doReturn mockContentResolver
         }
 
-        val validator = { validation: DocentImportValidationData ->
-            assertThat(validation.docentTrackUuid).isEqualTo("test-uuid-456")
+        val validator = { validation: DocentImportExportData ->
+            assertThat(validation.docentTrack.uuid).isEqualTo("test-uuid-456")
             assertThat(validation.gpsTrackUuid).isEqualTo("test-uuid-1234")
             assertThat(validation.gpsTrackName).isEqualTo("""  A fairly long Test+!@#$%^&*()!!=\/<>.,;':"[|]?-Track name 42 that is more than 64 characters  """)
             assertThat(validation.audioDescriptors).containsExactly(

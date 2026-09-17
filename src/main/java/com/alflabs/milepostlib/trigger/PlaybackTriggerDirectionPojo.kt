@@ -3,6 +3,7 @@ package com.alflabs.milepostlib.trigger
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 
+@Deprecated("rewrite this as Protobuf test and remove POJO")
 data class PlaybackTriggerDirectionPojo @JsonCreator constructor(
     @param:JsonProperty("direction") val direction: String
 ) {

@@ -4,14 +4,15 @@ import android.content.Context
 import android.net.Uri
 import com.alflabs.milepostlib.db.DocentTrackEntity
 import com.alflabs.milepostlib.db.GpsTrackEntity
+import com.alflabs.milepostlib.db.exportProtobuf
 import com.alflabs.milepostlib.fragments.docentTriggers.DocentTriggerItem
 import com.alflabs.milepostlib.trigger.PlaybackTriggerPojo
+import com.alflabs.milepostlib.db.importProtobuf
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import javax.inject.Inject
@@ -47,11 +48,8 @@ class DocentImporterExporter @Inject constructor(
 
         val exportedTriggers = triggersList.map { PlaybackTriggerPojo(it) }
 
-        val exported = DocentTrackEntityPojo(
-            docentTrackUuid = docentTrackEntity.uuid,
-            userTitle = docentTrackEntity.userTitle,
-            createdDateISO = docentTrackEntity.creationTime,
-            lastUsedDateISO = docentTrackEntity.lastUsedTime,
+        val exported = DocentImportExportData(
+            docentTrack = docentTrackEntity,
             gpsTrackUuid = gpsTrackEntity.uuid,
             gpsTrackName = gpsTrackEntity.displayTrackLabel(),
             audioDescriptors = uniqueDescriptors,
@@ -61,10 +59,10 @@ class DocentImporterExporter @Inject constructor(
         return try {
             // Use the cache directory for the export file
             val cacheDir = context.cacheDir
-            val file = File(cacheDir, "docent ${exported.docentTrackUuid}${sanitizeTitle(docentTrackEntity.userTitle)}.json")
+            val file = File(cacheDir, "docent ${docentTrackEntity.uuid}${sanitizeTitle(docentTrackEntity.userTitle)}.json")
             logger.d(TAG, "@@ createJsonExportFile: file = ${file.path}")
 
-            val objectMapper = ObjectMapper()
+            val objectMapper = ObjectMapper().exportProtobuf()
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, exported)
@@ -105,7 +103,7 @@ class DocentImporterExporter @Inject constructor(
     suspend fun loadDocentTrackEntityFromUri(
         context: Context,
         uri: Uri,
-        validator: suspend (DocentImportValidationData) -> DocentImportValidationResult,
+        validator: suspend (DocentImportExportData) -> DocentImportValidationResult,
     ): DocentImportResult? {
         logger.d(TAG, "loadDocentTrackEntityFromUri")
 
@@ -113,39 +111,29 @@ class DocentImporterExporter @Inject constructor(
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 val bytes = inputStream.readBytes()
 
-                val validated = bytes.inputStream().use { bytesStream ->
-                    // This mapper is special and must ignore a bunch of fields not present
-                    // in the destination POJO.
-                    val objectMapper = ObjectMapper()
-                    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                    val validation = objectMapper.readValue(
+                val (data, validated) = bytes.inputStream().use { bytesStream ->
+                    val objectMapper = ObjectMapper().importProtobuf()
+                    val data = objectMapper.readValue(
                         bytesStream,
-                        DocentImportValidationData::class.java)
+                        DocentImportExportData::class.java)
 
-                    validator(validation)
+                    Pair(data, validator(data))
                 }
 
-                if (validated.canContinue) {
-                    bytes.inputStream().use { bytesStream ->
-                        val objectMapper = ObjectMapper()
-                        val entity = objectMapper.readValue(
-                            bytesStream,
-                            DocentTrackEntityPojo::class.java)
-
-                        return DocentImportResult(
-                            validatorResult = validated,
-                            docentTrackEntity = entity.toProto(validated),
-                            triggerItems = entity.triggers.map {
-                                it.toItem(
-                                    docentTrackId = 0,
-                                    descriptorsToId = validated.descriptorsToId,
-                                    descriptorsToUri = validated.descriptorsToUri,
-                                )
-                            }
-                        )
-                    }
+                return if (validated.canContinue) {
+                    DocentImportResult(
+                        validatorResult = validated,
+                        docentTrackEntity = data.toEntity(validated),
+                        triggerItems = data.triggers.map {
+                            it.toItem(
+                                docentTrackId = 0,
+                                descriptorsToId = validated.descriptorsToId,
+                                descriptorsToUri = validated.descriptorsToUri,
+                            )
+                        }
+                    )
                 } else {
-                    return null
+                    null
                 }
             }
         } catch (e: Exception) {
@@ -158,33 +146,57 @@ class DocentImporterExporter @Inject constructor(
 
 /** A mirror of [DocentTrackEntity] for JSON import/export. */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-private data class DocentTrackEntityPojo @JsonCreator constructor(
-    @param:JsonProperty("docentTrackUuid") val docentTrackUuid: String,
-    @param:JsonProperty("userTitle") val userTitle: String? = null,
-    @param:JsonProperty("createdDateISO") val createdDateISO: String,
-    @param:JsonProperty("lastUsedDateISO") val lastUsedDateISO: String? = null,
+data class DocentImportExportData @JsonCreator constructor(
+    @param:JsonProperty("docentTrack") val docentTrack: DocentTrackEntity,
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
     @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
     @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
     @param:JsonProperty("triggers") val triggers: List<PlaybackTriggerPojo>,
 ) {
-    fun toProto(data: DocentImportValidationResult) = DocentTrackEntity(
+    fun toEntity(data: DocentImportValidationResult) = docentTrack.copy(
         id = 0,
-        uuid = docentTrackUuid,
-        userTitle = data.docentUserTitle.ifBlank { userTitle },
-        creationTime = createdDateISO,
-        lastUsedTime = lastUsedDateISO,
+        userTitle = data.docentUserTitle.ifBlank { docentTrack.userTitle ?: "" },
         gpsTrackId = data.gpsTrackId
     )
 }
 
-data class DocentImportValidationData @JsonCreator constructor(
-    @param:JsonProperty("docentTrackUuid") val docentTrackUuid: String,
-    @param:JsonProperty("userTitle") val userTitle: String,
-    @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
-    @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
-    @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
-)
+//// TBD we may not need this
+//private class DocentTrackExportInfoDeserializer : StdDeserializer<DocentTrackExportInfo>(DocentTrackExportInfo::class.java) {
+//    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): DocentTrackExportInfo {
+//        val node: JsonNode = p.codec.readTree(p)
+//        return DocentTrackExportInfo(
+//            docentTrack = ctxt.readTreeAsValue(node.get("docentTrack"), DocentTrackEntity::class.java),
+//            gpsTrackUuid = node.get("gpsTrackUuid").asText(),
+//            gpsTrackName = node.get("gpsTrackName").asText(),
+//            audioDescriptors = ctxt.readTreeAsValue(node.get("audioDescriptors"), ctxt.typeFactory.constructCollectionType(List::class.java, String::class.java)),
+//            triggers = ctxt.readTreeAsValue(node.get("triggers"), ctxt.typeFactory.constructCollectionType(List::class.java, PlaybackTriggerPojo::class.java))
+//        )
+//    }
+//}
+
+//data class DocentImportValidationData @JsonCreator constructor(
+//    @param:JsonProperty("docentTrack") val docentTrack: DocentTrackEntity,
+////    @param:JsonProperty("docentTrackUuid") val docentTrackUuid: String,
+////    @param:JsonProperty("userTitle") val userTitle: String,
+//    @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
+//    @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
+//    @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
+//)
+
+//// TBD we may not need this
+//private class DocentImportValidationDataDeserializer : StdDeserializer<DocentImportValidationData>(DocentImportValidationData::class.java) {
+//    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): DocentImportValidationData {
+//        val node: JsonNode = p.codec.readTree(p)
+//        val docentTrack = node.get("docentTrack")
+//        return DocentImportValidationData(
+//            docentTrackUuid = docentTrack.get("uuid").asText(),
+//            userTitle = if (docentTrack.hasNonNull("userTitle")) docentTrack.get("userTitle").asText() else "",
+//            gpsTrackUuid = node.get("gpsTrackUuid").asText(),
+//            gpsTrackName = node.get("gpsTrackName").asText(),
+//            audioDescriptors = ctxt.readTreeAsValue(node.get("audioDescriptors"), ctxt.typeFactory.constructCollectionType(List::class.java, String::class.java))
+//        )
+//    }
+//}
 
 data class DocentImportValidationResult(
     val canContinue: Boolean,

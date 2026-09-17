@@ -34,7 +34,7 @@ import com.alflabs.milepostlib.db.DocentTrackDao
 import com.alflabs.milepostlib.db.GpsTrackDao
 import com.alflabs.milepostlib.db.PlayTriggerDao
 import com.alflabs.milepostlib.fragments.audioSegments.AudioSegmentItem
-import com.alflabs.milepostlib.utils.DocentImportValidationData
+import com.alflabs.milepostlib.utils.DocentImportExportData
 import com.alflabs.milepostlib.utils.DocentImportValidationResult
 import com.alflabs.milepostlib.utils.DocentImporterExporter
 import com.alflabs.utils.ApiHelper
@@ -247,8 +247,8 @@ class DocentTracksFragment : Fragment() {
         }
     }
 
-    private suspend fun importJsonValidator(data: DocentImportValidationData): DocentImportValidationResult {
-        val docentId = docentTrackDao.getIdByUuid(data.docentTrackUuid)
+    private suspend fun importJsonValidator(data: DocentImportExportData): DocentImportValidationResult {
+        val docentId = docentTrackDao.getIdByUuid(data.docentTrack.uuid)
         val gpsTrackId = gpsTrackDao.getIdByUuid(data.gpsTrackUuid)
         val gpsTracks = gpsTrackDao.getItemsAsync()
         val audioSegments = audioSegmentDao.getItemsAsync()
@@ -264,7 +264,8 @@ class DocentTracksFragment : Fragment() {
                 dialogView.findViewById<AutoCompleteTextView>(R.id.gps_track_dropdown)
             val audioSegmentsContainer = dialogView.findViewById<LinearLayout>(R.id.audio_segments)
 
-            userTitleText.setText(data.userTitle)
+            val dataUserTitle = data.docentTrack.userTitle?.trim() ?: "Untitled"
+            userTitleText.setText(dataUserTitle)
             gpsTrackLabel.hint = "GPS Track: ${data.gpsTrackName}"
 
             replaceExistingCheckbox.isChecked = false
@@ -332,7 +333,7 @@ class DocentTracksFragment : Fragment() {
                             && docentId > 0
 
                     var newUserTitle = userTitleText.text.toString().trim()
-                    if (newUserTitle == data.userTitle.trim()) {
+                    if (newUserTitle == dataUserTitle) {
                         newUserTitle = ""
                     }
 

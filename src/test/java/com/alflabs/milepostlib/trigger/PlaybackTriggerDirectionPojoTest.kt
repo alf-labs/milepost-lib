@@ -3,6 +3,7 @@ package com.alflabs.milepostlib.trigger
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
+@Deprecated("rewrite this as Protobuf test")
 class PlaybackTriggerDirectionPojoTest {
 
     @Test

@@ -2,7 +2,6 @@ package com.alflabs.milepostlib.trigger
 
 import com.alflabs.milepostlib.db.PlayTriggerEntity
 import com.alflabs.milepostlib.fragments.docentTriggers.DocentTriggerItem
-import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 

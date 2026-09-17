@@ -8,10 +8,14 @@ import com.alflabs.milepostlib.location.latLongData
 import com.alflabs.milepostlib.location.locationData
 import com.alflabs.milepostlib.location.locationDataList
 import com.alflabs.milepostlib.location.speedData
+import com.alflabs.milepostlib.trigger.PlaybackTriggerDirection
+import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
+import com.alflabs.milepostlib.trigger.playbackTriggerMetadata
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
+import java.util.UUID
 import kotlin.collections.forEach
 
 class LocationDataListDeserializer : StdDeserializer<LocationDataList>(LocationDataList::class.java) {
@@ -83,6 +87,55 @@ class SpeedDataDeserializer : StdDeserializer<SpeedData>(SpeedData::class.java) 
                 val value = node.get("speedAcc").floatValue()
                 if (value != 0f) speedAcc = value
             }
+        }
+    }
+}
+
+class PlayTriggerEntityDeserializer : StdDeserializer<PlayTriggerEntity>(PlayTriggerEntity::class.java) {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): PlayTriggerEntity {
+        val node: JsonNode = p.codec.readTree(p)
+        return PlayTriggerEntity(
+            audioSegmentId = node.get("audioSegmentId").asLong(),
+            docentTrackId = node.get("docentTrackId").asLong(),
+            playbackTrigger = if (node.hasNonNull("playbackTrigger")) {
+                ctxt.readTreeAsValue(node.get("playbackTrigger"), PlaybackTriggerMetadata::class.java)
+            } else null
+        )
+    }
+}
+
+class DocentTrackEntityDeserializer : StdDeserializer<DocentTrackEntity>(DocentTrackEntity::class.java) {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): DocentTrackEntity {
+        val node: JsonNode = p.codec.readTree(p)
+        return DocentTrackEntity(
+            uuid = if (node.hasNonNull("uuid")) node.get("uuid").asText() else UUID.randomUUID().toString(),
+            userTitle = if (node.hasNonNull("userTitle")) node.get("userTitle").asText() else null,
+            creationTime = if (node.hasNonNull("creationTime")) node.get("creationTime").asText() else "",
+            lastUsedTime = if (node.hasNonNull("lastUsedTime")) node.get("lastUsedTime").asText() else null,
+            gpsTrackId = if (node.hasNonNull("gpsTrackId")) node.get("gpsTrackId").asLong() else 0L
+        )
+    }
+}
+
+class PlaybackTriggerMetadataDeserializer : StdDeserializer<PlaybackTriggerMetadata>(PlaybackTriggerMetadata::class.java) {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): PlaybackTriggerMetadata {
+        val node: JsonNode = p.codec.readTree(p)
+        return playbackTriggerMetadata {
+            if (node.hasNonNull("includeInColdStart")) includeInColdStart = node.get("includeInColdStart").asBoolean()
+            if (node.hasNonNull("mpMin")) mpMin = node.get("mpMin").floatValue()
+            if (node.hasNonNull("mpMax")) mpMax = node.get("mpMax").floatValue()
+            if (node.hasNonNull("mpDirection")) {
+                mpDirection = PlaybackTriggerDirection.valueOf(node.get("mpDirection").asText())
+            }
+        }
+    }
+}
+
+class AudioSegmentMetadataDeserializer : StdDeserializer<AudioSegmentMetadata>(AudioSegmentMetadata::class.java) {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): AudioSegmentMetadata {
+        val node: JsonNode = p.codec.readTree(p)
+        return audioSegmentMetadata {
+            if (node.hasNonNull("durationMs")) durationMs = node.get("durationMs").asLong()
         }
     }
 }

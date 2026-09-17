@@ -4,6 +4,7 @@ import com.alflabs.milepostlib.location.LatLongData
 import com.alflabs.milepostlib.location.LocationData
 import com.alflabs.milepostlib.location.LocationDataList
 import com.alflabs.milepostlib.location.SpeedData
+import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
@@ -95,6 +96,10 @@ fun ObjectMapper.importProtobuf() : ObjectMapper {
         addDeserializer(LatLongData::class.java, LatLongDataDeserializer())
         addDeserializer(SpeedData::class.java, SpeedDataDeserializer())
         addDeserializer(GpsTrackEntity::class.java, GpsTrackEntityDeserializer())
+        addDeserializer(PlayTriggerEntity::class.java, PlayTriggerEntityDeserializer())
+        addDeserializer(DocentTrackEntity::class.java, DocentTrackEntityDeserializer())
+        addDeserializer(PlaybackTriggerMetadata::class.java, PlaybackTriggerMetadataDeserializer())
+        addDeserializer(AudioSegmentMetadata::class.java, AudioSegmentMetadataDeserializer())
     }
     registerModule(protoDeserializerModule)
 
