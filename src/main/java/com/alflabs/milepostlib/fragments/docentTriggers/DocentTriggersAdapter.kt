@@ -64,8 +64,8 @@ class DocentTriggersAdapter(
 
         fun bind(item: DocentTriggerItem, isSelected: Boolean) {
             val trigger = item.playbackTrigger
-            binding.triggerTitle.text = if (item.descriptor.isNotEmpty()) {
-                AudioSegmentItem.toDisplayTitle(item.descriptor)
+            binding.triggerTitle.text = if (item.audioDescriptor.isNotEmpty()) {
+                AudioSegmentItem.toDisplayTitle(item.audioDescriptor)
             } else {
                 "Unknown Audio ${item.audioSegmentId}"
             }

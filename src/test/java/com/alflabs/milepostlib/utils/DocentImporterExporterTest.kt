@@ -70,7 +70,7 @@ class DocentImporterExporterTest {
                 audioSegmentId = 1,
                 persistableUri = "Uri-1",
                 docentTrackId = 42L,
-                descriptor = audioFiles[1]!!,
+                audioDescriptor = audioFiles[1]!!,
                 playbackTrigger = playbackTriggerMetadata {
                     includeInColdStart = true
                     mpMin = 10f
@@ -83,7 +83,7 @@ class DocentImporterExporterTest {
                 audioSegmentId = 2,
                 persistableUri = "Uri-2",
                 docentTrackId = 42L,
-                descriptor = audioFiles[2]!!,
+                audioDescriptor = audioFiles[2]!!,
                 playbackTrigger = playbackTriggerMetadata {
                     includeInColdStart = true
                     mpMin = 20f
@@ -96,7 +96,7 @@ class DocentImporterExporterTest {
                 audioSegmentId = 3,
                 persistableUri = "Uri-3",
                 docentTrackId = 42L,
-                descriptor = audioFiles[3]!!,
+                audioDescriptor = audioFiles[3]!!,
                 playbackTrigger = playbackTriggerMetadata {
                     includeInColdStart = false
                     mpMin = 30f
@@ -130,28 +130,28 @@ class DocentImporterExporterTest {
               "gpsTrackUuid" : "test-uuid-1234",
               "triggers" : [ {
                 "audioDescriptor" : "audio 1 segment[0:42]",
-                "includeInColdStart" : true,
-                "mpDirection" : {
-                  "direction" : "ToHighMP"
-                },
-                "mpMax" : 11.0,
-                "mpMin" : 10.0
+                "playbackTrigger" : {
+                  "includeInColdStart" : true,
+                  "mpDirection" : "DIRECTION_TO_HIGHER_MP",
+                  "mpMax" : 11.0,
+                  "mpMin" : 10.0
+                }
               }, {
                 "audioDescriptor" : "audio 1 segment[2:24]",
-                "includeInColdStart" : true,
-                "mpDirection" : {
-                  "direction" : "Both"
-                },
-                "mpMax" : 22.0,
-                "mpMin" : 20.0
+                "playbackTrigger" : {
+                  "includeInColdStart" : true,
+                  "mpDirection" : "DIRECTION_UNSPECIFIED",
+                  "mpMax" : 22.0,
+                  "mpMin" : 20.0
+                }
               }, {
                 "audioDescriptor" : "audio 3 segment[0:42]",
-                "includeInColdStart" : false,
-                "mpDirection" : {
-                  "direction" : "ToLowMP"
-                },
-                "mpMax" : 33.0,
-                "mpMin" : 30.0
+                "playbackTrigger" : {
+                  "includeInColdStart" : false,
+                  "mpDirection" : "DIRECTION_TO_LOWER_MP",
+                  "mpMax" : 33.0,
+                  "mpMin" : 30.0
+                }
               } ]
             }
             """

@@ -34,7 +34,7 @@ data class DocentPlaybackItem(
         triggerId = editorItem.id,
         audioSegmentId = editorItem.audioSegmentId,
         playbackTrigger = editorItem.playbackTrigger,
-        descriptor = editorItem.descriptor,
+        descriptor = editorItem.audioDescriptor,
         persistableUri = editorItem.persistableUri,
     )
 

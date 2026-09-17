@@ -22,7 +22,10 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
 import com.google.protobuf.MessageLite
 
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+
 fun ObjectMapper.exportProtobuf() : ObjectMapper {
+    registerKotlinModule()
     setSerializationInclusion(JsonInclude.Include.NON_NULL)
 
     // For unit tests, we need to enforce sorting of keys and properties.
@@ -77,9 +80,11 @@ fun ObjectMapper.exportProtobuf() : ObjectMapper {
             // We avoid *OrBuilder() and *OrBuilderList() getters.
             // We also remove the "listCount" getters.
             // We also remove the "stringBytes" getters.
+            // We also remove the "enumValue" getters.
             if (m.name.contains("OrBuilder")
                 or m.name.endsWith("Count")
-                or m.name.endsWith("Bytes")) {
+                or m.name.endsWith("Bytes")
+                or m.name.endsWith("Value")) {
                 return true
             }
             return super.hasIgnoreMarker(m)
@@ -90,6 +95,7 @@ fun ObjectMapper.exportProtobuf() : ObjectMapper {
 }
 
 fun ObjectMapper.importProtobuf() : ObjectMapper {
+    registerKotlinModule()
     val protoDeserializerModule = SimpleModule().apply {
         addDeserializer(LocationDataList::class.java, LocationDataListDeserializer())
         addDeserializer(LocationData::class.java, LocationDataDeserializer())

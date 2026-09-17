@@ -6,7 +6,6 @@ import com.alflabs.milepostlib.db.DocentTrackEntity
 import com.alflabs.milepostlib.db.GpsTrackEntity
 import com.alflabs.milepostlib.db.exportProtobuf
 import com.alflabs.milepostlib.fragments.docentTriggers.DocentTriggerItem
-import com.alflabs.milepostlib.trigger.PlaybackTriggerPojo
 import com.alflabs.milepostlib.db.importProtobuf
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
@@ -44,9 +43,9 @@ class DocentImporterExporter @Inject constructor(
         }
 
         // Creates a sorted list of unique audio file names used by all triggers.
-        val uniqueDescriptors = triggersList.map { it.descriptor }.distinct().sorted()
+        val uniqueDescriptors = triggersList.map { it.audioDescriptor }.distinct().sorted()
 
-        val exportedTriggers = triggersList.map { PlaybackTriggerPojo(it) }
+        val exportedTriggers = triggersList.map { it }
 
         val exported = DocentImportExportData(
             docentTrack = docentTrackEntity,
@@ -125,7 +124,7 @@ class DocentImporterExporter @Inject constructor(
                         validatorResult = validated,
                         docentTrackEntity = data.toEntity(validated),
                         triggerItems = data.triggers.map {
-                            it.toItem(
+                             it.toItem(
                                 docentTrackId = 0,
                                 descriptorsToId = validated.descriptorsToId,
                                 descriptorsToUri = validated.descriptorsToUri,
@@ -151,7 +150,7 @@ data class DocentImportExportData @JsonCreator constructor(
     @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
     @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
     @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
-    @param:JsonProperty("triggers") val triggers: List<PlaybackTriggerPojo>,
+    @param:JsonProperty("triggers") val triggers: List<DocentTriggerItem>,
 ) {
     fun toEntity(data: DocentImportValidationResult) = docentTrack.copy(
         id = 0,
