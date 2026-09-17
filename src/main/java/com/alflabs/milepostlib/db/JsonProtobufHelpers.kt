@@ -99,13 +99,7 @@ fun ObjectMapper.importProtobuf() : ObjectMapper {
     val protoDeserializerModule = SimpleModule().apply {
         addDeserializer(LocationDataList::class.java, LocationDataListDeserializer())
         addDeserializer(LocationData::class.java, LocationDataDeserializer())
-        addDeserializer(LatLongData::class.java, LatLongDataDeserializer())
         addDeserializer(SpeedData::class.java, SpeedDataDeserializer())
-        addDeserializer(GpsTrackEntity::class.java, GpsTrackEntityDeserializer())
-        addDeserializer(PlayTriggerEntity::class.java, PlayTriggerEntityDeserializer())
-        addDeserializer(DocentTrackEntity::class.java, DocentTrackEntityDeserializer())
-        addDeserializer(PlaybackTriggerMetadata::class.java, PlaybackTriggerMetadataDeserializer())
-        addDeserializer(AudioSegmentMetadata::class.java, AudioSegmentMetadataDeserializer())
     }
     registerModule(protoDeserializerModule)
 

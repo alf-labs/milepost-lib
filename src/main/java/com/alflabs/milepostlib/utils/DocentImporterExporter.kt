@@ -143,7 +143,7 @@ class DocentImporterExporter @Inject constructor(
 }
 
 
-/** A mirror of [DocentTrackEntity] for JSON import/export. */
+/** A variation of [DocentTrackEntity] suitable for JSON import/export. */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DocentImportExportData @JsonCreator constructor(
     @param:JsonProperty("docentTrack") val docentTrack: DocentTrackEntity,
@@ -158,44 +158,6 @@ data class DocentImportExportData @JsonCreator constructor(
         gpsTrackId = data.gpsTrackId
     )
 }
-
-//// TBD we may not need this
-//private class DocentTrackExportInfoDeserializer : StdDeserializer<DocentTrackExportInfo>(DocentTrackExportInfo::class.java) {
-//    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): DocentTrackExportInfo {
-//        val node: JsonNode = p.codec.readTree(p)
-//        return DocentTrackExportInfo(
-//            docentTrack = ctxt.readTreeAsValue(node.get("docentTrack"), DocentTrackEntity::class.java),
-//            gpsTrackUuid = node.get("gpsTrackUuid").asText(),
-//            gpsTrackName = node.get("gpsTrackName").asText(),
-//            audioDescriptors = ctxt.readTreeAsValue(node.get("audioDescriptors"), ctxt.typeFactory.constructCollectionType(List::class.java, String::class.java)),
-//            triggers = ctxt.readTreeAsValue(node.get("triggers"), ctxt.typeFactory.constructCollectionType(List::class.java, PlaybackTriggerPojo::class.java))
-//        )
-//    }
-//}
-
-//data class DocentImportValidationData @JsonCreator constructor(
-//    @param:JsonProperty("docentTrack") val docentTrack: DocentTrackEntity,
-////    @param:JsonProperty("docentTrackUuid") val docentTrackUuid: String,
-////    @param:JsonProperty("userTitle") val userTitle: String,
-//    @param:JsonProperty("gpsTrackUuid") val gpsTrackUuid: String,
-//    @param:JsonProperty("gpsTrackName") val gpsTrackName: String,
-//    @param:JsonProperty("audioDescriptors") val audioDescriptors: List<String>,
-//)
-
-//// TBD we may not need this
-//private class DocentImportValidationDataDeserializer : StdDeserializer<DocentImportValidationData>(DocentImportValidationData::class.java) {
-//    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): DocentImportValidationData {
-//        val node: JsonNode = p.codec.readTree(p)
-//        val docentTrack = node.get("docentTrack")
-//        return DocentImportValidationData(
-//            docentTrackUuid = docentTrack.get("uuid").asText(),
-//            userTitle = if (docentTrack.hasNonNull("userTitle")) docentTrack.get("userTitle").asText() else "",
-//            gpsTrackUuid = node.get("gpsTrackUuid").asText(),
-//            gpsTrackName = node.get("gpsTrackName").asText(),
-//            audioDescriptors = ctxt.readTreeAsValue(node.get("audioDescriptors"), ctxt.typeFactory.constructCollectionType(List::class.java, String::class.java))
-//        )
-//    }
-//}
 
 data class DocentImportValidationResult(
     val canContinue: Boolean,
