@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 
 @Entity(
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 )
 data class PlayTriggerEntity(
     @PrimaryKey(autoGenerate = true)
+    @JsonIgnore
     val id: Long = 0,
 
     @ColumnInfo(index = true)

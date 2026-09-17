@@ -1,5 +1,13 @@
-package com.alflabs.milepostlib.location
+package com.alflabs.milepostlib.db
 
+import com.alflabs.milepostlib.location.LatLongData
+import com.alflabs.milepostlib.location.LocationData
+import com.alflabs.milepostlib.location.LocationDataList
+import com.alflabs.milepostlib.location.SpeedData
+import com.alflabs.milepostlib.location.latLongData
+import com.alflabs.milepostlib.location.locationData
+import com.alflabs.milepostlib.location.locationDataList
+import com.alflabs.milepostlib.location.speedData
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonNode
@@ -56,7 +64,8 @@ class LatLongDataDeserializer : StdDeserializer<LatLongData>(LatLongData::class.
         return latLongData {
             if (node.hasNonNull("latitude")) latitude = node.get("latitude").asDouble()
             if (node.hasNonNull("longitude")) longitude = node.get("longitude").asDouble()
-            if (node.hasNonNull("timestampMillis")) timestampMillis = node.get("timestampMillis").asLong()
+            if (node.hasNonNull("timestampMillis")) timestampMillis =
+                node.get("timestampMillis").asLong()
             if (node.hasNonNull("accuracy")) {
                 val value = node.get("accuracy").floatValue()
                 if (value != 0f) accuracy = value

@@ -1,13 +1,9 @@
 package com.alflabs.milepostlib.db
 
 import com.alflabs.milepostlib.location.LatLongData
-import com.alflabs.milepostlib.location.LatLongDataDeserializer
 import com.alflabs.milepostlib.location.LocationData
-import com.alflabs.milepostlib.location.LocationDataDeserializer
 import com.alflabs.milepostlib.location.LocationDataList
-import com.alflabs.milepostlib.location.LocationDataListDeserializer
 import com.alflabs.milepostlib.location.SpeedData
-import com.alflabs.milepostlib.location.SpeedDataDeserializer
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
