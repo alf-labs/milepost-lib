@@ -55,6 +55,7 @@ class OpGpsPlayback @AssistedInject constructor(
     private var lastIndex = -1
     private var lastDirection = MpDirection.UNKNOWN
     private var simulateGps = -1
+    private var simulateGpsFactor = 1.0f
 
     init {
         logger.d(TAG, "init: ${gpsTrack.id}")
@@ -70,6 +71,7 @@ class OpGpsPlayback @AssistedInject constructor(
     }
 
     suspend fun initAsync() {
+        simulateGpsFactor = appSettings.simulateGpsFactor()
         simulateGps = when(appSettings.simulateGps()) {
             "from_start" -> 1
             "from_end" -> 2

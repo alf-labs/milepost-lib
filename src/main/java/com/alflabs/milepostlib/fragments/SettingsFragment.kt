@@ -88,6 +88,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 text
             }
         }
+
+        val simulateGpsFactor = findPreference<EditTextPreference>(AppSettings.SIMULATE_GPS_FACTOR.name)
+        simulateGpsFactor?.setOnBindEditTextListener { editText ->
+            editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+
     }
 
     override fun onCreateView(

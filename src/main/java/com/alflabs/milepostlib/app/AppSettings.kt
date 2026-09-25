@@ -43,6 +43,7 @@ class AppSettings @Inject constructor(
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
 
         val SIMULATE_GPS = stringPreferencesKey("simulate_gps")
+        val SIMULATE_GPS_FACTOR = floatPreferencesKey("simulate_gps_factor")
 
         val USE_LOCK_TASK = booleanPreferencesKey("use_lock_task")
         val HIDE_SYSTEM_BARS = booleanPreferencesKey("hide_system_bars")
@@ -128,6 +129,11 @@ class AppSettings @Inject constructor(
     suspend fun simulateGps(): String {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getString(SIMULATE_GPS.name, "none")
+    }
+
+    suspend fun simulateGpsFactor(): Float {
+        val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
+        return adapter.getFloat(SIMULATE_GPS_FACTOR.name, 1.0f)
     }
 
     suspend fun useUsbAudio(): Boolean {

@@ -71,6 +71,13 @@
                 app:useSimpleSummaryProvider="true"
                 />
 
+        <EditTextPreference
+                app:key="simulate_gps_factor"
+                app:title="Speed factor for Simulated GPS (1x, 2x, etc)"
+                app:defaultValue="1"
+                android:inputType="number"
+                />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="GPS Track Recording">
