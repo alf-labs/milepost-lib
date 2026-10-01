@@ -3,11 +3,12 @@
     <title>About Milepost Docent</title>
     <style type="text/css">
         /* light theme */
-        body      { color: back;    }
+        body      { color: black;   }
         a:link    { color: darkblue;}
         a:visited { color: green;   }
         a:hover   { color: #8B8000; } /* dark yellow */
         h3        { color: #C76E00; } /* dark orange */
+        h4        { color: #9C5100; margin-bottom: 4px; }
 
         /* dark theme */
         @media (prefers-color-scheme: dark) {
@@ -16,31 +17,135 @@
             a:visited { color: green;  }
             a:hover   { color: yellow; }
             h3        { color: orange; }
+            h4        { color: #FFB366; margin-bottom: 4px; }
         }
+
+        ul { margin-top: 4px; padding-left: 20px; }
+        li { margin-bottom: 4px; }
     </style>
 </head>
 <body>
 <img id="app_icon" src="" align="right" />
 <b>Milepost Docent</b>
-is an Android application that automates docent annoucement for
+is an Android application that automates docent announcements for
 a heritage railway such as living history museums operating historic steam and diesel trains.
-
-A GPS track is captured that corresponds to a train scheduled track, and mileposts numbers are
-associated with the GPS track. The app automatically computes the train's milepost based  on
-its location on the expected track.
-
-Pre-recorded docent audio segments are then programmed to play along at specific mileposts
+<p>
+A GPS track is captured that corresponds to a train's scheduled route, and milepost numbers are
+associated with points along the track. The app automatically computes the train's current milepost based on
+its location relative to the expected track.
+</p>
+<p>
+Pre-recorded docent audio segments are then programmed to play automatically at specific mileposts and travel directions
 as the train progresses on its journey.
+</p>
 
 <h3>Usage</h3>
 
-TODO document the different screens:
-- adding audio segments
-- recording a GPS track
-- editing of the GPS track mileposts
-- programming a docent track by adding triggers mapping an audio segment with a specific
-  milepost range and direction.
-- playback of a docent track.
+<h4>1. Adding Audio Segments</h4>
+
+<p>
+Pre-recorded docent audio segments should be stored on the device.
+There are many apps on Android that let you record audio files, or you can record them separately
+using audio equipment and transfer them to the Android device via USB file transfer or online cloud
+services.
+</p>
+<p>
+Once the files are copied on the Android device, they need to be registered with the Milepost application:
+</p>
+
+<ul>
+    <li>Navigate to <b>Audio Segments</b> from the navigation menu.</li>
+    <li>Tap the <b>+</b> button (or select <i>Add File</i> from the 3-dot menu) to pick audio files stored on your device using Android's system document picker.</li>
+    <li>The app requests persistent read permissions, checks the audio format and duration, and registers the file reference.</li>
+    <li>Use the list controls to preview audio playback or remove file references.</li>
+    <li>Red indicators highlight stale or missing file references -- this happens if the audio files are
+        moved, renamed, or deleted.</li>
+</ul>
+
+<h4>2. Recording a GPS Track</h4>
+
+<p>
+    At least one GPS track should be captured that corresponds to the train's scheduled route.
+    When a train operates as a "back-and-forth shuttle", that is going from station A to station
+    B and then reversing on the <i>same</i> route, you should only capture one of the directions on the
+    route -- later, when programming docent annoucements, you'll be able to tailor them to the
+    desired direction.
+</p>
+
+<ul>
+    <li>Navigate to <b>Record GPS Track</b>.</li>
+    <li>Ensure location permissions are granted. The app can use internal device GPS or an external USB OTG / Bluetooth GPS receiver (configured in <i>Settings</i>).</li>
+    <li>Tap <b>Start</b> to begin logging GPS track points along the railway route. Live position, speed, and signal accuracy are displayed on the map.</li>
+    <li>Tap <b>Stop</b> when finished. The app saves the GPS track and automatically opens the review screen for editing.</li>
+</ul>
+
+<h4>3. Reviewing & Editing GPS Track Mileposts</h4>
+
+<ul>
+    <li>Navigate to <b>Milepost GPS Tracks</b> to view recorded tracks.</li>
+    <li>Tap a track to open <b>Review GPS Track</b>.</li>
+</ul>
+
+<p>
+    In this step, you annotate a recorded GPS track to add Milepost numbers.
+    You can also add <i>points of interest</i> on the track -- typically stations or noteworthy
+    places that can later be used to trigger docent annoucements.
+</p>
+<p>
+    Each track has a <i>Start Label</i> and an <i>End Label</i>. These actually represent the
+    label of <i>travel direction</i> -- for example if "End Label" is set to "Westbound" and
+    the train travels <i>towards</i> the End of the GPS track, its journey will be described
+    as "the westbound direction" when displaying the train's direction.
+    <br/>
+    As most railroads follow a roughly cardinal direction, the recorded GPS path is analyzed
+    the first time and the Start and End labels are set accordingly.
+</p>
+
+
+<ul>
+    <li>Tap the track title or top header to set the track label, the start direction label, the end direction label, and the initial/ending milepost values.</li>
+    <li>Tap any line in the GPS track to display its location on the map (visible only in landscape mode).</li>
+    <li>The "MP" number is the milepost number associated with a given GPS point.</li>
+    <li>The "MP" number is displayed in bold when it has been set by the user.</li>
+    <li>The "MP" number is displayed in italics when it is automatically estimated.</li>
+    <li>Tap on the MP number (bold or italic) to edit the milepost:
+    <ul>
+        <li>Set or change the MP number.</li>
+        <li>Enter a <b>Point of Interest</b> label.</li>
+        <li>Ignore points to flag as inaccurate location points so they are excluded from calculations.</li>
+    </ul></li>
+</ul>
+
+<h4>4. Programming a Docent Track</h4>
+<ul>
+    <li>From the <b>Review GPS Track</b> screen, select <b>Create Docent Track</b> from the action menu (or manage existing tracks under <b>Docent Tracks</b>).</li>
+    <li>In <b>Docent Triggers</b>, tap the track title to customize its label, then tap <b>+</b> to add play triggers:
+        <ul>
+            <li><b>Audio File</b>: Select a registered audio segment to associate with this trigger.</li>
+            <li><b>Milepost Range</b>: Define the start (<i>MP Min</i>) and end (<i>MP Max</i>) mileposts for the trigger window.</li>
+            <li><b>Travel Direction</b>: Choose whether the trigger activates when traveling <i>Towards Higher MP</i>, <i>Towards Lower MP</i>, or in <i>Both</i> directions.</li>
+            <li><b>Cold Start</b>: Choose whether the trigger can activate if playback starts mid-route within the trigger range.</li>
+        </ul>
+    </li>
+    <li>Review the estimated playback duration and track coverage overlaid with estimated train speeds.</li>
+    <li>Export or import docent track configurations via the JSON action menu options.</li>
+</ul>
+
+<h4>5. Playback of a Docent Track</h4>
+<ul>
+    <li>Navigate to <b>Playback Docent Track</b>.</li>
+    <li>Tap <b>Start</b> to begin live docent operation during a train journey.</li>
+    <li>The app tracks the train's position in real-time, calculates the current milepost and direction of travel, and automatically plays scheduled audio segments as the train enters each trigger range.</li>
+    <li>Monitor live progress on the interactive map, linear track view, and active trigger list.</li>
+    <li>Use on-screen trigger controls (<i>Force Play</i>, <i>Pause</i>, <i>Unpause</i>) to manually override or pause announcements as needed.</li>
+</ul>
+
+<h4>6. Simulation, Testing & Settings</h4>
+<ul>
+    <li><b>Playback GPS Track</b>: Simulates train movement along a recorded GPS track to test docent track triggers and audio timing without being on a physical train.</li>
+    <li><b>Test Sensors</b>: Inspect live GPS sensor data and fix accuracy without recording.</li>
+    <li><b>Settings</b>: Toggle between Imperial (miles, mph) and Metric (km, m/s) units, set GPS distance/speed threshold filters, configure external USB OTG GPS devices, adjust simulation speed factors, or enable lock task / kiosk mode.</li>
+</ul>
 
 
 <center>
