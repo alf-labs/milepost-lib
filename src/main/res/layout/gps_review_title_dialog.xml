@@ -22,7 +22,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Start Label">
+        android:hint="Label Direction toward Start">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/start_label_edittext"
@@ -63,7 +63,7 @@
     <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="End Label">
+            android:hint="Label Direction toward End">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/end_label_edittext"

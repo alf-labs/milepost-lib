@@ -92,13 +92,13 @@ Once the files are copied on the Android device, they need to be registered with
     places that can later be used to trigger docent annoucements.
 </p>
 <p>
-    Each track has a <i>Start Label</i> and an <i>End Label</i>. These actually represent the
-    label of <i>travel direction</i> -- for example if "End Label" is set to "Westbound" and
-    the train travels <i>towards</i> the End of the GPS track, its journey will be described
-    as "the westbound direction" when displaying the train's direction.
+    Each track has a <i>Label Direction toward Start</i> and a <i>Label Direction toward End</i>.
+    These actually are the labels used to express the <i>travel direction</i> toward the start or
+    the end of the GPS track, respectively.
     <br/>
     As most railroads follow a roughly cardinal direction, the recorded GPS path is analyzed
-    the first time and the Start and End labels are set accordingly.
+    the first time and the<i>Label Direction toward Start and End</i> are initally set according to
+    the relative position of the Start and End points as Southbound/Northbound or Westbound/Eastbound.
 </p>
 
 
@@ -106,13 +106,13 @@ Once the files are copied on the Android device, they need to be registered with
     <li>Tap the track title or top header to set the track label, the start direction label, the end direction label, and the initial/ending milepost values.</li>
     <li>Tap any line in the GPS track to display its location on the map (visible only in landscape mode).</li>
     <li>The "MP" number is the milepost number associated with a given GPS point.</li>
-    <li>The "MP" number is displayed in bold when it has been set by the user.</li>
-    <li>The "MP" number is displayed in italics when it is automatically estimated.</li>
+    <li>The <b>"MP" number is displayed in bold</b> when it has been set by the user.</li>
+    <li>The <i>"MP" number is displayed in italics</i> when it is otherwise automatically estimated.</li>
     <li>Tap on the MP number (bold or italic) to edit the milepost:
     <ul>
         <li>Set or change the MP number.</li>
         <li>Enter a <b>Point of Interest</b> label.</li>
-        <li>Ignore points to flag as inaccurate location points so they are excluded from calculations.</li>
+        <li>Ignore a GPS point -- this flags the location point as inaccurate and excludes it from milepost calculations.</li>
     </ul></li>
 </ul>
 
