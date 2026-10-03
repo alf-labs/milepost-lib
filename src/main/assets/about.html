@@ -1,4 +1,4 @@
-<html>
+<html lang="en">
 <head>
     <title>About Milepost Docent</title>
     <style type="text/css">
@@ -117,36 +117,86 @@ Once the files are copied on the Android device, they need to be registered with
 </ul>
 
 <h4>4. Programming a Docent Track</h4>
+
+<p>
+    A <i>Docent Track</i> combines a <i>GPS Track</i> with <i>Audio Triggers</i> to indicate to the
+    software which audio segment to play when the train reaches specific milepost values.
+    The triggers are based on the milepost number as well as the direction of the train.
+</p>
+
+
+    To create a new <i>Docent Track</i>:
+
+    <ul>
+        <li>Open the <b>Milepost GPS Tracks</b> from the navigation menu, and select the GPS Track to use.</li>
+        <li>From the <b>Review GPS Track</b> screen, select <b>Create New Docent Track</b> from the 3-dot action menu.</li>
+    </ul>
+
+
+To edit an existing Docent Track, open the <b>Docent Tracks</b> screen from the navigation menu then select the track to edit.
+    This opens the <b>Docent Triggers</b> screen to add or edit docent audio triggers.
+
+
 <ul>
-    <li>From the <b>Review GPS Track</b> screen, select <b>Create Docent Track</b> from the action menu (or manage existing tracks under <b>Docent Tracks</b>).</li>
-    <li>In <b>Docent Triggers</b>, tap the track title to customize its label, then tap <b>+</b> to add play triggers:
+    <li>In the <b>Docent Triggers</b> screen, tap the track title to customize the Docent Track label</li>
+    <li>Tap the floating <b>+</b> button to add play a new audio trigger:
         <ul>
             <li><b>Audio File</b>: Select a registered audio segment to associate with this trigger.</li>
-            <li><b>Milepost Range</b>: Define the start (<i>MP Min</i>) and end (<i>MP Max</i>) mileposts for the trigger window.</li>
+            <li><b>Milepost Range</b>: Define the start (<i>MP Min</i>) and end (<i>MP Max</i>) mileposts for the trigger ranger.</li>
             <li><b>Travel Direction</b>: Choose whether the trigger activates when traveling <i>Towards Higher MP</i>, <i>Towards Lower MP</i>, or in <i>Both</i> directions.</li>
             <li><b>Cold Start</b>: Choose whether the trigger can activate if playback starts mid-route within the trigger range.</li>
         </ul>
     </li>
-    <li>Review the estimated playback duration and track coverage overlaid with estimated train speeds.</li>
-    <li>Export or import docent track configurations via the JSON action menu options.</li>
+    <li>Once an audio trigger is added, the software estimates the playback duration and track coverage overlaid based on the average train speed during the GPS track recording.</li>
 </ul>
 
+Finally, in the <b>Docent Triggers</b> screen, tap the 3-dot action menu and select <b>Playback Docent Track</b> to play back this track.
+
 <h4>5. Playback of a Docent Track</h4>
+
+<p>
+In this first iteration of the software, only one Docent Track can be active and enabled to be played at a given time.
+</p>
+
+To select the currently active Docent Track:
+<ul>
+    <li>Open the <b>Docent Tracks</b> screen from the navigation menu then select the desired Docent Track.</li>
+    <li>In the <b>Docent Triggers</b> screen, tap the 3-dot action menu and select <b>Playback Docent Track</b> to play back this track.</li>
+</ul>
+
+Once a Docent Track has been activated:
 <ul>
     <li>Navigate to <b>Playback Docent Track</b>.</li>
     <li>Tap <b>Start</b> to begin live docent operation during a train journey.</li>
-    <li>The app tracks the train's position in real-time, calculates the current milepost and direction of travel, and automatically plays scheduled audio segments as the train enters each trigger range.</li>
-    <li>Monitor live progress on the interactive map, linear track view, and active trigger list.</li>
-    <li>Use on-screen trigger controls (<i>Force Play</i>, <i>Pause</i>, <i>Unpause</i>) to manually override or pause announcements as needed.</li>
+    <li>The app tracks the train's position in real-time, calculates the current milepost and direction of travel,
+        and automatically plays scheduled audio segments as the train enters each trigger range.</li>
+    <li>At the bottom of the screen is a linear representation of the track with all the Points of Interests added in the GPS Track.
+        An icon of a train is shown in real time at the estimated milepost position.
+        The direction of the train icon denotes the detected direction of travel.</li>
+    <li>When the device is in landscape mode, a map also displays the GPS track as well as the current position of the train.</li>
+    <li>The list of all Docent Audio Triggers is shown in the middle of the screen.
+        The currently playing audio segment is highlighted in the list.
+        A control button on the side allows to <i>Force Play</i>, <i>Pause</i>, or <i>Unpause</i> the announcement as needed.</li>
 </ul>
 
-<h4>6. Simulation, Testing & Settings</h4>
+<h4>6. Simulation, Testing, &amp; Settings</h4>
+
+<p>
+The <b>Test Sensors</b> screen allows you to inspect live GPS sensor data such as position and accuracy without recording.
+</p>
+
+The <b>Settings</b> screen offers the following options:
 <ul>
-    <li><b>Playback GPS Track</b>: Simulates train movement along a recorded GPS track to test docent track triggers and audio timing without being on a physical train.</li>
-    <li><b>Test Sensors</b>: Inspect live GPS sensor data and fix accuracy without recording.</li>
-    <li><b>Settings</b>: Toggle between Imperial (miles, mph) and Metric (km, m/s) units, set GPS distance/speed threshold filters, configure external USB OTG GPS devices, adjust simulation speed factors, or enable lock task / kiosk mode.</li>
+    <li>Toggle between <b>Imperial</b> (miles, mph) and <b>Metric</b> (km, m/s) units.</li>
+    <li>Configure <b>external USB GPS Receiver</b>: the Android device must support USB OTG. The USB VID:PID of the device to use must be entered in the filter string.</li>
+    <li>Enable <b>simulation</b>: This simulates the GPS position to use in the <b>Playback Docent Track</b> screen.
+        In that case, the GPS position follows the GPS Track recorded instead of the actual device's physical location.
+        This is useful for testing a new Docent Track to ensure that the audio timings are adequate.</li>
 </ul>
 
+<p>
+    ~~
+</p>
 
 <center>
     <hr width="40%"/>
