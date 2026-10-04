@@ -76,6 +76,7 @@
                 app:title="Speed factor for Simulated GPS (1x, 2x, etc)"
                 app:defaultValue="1"
                 android:inputType="number"
+                app:useSimpleSummaryProvider="true"
                 />
 
     </PreferenceCategory>
