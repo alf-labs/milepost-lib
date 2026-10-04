@@ -7,7 +7,7 @@
 
     <string-array name="pref_simulate_gps_values">
         <item>none</item>
-        <item>from_start</item>
-        <item>from_end</item>
+        <item>simulate_from_start</item>
+        <item>simulate_from_end</item>
     </string-array>
 </resources>

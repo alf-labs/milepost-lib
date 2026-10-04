@@ -73,8 +73,8 @@ class OpGpsPlayback @AssistedInject constructor(
     suspend fun initAsync() {
         simulateGpsFactor = appSettings.simulateGpsFactor()
         simulateGps = when(appSettings.simulateGps()) {
-            "from_start" -> 1
-            "from_end" -> 2
+            "simulate_from_start" -> 1
+            "simulate_from_end" -> 2
             else -> -1
         }
     }

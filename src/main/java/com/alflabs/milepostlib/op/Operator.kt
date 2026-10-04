@@ -5,6 +5,7 @@ import com.alflabs.milepostlib.app.GlobalState
 import com.alflabs.milepostlib.db.DocentTrackEntity
 import com.alflabs.milepostlib.db.GpsTrackEntity
 import com.alflabs.milepostlib.fragments.docentPlayback.DocentPlaybackItem
+import com.alflabs.milepostlib.service.SimulationGpsProvider
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.Publishers
 import com.alflabs.utils.ILogger
@@ -16,6 +17,7 @@ class Operator @Inject constructor(
     private val opGpsRecordFactory: OpGpsRecord.Factory,
     private val opGpsPlaybackFactory: OpGpsPlayback.Factory,
     private val opDocentPlaybackFactory: OpDocentPlayback.Factory,
+    private val simulationGpsProvider: SimulationGpsProvider,
     private val logger: ILogger,
     private val globalState: GlobalState,
 ) {
@@ -94,6 +96,7 @@ class Operator @Inject constructor(
         if (operatorMode == OperatorMode.GPS_PLAYBACK) return
         currentOp.stop()
         logger.d(TAG, "startGpsPlayback id=${gpsTrack.id}")
+        simulationGpsProvider.setGpsTrack(gpsTrack)
         val op = opGpsPlaybackFactory.create(gpsTrack)
         op.initAsync()
         currentOp = op
@@ -113,6 +116,7 @@ class Operator @Inject constructor(
         logger.d(TAG, "stopGpsPlayback ${(currentOp as? OpGpsPlayback)?.currentGpsTrackId}")
         currentOp.stop()
         currentOp = opIdle
+        simulationGpsProvider.setGpsTrack(null)
         changeMode(OperatorMode.IDLE)
     }
 
@@ -124,6 +128,7 @@ class Operator @Inject constructor(
         if (operatorMode == OperatorMode.DOCENT_PLAYBACK) return
         currentOp.stop()
         logger.d(TAG, "startDocentPlayback id=${docenTrack.id}")
+        simulationGpsProvider.setGpsTrack(gpsTrack)
         val op = opDocentPlaybackFactory.create(docenTrack, gpsTrack, triggers)
         op.initAsync()
         currentOp = op
@@ -149,6 +154,7 @@ class Operator @Inject constructor(
         logger.d(TAG, "stopDocentPlayback ${(currentOp as? OpDocentPlayback)?.currentDocentTrackId}")
         currentOp.stop()
         currentOp = opIdle
+        simulationGpsProvider.setGpsTrack(null)
         changeMode(OperatorMode.IDLE)
     }
 

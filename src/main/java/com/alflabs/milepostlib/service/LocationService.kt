@@ -62,8 +62,9 @@ class LocationService : LifecycleService() {
     @Inject lateinit var appSettings: AppSettings
     @Inject lateinit var globalState: GlobalState
     @Inject lateinit var internalGpsProvider: InternalGpsProvider
-    @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
     @Inject lateinit var externalGpsProvider: ExternalGpsProvider
+    @Inject lateinit var simulationGpsProvider: SimulationGpsProvider
+    @Inject lateinit var docentMediaPlayerFactory: DocentMediaPlayer.Factory
     @Inject lateinit var notificationManagerOpt: Optional<NotificationManager>
 
     private lateinit var locationCallback: LocationCallback
@@ -132,9 +133,16 @@ class LocationService : LifecycleService() {
         }
 
         lifecycleScope.launch {
-            if (!PermissionsFragment.allPermissionsGranted(this@LocationService, externalGpsProvider)) {
+            if (appSettings.simulateGps().contains("simu" /* see arrays.xml */)) {
+                // Simulation mode, no need to check permissions.
+                simulationGpsProvider.start(locationCallback)
+                logger.d(TAG, "@@ Simulation GPS Provider started")
+
+            } else if (!PermissionsFragment.allPermissionsGranted(
+                        this@LocationService, externalGpsProvider)) {
                 logger.d(TAG, "onStartCommand: No permission")
             } else {
+                // Real GPS mode
                 var started = false
                 if (appSettings.useExternalGps()) {
                     started = externalGpsProvider.start(locationCallback)
@@ -162,6 +170,7 @@ class LocationService : LifecycleService() {
         docentMediaPlayer.onDestroy()
         internalGpsProvider.onDestroy()
         externalGpsProvider.onDestroy()
+        simulationGpsProvider.onDestroy()
         serviceMode = ServiceMode.STOPPED
         serviceModePublisher.publish(serviceMode)
         globalState.locationStream.remove(locationPublisher)
