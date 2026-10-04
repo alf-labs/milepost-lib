@@ -8,10 +8,10 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
@@ -470,10 +470,18 @@ class GpsReviewFragment : Fragment() {
         val clearPoiButton = dialogView.findViewById<ImageButton>(R.id.clear_poi_button)
         val mpValueEditText = dialogView.findViewById<TextInputEditText>(R.id.mp_value_edittext)
         val clearMpButton = dialogView.findViewById<ImageButton>(R.id.clear_mp_button)
-        val ignoreCheckbox = dialogView.findViewById<CheckBox>(R.id.ignore_checkbox)
+        val tsValueEditText = dialogView.findViewById<TextInputEditText>(R.id.timestamp_edittext)
+        val ignoreSwitch = dialogView.findViewById<SwitchCompat>(R.id.ignore_switch)
+        val advancedSwitch = dialogView.findViewById<SwitchCompat>(R.id.advanced_switch)
+        val advancedGroup = dialogView.findViewById<ViewGroup>(R.id.advanced_group)
         val mpStart = if (ld.hasMp()) ld.mp else null
         val poiStart = if (ld.hasPoiLabel()) ld.poiLabel.trim() else ""
+        val tsOld = if (ld.hasLatLong()) ld.latLong.timestampMillis else null
         val ignoreStart = ld.flags.hasFlag(LocationFlags.IGNORE)
+
+        advancedSwitch.setOnCheckedChangeListener { _, isChecked ->
+            advancedGroup.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
 
         if (poiStart.isNotEmpty()) {
             poiLabelEditText.setText(poiStart)
@@ -481,6 +489,13 @@ class GpsReviewFragment : Fragment() {
 
         clearPoiButton.setOnClickListener {
             poiLabelEditText.text?.clear()
+        }
+
+        if (tsOld != null) {
+            tsValueEditText.setText(tsOld.toString())
+        } else {
+            tsValueEditText.text?.clear()
+            tsValueEditText.isEnabled = false
         }
 
         mpStart?.let {
@@ -491,7 +506,7 @@ class GpsReviewFragment : Fragment() {
             mpValueEditText.text?.clear()
         }
 
-        ignoreCheckbox.isChecked = ignoreStart
+        ignoreSwitch.isChecked = ignoreStart
 
         AlertDialog.Builder(requireContext())
             .setTitle("Edit Milepost")
@@ -499,17 +514,20 @@ class GpsReviewFragment : Fragment() {
             .setPositiveButton("Apply") { _, _ ->
                 val newPoi = poiLabelEditText.text?.toString()?.trim() ?: ""
                 val mpNew = mpValueEditText.text.toString().toFloatOrNull()
-                val ignoredNew = ignoreCheckbox.isChecked
+                val tsNew = tsValueEditText.text.toString().toLongOrNull()
+                val ignoredNew = ignoreSwitch.isChecked
 
                 logger.d(TAG, "@@Apply MP clicked:")
                 logger.d(TAG, "@@  Item: ${item.data.latLong.timestampMillis}")
                 logger.d(TAG, "@@  POI Label: $newPoi")
                 logger.d(TAG, "@@  MP Value: $mpNew")
+                logger.d(TAG, "@@  TS Value: $tsNew")
                 logger.d(TAG, "@@  Ignore: $ignoredNew")
 
                 if (track.locationList != null
                     && (newPoi != poiStart
                         || mpNew != mpStart
+                        || tsNew != tsOld
                         || ignoredNew != ignoreStart)
                     && index < track.locationList.locationsCount) {
                     val listBuilder = track.locationList.toBuilder()
@@ -527,6 +545,13 @@ class GpsReviewFragment : Fragment() {
                         } else {
                             clearPoiLabel()
                         }
+
+                        if (tsNew != null && tsOld != null && tsNew != tsOld) {
+                            latLong = latLong.copy {
+                                timestampMillis = tsNew
+                            }
+                        }
+
                         flags = flags.changeFlag(LocationFlags.IGNORE, ignoredNew)
                     }
                     listBuilder.setLocations(index, loc)

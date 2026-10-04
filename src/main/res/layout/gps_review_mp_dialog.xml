@@ -64,10 +64,55 @@
                 app:tint="?android:attr/textColorSecondary" />
     </LinearLayout>
 
-    <CheckBox
-        android:id="@+id/ignore_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ignore" />
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/advanced_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show Advanced Fields" />
+
+    <LinearLayout
+            android:id="@+id/advanced_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            >
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+        <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Timestamp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/timestamp_edittext"
+                    android:inputType="number"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+                android:id="@+id/clear_timestamp"
+                android:visibility="invisible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Clear Timestamp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                app:tint="?android:attr/textColorSecondary" />
+    </LinearLayout>
+
+    </LinearLayout>
+
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/ignore_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ignore GPS Location" />
 
 </LinearLayout>
