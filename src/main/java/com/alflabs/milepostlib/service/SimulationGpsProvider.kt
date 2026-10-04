@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import javax.inject.Singleton
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -124,9 +125,10 @@ class SimulationGpsProvider @Inject constructor(
             val pointA = locations[i]
             val pointB = locations[i + direction]
 
-            val timeA = pointA.latLong.timestampMillis
-            val timeB = pointB.latLong.timestampMillis
-            val duration = timeB - timeA
+            // Note: Time A/B are reversed when starting from the end point.
+            val timeA = min(pointA.latLong.timestampMillis, pointB.latLong.timestampMillis)
+            val timeB = max(pointA.latLong.timestampMillis, pointB.latLong.timestampMillis)
+            val duration = max(timeB - timeA, 1)    // protect against unexpected time A==B
 
             var previousTime = timeA
             var currentTime = timeA + maxIntervalMs
