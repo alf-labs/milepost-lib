@@ -85,6 +85,7 @@ class SimulationGpsProvider @Inject constructor(
     }
 
     fun setGpsTrack(gpsTrack: GpsTrackEntity?) {
+        logger.d(TAG, "@@ Simulate GPS: GPS Track set to ${gpsTrack?.trackLabel}")
         this.gpsTrack = gpsTrack
     }
 

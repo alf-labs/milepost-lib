@@ -133,6 +133,7 @@ class LocationService : LifecycleService() {
         }
 
         lifecycleScope.launch {
+            logger.d(TAG, "@@ LocService: Choosing GPS Provider")
             if (appSettings.simulateGps().contains("simu" /* see arrays.xml */)) {
                 // Simulation mode, no need to check permissions.
                 simulationGpsProvider.start(locationCallback)
@@ -150,11 +151,11 @@ class LocationService : LifecycleService() {
                 if (!started) {
                     started = internalGpsProvider.start(locationCallback)
                 }
-                logger.d(TAG, "@@ GPS Provider started: $started")
+                logger.d(TAG, "@@ LocService: GPS Provider started: $started")
             }
         }
 
-        logger.d(TAG, "Started")
+        logger.d(TAG, "LocService Started Not Sticky")
         return START_NOT_STICKY
     }
 

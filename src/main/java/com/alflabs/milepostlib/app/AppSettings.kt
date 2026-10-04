@@ -38,12 +38,14 @@ class AppSettings @Inject constructor(
         // This does not apply to values used only in-app and not visible in the settings fragment.
 
         // Values visible in the settings fragment, they must be boolean (checkbox) or string.
+        // I repeat: the ONLY valid ones are booleanPreferencesKey or stringPreferencesKey !!
+        // Even a number or an emum setting is really just a string.
         val USE_IMPERIAL_UNITS = booleanPreferencesKey("use_imperial_units")
         val THRESHOLD_DISTANCE_METERS = stringPreferencesKey("threshold_distance_meters")
         val THRESHOLD_SPEED_MPS = stringPreferencesKey("threshold_speed_mps")
 
         val SIMULATE_GPS = stringPreferencesKey("simulate_gps")
-        val SIMULATE_GPS_FACTOR = floatPreferencesKey("simulate_gps_factor")
+        val SIMULATE_GPS_FACTOR = stringPreferencesKey("simulate_gps_factor")
 
         val USE_LOCK_TASK = booleanPreferencesKey("use_lock_task")
         val HIDE_SYSTEM_BARS = booleanPreferencesKey("hide_system_bars")
@@ -133,7 +135,8 @@ class AppSettings @Inject constructor(
 
     suspend fun simulateGpsFactor(): Float {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
-        return adapter.getFloat(SIMULATE_GPS_FACTOR.name, 1.0f)
+        val str = adapter.getString(SIMULATE_GPS_FACTOR.name, "1.0")
+        return str.toFloatOrNull() ?: 1.0f
     }
 
     suspend fun useUsbAudio(): Boolean {
