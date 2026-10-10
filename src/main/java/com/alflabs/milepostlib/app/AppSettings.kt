@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.preference.PreferenceDataStore
+import androidx.preference.PreferenceFragmentCompat
 import com.alflabs.utils.ILogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -166,6 +167,8 @@ class AppSettings @Inject constructor(
 
     // ------
 
+    /** Creates a non-Async pref data store for [PreferenceFragmentCompat] */
+    @Suppress("DEPRECATION")
     fun createAdapter(coroutineScope: CoroutineScope): AdapterPreferenceDataStore {
         return AdapterPreferenceDataStore(
             appSettingsDataStore,

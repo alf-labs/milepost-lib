@@ -18,22 +18,21 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.PropertyWriter
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.google.protobuf.MessageLite
 
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-
-fun objectMapperExportProtobuf() : ObjectMapper = jacksonObjectMapper().apply {
-    registerKotlinModule()
-    setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
-
+fun objectMapperExportProtobuf() : ObjectMapper = jacksonMapperBuilder().apply {
     // For unit tests, we need to enforce sorting of keys and properties.
     // Sort standard Java POJO properties alphabetically
-    configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+    enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
     // Sort java.util.Map entries by their keys
-    configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true)
+    enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
     // Sort JsonNode / ObjectNode properties
-    configure(JsonNodeFeature.WRITE_PROPERTIES_SORTED, true)
+    enable(JsonNodeFeature.WRITE_PROPERTIES_SORTED)
+}.build().apply {
+    registerKotlinModule()
+    setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
 
     // Tells Jackson to ignore defaultInstanceForType on all Protobuf-Lite objects
     addMixIn(MessageLite::class.java, ProtobufLiteMixin::class.java)
@@ -93,7 +92,15 @@ fun objectMapperExportProtobuf() : ObjectMapper = jacksonObjectMapper().apply {
     return this
 }
 
-fun objectMapperImportProtobuf() : ObjectMapper = jacksonObjectMapper().apply {
+fun objectMapperImportProtobuf() : ObjectMapper = jacksonMapperBuilder().apply {
+    // For unit tests, we need to enforce sorting of keys and properties.
+    // Sort standard Java POJO properties alphabetically
+    enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+    // Sort java.util.Map entries by their keys
+    enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+    // Sort JsonNode / ObjectNode properties
+    enable(JsonNodeFeature.WRITE_PROPERTIES_SORTED)
+}.build().apply {
     registerKotlinModule()
     val protoDeserializerModule = SimpleModule().apply {
         addDeserializer(LocationDataList::class.java, LocationDataListDeserializer())
