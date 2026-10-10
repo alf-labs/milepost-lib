@@ -3,11 +3,10 @@ package com.alflabs.milepostlib.utils
 import android.content.Context
 import android.net.Uri
 import com.alflabs.milepostlib.db.GpsTrackEntity
-import com.alflabs.milepostlib.db.exportProtobuf
-import com.alflabs.milepostlib.db.importProtobuf
+import com.alflabs.milepostlib.db.objectMapperExportProtobuf
+import com.alflabs.milepostlib.db.objectMapperImportProtobuf
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
-import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -101,7 +100,7 @@ class GpsImporterExporter @Inject constructor(
             val file = File(cacheDir, "gps ${gpsTrackEntity.uuid}${sanitizeTitle(gpsTrackEntity)}.json")
             logger.d(TAG, "@@ createJsonExportFile: file = ${file.path}")
 
-            val objectMapper = ObjectMapper().exportProtobuf()
+            val objectMapper = objectMapperExportProtobuf()
             fileOps.openFileWriter(file, /*append=*/false).use { writer ->
                 objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, gpsTrackEntity)
             }
@@ -126,7 +125,7 @@ class GpsImporterExporter @Inject constructor(
 
         return try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val objectMapper = ObjectMapper().importProtobuf()
+                val objectMapper = objectMapperImportProtobuf()
                 return objectMapper.readValue(inputStream, GpsTrackEntity::class.java)
             }
         } catch (e: Exception) {

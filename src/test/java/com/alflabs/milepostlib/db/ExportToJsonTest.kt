@@ -7,7 +7,6 @@ import com.alflabs.milepostlib.location.locationDataList
 import com.alflabs.milepostlib.location.speedData
 import com.alflabs.milepostlib.utils.diffIsEqualTo
 import com.alflabs.milepostlib.utils.toTestString
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import java.io.StringWriter
@@ -26,7 +25,7 @@ class ExportToJsonTest {
             ))
         }
 
-        val exportMapper = ObjectMapper().exportProtobuf()
+        val exportMapper = objectMapperExportProtobuf()
 
         val writer = StringWriter()
         exportMapper.writerWithDefaultPrettyPrinter().writeValue(writer, originalList)
@@ -63,7 +62,7 @@ class ExportToJsonTest {
             """.trimIndent().toTestString()
         assertThat(exported).diffIsEqualTo(expected)
 
-        val importMapper = ObjectMapper().importProtobuf()
+        val importMapper = objectMapperImportProtobuf()
         val imported = importMapper.readValue(exported, LocationDataList::class.java)
         assertThat(imported.toTestString()).diffIsEqualTo(originalList.toTestString())
     }
@@ -96,7 +95,7 @@ class ExportToJsonTest {
             updatedDateISO = "2022-03-04T05:06:07Z"
         )
 
-        val exportMapper = ObjectMapper().exportProtobuf()
+        val exportMapper = objectMapperExportProtobuf()
 
         val writer = StringWriter()
         exportMapper.writerWithDefaultPrettyPrinter().writeValue(writer, gpsTrackEntity)
@@ -141,7 +140,7 @@ class ExportToJsonTest {
             """.trimIndent().toTestString()
         assertThat(exported).diffIsEqualTo(expected)
 
-        val importMapper = ObjectMapper().importProtobuf()
+        val importMapper = objectMapperImportProtobuf()
         val imported = importMapper.readValue(exported, GpsTrackEntity::class.java)
         assertThat(imported.toTestString()).diffIsEqualTo(
             gpsTrackEntity

@@ -1,10 +1,8 @@
 package com.alflabs.milepostlib.db
 
-import com.alflabs.milepostlib.location.LatLongData
 import com.alflabs.milepostlib.location.LocationData
 import com.alflabs.milepostlib.location.LocationDataList
 import com.alflabs.milepostlib.location.SpeedData
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
@@ -20,13 +18,14 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.PropertyWriter
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.protobuf.MessageLite
 
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
-fun ObjectMapper.exportProtobuf() : ObjectMapper {
+fun objectMapperExportProtobuf() : ObjectMapper = jacksonObjectMapper().apply {
     registerKotlinModule()
-    setSerializationInclusion(JsonInclude.Include.NON_NULL)
+    setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
 
     // For unit tests, we need to enforce sorting of keys and properties.
     // Sort standard Java POJO properties alphabetically
@@ -94,7 +93,7 @@ fun ObjectMapper.exportProtobuf() : ObjectMapper {
     return this
 }
 
-fun ObjectMapper.importProtobuf() : ObjectMapper {
+fun objectMapperImportProtobuf() : ObjectMapper = jacksonObjectMapper().apply {
     registerKotlinModule()
     val protoDeserializerModule = SimpleModule().apply {
         addDeserializer(LocationDataList::class.java, LocationDataListDeserializer())
