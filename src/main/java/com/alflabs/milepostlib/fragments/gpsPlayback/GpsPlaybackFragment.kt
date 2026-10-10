@@ -306,7 +306,6 @@ class GpsPlaybackFragment : SensorsFragment() {
                     markerTrackEnd?.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
                     playbackBinding.linearTrackView.setDirectionTowardsStart(false)
                 }
-                else -> { /* no-op */ }
             }
         }
     }

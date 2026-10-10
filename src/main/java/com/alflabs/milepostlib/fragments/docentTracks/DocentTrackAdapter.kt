@@ -56,7 +56,7 @@ class DocentTrackAdapter(
             }
 
             val isPlayback = if (item.id == docentPlaybackTrackId) " ★" else ""
-            binding.userTitle.text = "[${item.id}] ${item.userTitle?.ifBlank { "(No Title)" }}$isPlayback"
+            binding.userTitle.text = "[${item.id}] ${item.userTitle.ifBlank { "(No Title)" }}$isPlayback"
             binding.creationTime.text = item.creationTime
             binding.gpsTrackLabel.text = item.gpsTrackLabel ?:
                 "GPS Track #${item.gpsTrackId}"
