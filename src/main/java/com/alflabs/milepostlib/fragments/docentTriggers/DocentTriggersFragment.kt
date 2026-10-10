@@ -92,12 +92,6 @@ class DocentTriggersFragment : Fragment() {
             binding.playTriggerList.adapter = docentTriggersAdapter
             binding.playTriggerList.layoutManager = layoutManager
 
-            savedInstanceState?.let {
-                val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
-                @Suppress("DEPRECATION")
-                docentTriggersAdapter?.setSelectedPosition(selectedPosition)
-            }
-
             val dividerItemDecoration = DividerItemDecoration(
                 requireContext(),
                 layoutManager.orientation
@@ -155,16 +149,6 @@ class DocentTriggersFragment : Fragment() {
             }
 
             viewModel.loadDocentTrack(fragmentArgs.docentTrackId)
-        }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        docentTriggersAdapter?.let { adapter ->
-            @Suppress("DEPRECATION")
-            logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
-            @Suppress("DEPRECATION")
-            outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
     }
 

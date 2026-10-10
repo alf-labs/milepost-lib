@@ -1,12 +1,10 @@
 package com.alflabs.milepostlib.fragments.docentTriggers
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.alflabs.milepostlib.R
 import com.alflabs.milepostlib.databinding.DocentTriggerItemBinding
 import com.alflabs.milepostlib.fragments.audioSegments.AudioSegmentItem
 import com.alflabs.milepostlib.trigger.PlaybackTriggerDirection
@@ -20,32 +18,6 @@ class DocentTriggersAdapter(
         private val TAG = DocentTriggersAdapter::class.java.simpleName
     }
 
-    @Deprecated("TBD: I don't use the selectedPosition on this Adapter anymore. Remove later.")
-    var selectedPosition = RecyclerView.NO_POSITION
-        private set
-
-    @Deprecated("TBD: I don't use the selectedPosition on this Adapter anymore. Remove later.")
-    fun setSelectedPosition(position: Int) {
-        // TBD remove if not used
-//        val previousPosition = selectedPosition
-//        selectedPosition = position
-//        if (previousPosition != RecyclerView.NO_POSITION) {
-//            notifyItemChanged(previousPosition)
-//        }
-//        if (selectedPosition != RecyclerView.NO_POSITION) {
-//            notifyItemChanged(selectedPosition)
-//        }
-    }
-
-    @Deprecated("TBD: I don't use the selectedPosition on this Adapter anymore. Remove later.")
-    fun getSelected(): DocentTriggerItem? {
-        return if (selectedPosition != RecyclerView.NO_POSITION) {
-            getItem(selectedPosition)
-        } else {
-            null
-        }
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DocentTriggersViewHolder {
         val binding = DocentTriggerItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
@@ -55,14 +27,14 @@ class DocentTriggersAdapter(
 
     override fun onBindViewHolder(holder: DocentTriggersViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item, position == selectedPosition)
+        holder.bind(item)
     }
 
     inner class DocentTriggersViewHolder(
         private val binding: DocentTriggerItemBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: DocentTriggerItem, isSelected: Boolean) {
+        fun bind(item: DocentTriggerItem) {
             val trigger = item.playbackTrigger
             binding.triggerTitle.text = if (item.audioDescriptor.isNotEmpty()) {
                 AudioSegmentItem.toDisplayTitle(item.audioDescriptor)
@@ -90,29 +62,9 @@ class DocentTriggersAdapter(
             val mpDur = String.format("%.2f", item.durationMp)
             binding.durationInfo.text = "Duration: ${item.durationDisplay} ($mpDur MP)"
 
-
             binding.root.setOnClickListener {
                 onUpdate(item)
-
-                // TBD remove if not used
-//                // Highlight the selected item in the recycler view
-//                val currentPosition = bindingAdapterPosition
-//                if (currentPosition != RecyclerView.NO_POSITION) {
-//                    if (currentPosition != selectedPosition) {
-//                        setSelectedPosition(currentPosition)
-//                    } else {
-//                        setSelectedPosition(RecyclerView.NO_POSITION)
-//                    }
-//                }
             }
-
-            itemView.setBackgroundColor(
-                if (isSelected) {
-                    itemView.context.getColor(R.color.list_highlight)
-                } else {
-                    Color.TRANSPARENT
-                }
-            )
         }
     }
 }
