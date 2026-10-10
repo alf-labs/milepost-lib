@@ -94,6 +94,7 @@ class DocentTriggersFragment : Fragment() {
 
             savedInstanceState?.let {
                 val selectedPosition = it.getInt(KEY_SELECTED_POSITION, RecyclerView.NO_POSITION)
+                @Suppress("DEPRECATION")
                 docentTriggersAdapter?.setSelectedPosition(selectedPosition)
             }
 
@@ -160,7 +161,9 @@ class DocentTriggersFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         docentTriggersAdapter?.let { adapter ->
+            @Suppress("DEPRECATION")
             logger.d(TAG, "@@ onSaveInstanceState: ${adapter.selectedPosition}")
+            @Suppress("DEPRECATION")
             outState.putInt(KEY_SELECTED_POSITION, adapter.selectedPosition)
         }
     }

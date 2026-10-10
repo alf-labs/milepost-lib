@@ -19,6 +19,7 @@ import android.widget.CompoundButton
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
@@ -68,7 +69,8 @@ class PermissionsFragment : DialogFragment() {
         override fun onReceive(context: Context, intent: Intent) {
             if (ACTION_USB_PERMISSION == intent.action) {
                  val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
-                 val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+                 val device: UsbDevice? = IntentCompat.getParcelableExtra(
+                     intent, UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
                 logger.d(TAG, "@@ USB Permission: granted=$granted for device $device")
                 updateAllStates()
             }

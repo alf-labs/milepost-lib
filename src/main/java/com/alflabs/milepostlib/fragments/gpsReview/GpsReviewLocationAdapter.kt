@@ -77,7 +77,7 @@ class GpsReviewLocationAdapter(
                 val ignore = ld.flags.hasFlag(LocationFlags.IGNORE)
                 val userMp = ld.flags.hasFlag(LocationFlags.USER_MP)
 
-                binding.index.text = adapterPosition.toString()
+                binding.index.text = bindingAdapterPosition.toString()
                 binding.timestamp.text = String.format("%.1f s", item.deltaTS / 1000f)
                 binding.latLong.text = "${ld.latLong.latitude}, ${ld.latLong.longitude}"
                 binding.distAcc.text = String.format("%.1f m", ld.latLong.accuracy)
@@ -102,7 +102,7 @@ class GpsReviewLocationAdapter(
                 binding.root.setOnClickListener {
                     onSelection(item)
                     // Highlight the selected item in the recycler view
-                    val currentPosition = adapterPosition
+                    val currentPosition = bindingAdapterPosition
                     if (currentPosition != RecyclerView.NO_POSITION && currentPosition != selectedPosition) {
                         setSelectedPosition(currentPosition)
                     }

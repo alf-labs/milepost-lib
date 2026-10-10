@@ -20,11 +20,11 @@ class DocentTriggersAdapter(
         private val TAG = DocentTriggersAdapter::class.java.simpleName
     }
 
-    @Deprecated("may not want to use this, remove later")
+    @Deprecated("TBD: I don't use the selectedPosition on this Adapter anymore. Remove later.")
     var selectedPosition = RecyclerView.NO_POSITION
         private set
 
-    @Deprecated("may not want to use this, remove later")
+    @Deprecated("TBD: I don't use the selectedPosition on this Adapter anymore. Remove later.")
     fun setSelectedPosition(position: Int) {
         // TBD remove if not used
 //        val previousPosition = selectedPosition
@@ -37,7 +37,7 @@ class DocentTriggersAdapter(
 //        }
     }
 
-    @Deprecated("may not want to use this, remove later")
+    @Deprecated("TBD: I don't use the selectedPosition on this Adapter anymore. Remove later.")
     fun getSelected(): DocentTriggerItem? {
         return if (selectedPosition != RecyclerView.NO_POSITION) {
             getItem(selectedPosition)
