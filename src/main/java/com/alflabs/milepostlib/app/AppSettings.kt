@@ -129,11 +129,18 @@ class AppSettings @Inject constructor(
         adapter.putFloat(MAP_ZOOM_LEVEL.name, level)
     }
 
+    /** One of arrays.xml pref_simulate_gps_values string values. */
     suspend fun simulateGps(): String {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         return adapter.getString(SIMULATE_GPS.name, "none")
     }
 
+    /** Speed factor for GPS Simulation.
+     * 1x is the default and is 'real time' normal speed.
+     * > 1 means to accelerate time by a constant factor.
+     * < -1 means to accelerate time only when there's no PA audio.
+     * Values [-1..1[ are essentially invalid as they have no meaning, and uses normal speed.
+     */
     suspend fun simulateGpsFactor(): Float {
         val adapter = AsyncPreferenceDataStore(appSettingsDataStore)
         val str = adapter.getString(SIMULATE_GPS_FACTOR.name, "1.0")

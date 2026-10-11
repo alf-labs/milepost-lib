@@ -2,9 +2,14 @@ package com.alflabs.milepostlib.service
 
 import android.location.Location
 import com.alflabs.milepostlib.app.AppSettings
+import com.alflabs.milepostlib.app.GlobalState
 import com.alflabs.milepostlib.db.GpsTrackEntity
 import com.alflabs.milepostlib.location.LocationData
 import com.alflabs.milepostlib.location.LocationDataList
+import com.alflabs.milepostlib.op.AudioPlayingStatus
+import com.alflabs.rx.AndroidSchedulers
+import com.alflabs.rx.ISubscriber
+import com.alflabs.rx.Schedulers
 import com.alflabs.utils.ILogger
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -15,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import javax.inject.Singleton
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
@@ -25,23 +31,30 @@ import kotlin.time.Duration.Companion.seconds
 class SimulationGpsProvider @Inject constructor(
     private val logger: ILogger,
     private val appSettings: AppSettings,
+    private val globalState: GlobalState,
 ) : IGpsProvider {
     companion object {
         private val TAG = SimulationGpsProvider::class.java.simpleName
     }
 
+    private val audioPlayingStatusSubscriber: ISubscriber<in AudioPlayingStatus?> =
+        ISubscriber<AudioPlayingStatus?> { _, event -> onAudioPlayingStatus(event) }
+
     private var gpsTrack: GpsTrackEntity? = null
     private var simulateGps = 0
-    private var simulateGpsFactor = 1.0f
+    private var speedFactor = 1.0f
+    private var audioPlaying = false
 
     override suspend fun start(locationCallback: LocationCallback): Boolean {
         logger.d(TAG, "@@ Start Simulation GPS Provider")
-        simulateGpsFactor = appSettings.simulateGpsFactor()
+        globalState.audioPlayingStatusStream.subscribe(Schedulers.sync(), audioPlayingStatusSubscriber)
+        speedFactor = appSettings.simulateGpsFactor()
         simulateGps = when(appSettings.simulateGps()) {
             "simulate_from_start" -> 1
             "simulate_from_end" -> -1
             else -> 0
         }
+
         process(locationCallback)
 
         return simulateGps != 0
@@ -58,10 +71,10 @@ class SimulationGpsProvider @Inject constructor(
                     logger.d(TAG, "@@ Simulate GPS warning: Empty GPS track")
                     return@withContext
                 }
-                runOnGpsTrack(locList, simulateDirection, simulateGpsFactor, locationCallback)
+                runOnGpsTrack(locList, simulateDirection, speedFactor, locationCallback)
                 simulateDirection = -simulateDirection
             }
-            delay(2.seconds)
+            delay(3.seconds)
         }
     }
 
@@ -87,6 +100,7 @@ class SimulationGpsProvider @Inject constructor(
     override fun stop() {
         logger.d(TAG, "@@ Stop Simulation GPS Provider")
         logger.d(TAG, "@@ Simulate GPS closing...")
+        globalState.audioPlayingStatusStream.remove(audioPlayingStatusSubscriber)
         simulateGps = 0
         gpsTrack = null
     }
@@ -94,6 +108,17 @@ class SimulationGpsProvider @Inject constructor(
     fun setGpsTrack(gpsTrack: GpsTrackEntity?) {
         logger.d(TAG, "@@ Simulate GPS: GPS Track set to ${gpsTrack?.trackLabel}")
         this.gpsTrack = gpsTrack
+    }
+
+    private fun onAudioPlayingStatus(status: AudioPlayingStatus?) {
+        status?.let { st ->
+            if (st.type == AudioPlayingStatus.Type.Current) {
+                if (audioPlaying != st.isPlaying) {
+                    audioPlaying = st.isPlaying
+                    logger.d(TAG, "@@ Simulate GPS: audio playing is $audioPlaying")
+                }
+            }
+        }
     }
 
     /**
@@ -105,8 +130,11 @@ class SimulationGpsProvider @Inject constructor(
      *
      * [speedFactor] is a multiplier to speed up the delay (e.g. make them shorter).
      * E.g. 1.0 is normal speed, 2.0 is twice faster (shorter delays),
+     * Values > 1 mean to accelerate speed all the time.
+     * Values < -1 mean to accelerate speed only when there's no PA audio going on.
+     * Values [-1 up to 1] are meaningless and interpreted as 1.
      */
-    fun replayGpsTrack(
+    private fun replayGpsTrack(
         locations: List<LocationData>,
         direction: Int,
         speedFactor: Float,
@@ -114,7 +142,8 @@ class SimulationGpsProvider @Inject constructor(
     ): Flow<Location> = flow {
         if (locations.isEmpty()) return@flow
 
-        val delayMultiplier = 1.0f / max(1.0f, speedFactor)
+        val delayMultiplier = 1.0f / max(1.0f, abs(speedFactor))
+        val constantFactor = speedFactor >= 0f
 
         // Emit the initial recorded point
         val firstLocation = locations.first()
@@ -136,28 +165,30 @@ class SimulationGpsProvider @Inject constructor(
             val timeB = max(pointA.latLong.timestampMillis, pointB.latLong.timestampMillis)
             val duration = max(timeB - timeA, 1)    // protect against unexpected time A==B
 
-            var previousTime = timeA
-            var currentTime = timeA + maxIntervalMs
+            var previousTimeMs = timeA
+            var currentTimeMs = timeA + maxIntervalMs
 
             // Emit interpolated points if time gap > maxIntervalMs
-            while (currentTime < timeB) {
-                val delayMs = currentTime - previousTime
+            while (currentTimeMs < timeB) {
+                val delayMs = currentTimeMs - previousTimeMs
                 if (delayMs > 0) {
-                    delay((delayMs * delayMultiplier).toLong().milliseconds)
+                    val multiplier = if (constantFactor || !audioPlaying) delayMultiplier else 1.0f
+                    delay((delayMs * multiplier).toLong().milliseconds)
                 }
 
-                val fraction = (currentTime - timeA).toDouble() / duration
-                val interpolatedLocation = interpolateLocation(pointA, pointB, fraction, currentTime)
+                val fraction = (currentTimeMs - timeA).toDouble() / duration
+                val interpolatedLocation = interpolateLocation(pointA, pointB, fraction, currentTimeMs)
                 emit(interpolatedLocation)
 
-                previousTime = currentTime
-                currentTime += maxIntervalMs
+                previousTimeMs = currentTimeMs
+                currentTimeMs += maxIntervalMs
             }
 
             // Delay remaining duration and emit the actual recorded point B
-            val finalDelay = maxOf(0L, timeB - previousTime)
-            if (finalDelay > 0) {
-                delay((finalDelay * delayMultiplier).toLong().milliseconds)
+            val finalDelayMs = maxOf(0L, timeB - previousTimeMs)
+            if (finalDelayMs > 0) {
+                val multiplier = if (constantFactor || !audioPlaying) delayMultiplier else 1.0f
+                delay((finalDelayMs * multiplier).toLong().milliseconds)
             }
 
             emit(pointB.toAndroidLocation())

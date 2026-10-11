@@ -71,11 +71,12 @@
                 app:useSimpleSummaryProvider="true"
                 />
 
+        <!-- Warning: inputType is ignored. The one from SettingsFragment.kt is used instead. -->
         <EditTextPreference
                 app:key="simulate_gps_factor"
                 app:title="Speed factor for Simulated GPS (1x, 2x, etc)"
                 app:defaultValue="1"
-                android:inputType="number"
+                android:inputType="number|numberSigned|numberDecimal"
                 app:useSimpleSummaryProvider="true"
                 />
 
