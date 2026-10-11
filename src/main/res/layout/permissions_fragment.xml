@@ -57,22 +57,16 @@
             android:layout_below="@id/usb_gps_switch"
             />
 
-    <ScrollView
+    <!-- Note: WebView handles scrolling and does not need a ScrollView container. -->
+    <WebView
+            android:id="@+id/webview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/divider"
             android:layout_above="@+id/close_button"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            >
-
-        <WebView
-                android:id="@+id/webview"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                />
-
-    </ScrollView>
+            />
 
     <Button
             android:id="@+id/close_button"

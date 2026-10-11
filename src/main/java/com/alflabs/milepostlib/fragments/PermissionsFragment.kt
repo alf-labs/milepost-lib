@@ -9,14 +9,12 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebViewClient
 import android.widget.CompoundButton
-import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
@@ -27,6 +25,7 @@ import com.alflabs.milepostlib.app.AppSettings
 import com.alflabs.milepostlib.databinding.PermissionsFragmentBinding
 import com.alflabs.milepostlib.service.ExternalGpsProvider
 import com.alflabs.milepostlib.service.ExternalGpsProvider.Companion.ACTION_USB_PERMISSION
+import com.alflabs.milepostlib.utils.SafeWebViewClient
 import com.alflabs.utils.ILogger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -128,7 +127,7 @@ class PermissionsFragment : DialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         updateAllStates()
 
-        binding.webview.webViewClient = WebViewClient()
+        binding.webview.webViewClient = SafeWebViewClient(logger)
         // Make the webview transparent
         binding.webview.setBackgroundColor(0x00000000)
         binding.webview.loadUrl("file:///android_asset/permissions.html")

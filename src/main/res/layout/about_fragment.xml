@@ -1,20 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".fragments.AboutFragment">
 
-    <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="16dp">
-
         <WebView
                 android:id="@+id/webview"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:padding="16dp"
+                />
 
-    </RelativeLayout>
-</androidx.core.widget.NestedScrollView>
+</FrameLayout>
+
+<!--
+Implementation note: an earlier version of this used
+<androidx.core.widget.NestedScrollView><RelativeLayout><WebView>
+Apparently there are 2 issues with that:
+1- WebView already handles scrolling, so no need for the NestedScrollView.
+   This means both the NestedScrollView and the WebView are trying to adjust to the
+   screen size on configuration change.
+2- If it were really needed, NestedScrollView should have android:fillViewport=true
+   and nested scrolling should be disabled in the WebView using a kotlin call to
+   binding.webview.isNestedScrollingEnabled=false
+-->

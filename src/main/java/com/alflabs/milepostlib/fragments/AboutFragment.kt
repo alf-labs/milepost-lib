@@ -1,5 +1,6 @@
 package com.alflabs.milepostlib.fragments
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -12,9 +13,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.RenderProcessGoneDetail
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.webkit.WebViewClientCompat
 import com.alflabs.milepostlib.R
 import com.alflabs.milepostlib.databinding.AboutFragmentBinding
 import com.alflabs.utils.ILogger
@@ -22,6 +25,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 import androidx.core.graphics.createBitmap
+import com.alflabs.milepostlib.utils.SafeWebViewClient
 
 @AndroidEntryPoint
 class AboutFragment : Fragment() {
@@ -43,13 +47,13 @@ class AboutFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         try {
-            binding.webview.webViewClient = WebViewClientCompat()
+            binding.webview.webViewClient = SafeWebViewClient(logger)
             binding.webview.settings.javaScriptEnabled = true
-
             val jsAppData = JSAppData(requireContext())
             binding.webview.addJavascriptInterface(jsAppData, "JSAppData")
             // Make the webview transparent
