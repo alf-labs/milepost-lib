@@ -22,8 +22,12 @@ import com.alflabs.milepostlib.location.LocationData
 import com.alflabs.milepostlib.location.latLongData
 import com.alflabs.milepostlib.location.locationData
 import com.alflabs.milepostlib.location.speedData
+import com.alflabs.milepostlib.op.OperatorMode
+import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.IPublisher
+import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Publishers
+import com.alflabs.rx.Schedulers
 import com.alflabs.utils.ILogger
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationResult
@@ -71,6 +75,10 @@ class LocationService : LifecycleService() {
     private lateinit var docentMediaPlayer: DocentMediaPlayer
     private val serviceModePublisher: IPublisher<ServiceMode?> = Publishers.latest()
     private val locationPublisher: IPublisher<LocationData?> = Publishers.latest()
+    private val operatorModeSubscriber: ISubscriber<in OperatorMode?> =
+        ISubscriber<OperatorMode?> { _, event -> onGlobalModeChanged(event) }
+    private var currentOpMode: OperatorMode? = null
+    private var currentGpsProvider: IGpsProvider? = null
 
     @RequiresPermission(
         allOf = [
@@ -133,30 +141,78 @@ class LocationService : LifecycleService() {
         }
 
         lifecycleScope.launch {
-            logger.d(TAG, "@@ LocService: Choosing GPS Provider")
-            if (appSettings.simulateGps().contains("simu" /* see arrays.xml */)) {
-                // Simulation mode, no need to check permissions.
-                simulationGpsProvider.start(locationCallback)
-                logger.d(TAG, "@@ Simulation GPS Provider started")
-
-            } else if (!PermissionsFragment.allPermissionsGranted(
-                        this@LocationService, externalGpsProvider)) {
-                logger.d(TAG, "onStartCommand: No permission")
-            } else {
-                // Real GPS mode
-                var started = false
-                if (appSettings.useExternalGps()) {
-                    started = externalGpsProvider.start(locationCallback)
-                }
-                if (!started) {
-                    started = internalGpsProvider.start(locationCallback)
-                }
-                logger.d(TAG, "@@ LocService: GPS Provider started: $started")
-            }
+            globalState.operatorModeStream.subscribe(
+                Schedulers.sync(),
+                operatorModeSubscriber
+            )
+            startSimulation(globalState.operatorMode)
         }
 
         logger.d(TAG, "LocService Started Not Sticky")
         return START_NOT_STICKY
+    }
+
+    @RequiresPermission(
+        allOf = [
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION]
+    )
+    private fun onGlobalModeChanged(opMode: OperatorMode?) {
+        logger.d(TAG, "@@ LocService: OpMode changed to $opMode")
+        opMode?.let { newOpMode ->
+            lifecycleScope.launch {
+                val testingSensors = newOpMode == OperatorMode.SENSORS
+                val simulation = appSettings.simulateGps().contains("simu" /* see arrays.xml */)
+
+                // We would run the simulationGpsProvider if simu is requested and NOT testing.
+                val wouldRunSimulation = simulation && !testingSensors
+                // Would we keep the same provider?
+                val sameProvider = (currentGpsProvider is SimulationGpsProvider) == wouldRunSimulation
+                // If not the same, we want to change.
+                if (!sameProvider) {
+                    startSimulation(newOpMode)
+                }
+            }
+        }
+    }
+
+    @RequiresPermission(
+        allOf = [
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION]
+    )
+    private suspend fun startSimulation(opMode: OperatorMode) {
+        currentOpMode = opMode
+        logger.d(TAG, "@@ LocService: Choosing GPS Provider")
+
+        currentGpsProvider?.let {
+            it.stop()
+            currentGpsProvider = null
+        }
+
+        // We only run the simulationGpsProvider if simu is requrested and NOT testing.
+        val testingSensors = currentOpMode == OperatorMode.SENSORS
+        val simulation = appSettings.simulateGps().contains("simu" /* see arrays.xml */)
+        if (simulation && !testingSensors) {
+            // Simulation mode, no need to check permissions.
+            currentGpsProvider = simulationGpsProvider
+            currentGpsProvider?.start(locationCallback)
+        } else if (!PermissionsFragment.allPermissionsGranted(
+                this@LocationService, externalGpsProvider)) {
+            logger.d(TAG, "onStartCommand: No permission")
+        } else {
+            // Real GPS mode
+            var started = false
+            if (appSettings.useExternalGps()) {
+                currentGpsProvider = externalGpsProvider
+                started = currentGpsProvider!!.start(locationCallback)
+            }
+            if (!started) {
+                currentGpsProvider = internalGpsProvider
+                started = currentGpsProvider!!.start(locationCallback)
+            }
+            logger.d(TAG, "@@ LocService: GPS Provider started: $started")
+        }
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -174,6 +230,7 @@ class LocationService : LifecycleService() {
         simulationGpsProvider.onDestroy()
         serviceMode = ServiceMode.STOPPED
         serviceModePublisher.publish(serviceMode)
+        globalState.operatorModeStream.remove(operatorModeSubscriber)
         globalState.locationStream.remove(locationPublisher)
         globalState.serviceModeStream.remove(serviceModePublisher)
     }

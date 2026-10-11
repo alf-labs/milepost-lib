@@ -233,6 +233,7 @@ abstract class SensorsFragmentBase: Fragment() {
 
     @CallSuper
     protected open fun onGlobalModeChanged(event: Any?) {
+        // Important: we share the subscriber. Event can be either ServiceMode or OperatorMode.
         logger.d(TAG, "onGlobalModeChanged: $event")
         // TBD this is temporary, change to a better display
         // This may potentially be called outside of the proper binding lifecycle.

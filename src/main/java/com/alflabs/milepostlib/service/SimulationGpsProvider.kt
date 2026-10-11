@@ -25,16 +25,17 @@ import kotlin.time.Duration.Companion.seconds
 class SimulationGpsProvider @Inject constructor(
     private val logger: ILogger,
     private val appSettings: AppSettings,
-) {
+) : IGpsProvider {
     companion object {
         private val TAG = SimulationGpsProvider::class.java.simpleName
     }
 
     private var gpsTrack: GpsTrackEntity? = null
-    private var simulateGps = -1
+    private var simulateGps = 0
     private var simulateGpsFactor = 1.0f
 
-    suspend fun start(locationCallback: LocationCallback): Boolean {
+    override suspend fun start(locationCallback: LocationCallback): Boolean {
+        logger.d(TAG, "@@ Start Simulation GPS Provider")
         simulateGpsFactor = appSettings.simulateGpsFactor()
         simulateGps = when(appSettings.simulateGps()) {
             "simulate_from_start" -> 1
@@ -79,9 +80,14 @@ class SimulationGpsProvider @Inject constructor(
         }
     }
 
-    fun onDestroy() {
+    override fun onDestroy() {
+        stop()
+    }
+
+    override fun stop() {
+        logger.d(TAG, "@@ Stop Simulation GPS Provider")
         logger.d(TAG, "@@ Simulate GPS closing...")
-        simulateGps = -1
+        simulateGps = 0
         gpsTrack = null
     }
 

@@ -16,7 +16,7 @@ class InternalGpsProvider @Inject constructor(
     private val logger: ILogger,
     private val locationRequest: LocationRequest,
     private val fusedLocationProviderClient: FusedLocationProviderClient,
-) {
+) : IGpsProvider {
 
     companion object {
         private val TAG = InternalGpsProvider::class.java.simpleName
@@ -29,7 +29,8 @@ class InternalGpsProvider @Inject constructor(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION]
     )
-    suspend fun start(locationCallback: LocationCallback): Boolean {
+    override suspend fun start(locationCallback: LocationCallback): Boolean {
+        logger.d(TAG, "@@ Start Internal GPS Provider")
         // Note: this call would fail if the proper permissions have not been granted
         // beforehand. The fragment handles the permissions requests before
         // starting the GPS provider, to avoid receiving a permission exception here.
@@ -49,11 +50,12 @@ class InternalGpsProvider @Inject constructor(
         }
     }
 
-    fun onDestroy() {
+    override fun onDestroy() {
         stop()
     }
 
-    private fun stop() {
+    override fun stop() {
+        logger.d(TAG, "@@ Stop Internal GPS Provider")
         locationCallback?.let { callback ->
             fusedLocationProviderClient.removeLocationUpdates(callback)
             locationCallback = null

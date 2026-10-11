@@ -43,7 +43,7 @@
                 android:text=""
                 tools:text="status placeholder"
                 android:layout_marginTop="16dp"
-                android:layout_below="@id/start_button"
+                android:layout_alignBaseline="@id/start_button"
                 android:layout_centerHorizontal="true"
                 />
 
@@ -75,18 +75,18 @@
 
     <!-- CENTER -->
 
-    <com.google.android.gms.maps.MapView
-            android:id="@+id/map_view"
+    <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:layout_marginTop="16dp"
-            />
-
-    <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             >
+        <com.google.android.gms.maps.MapView
+                android:id="@+id/map_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+
         <ImageButton
                 android:id="@+id/zoom_out_btn"
                 android:layout_width="wrap_content"
@@ -94,7 +94,7 @@
                 android:padding="16dp"
                 android:src="@drawable/zoom_out"
                 android:contentDescription="Zoom Out"
-                android:layout_alignParentStart="true"
+                android:layout_gravity="bottom|start"
                 android:backgroundTint="@color/colorAccent"
                 />
 
@@ -105,9 +105,15 @@
                 android:padding="16dp"
                 android:src="@drawable/zoom_in"
                 android:contentDescription="Zoom In"
-                android:layout_alignParentEnd="true"
+                android:layout_gravity="bottom|end"
                 android:backgroundTint="@color/colorAccent"
                 />
+    </FrameLayout>
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
     </RelativeLayout>
 
     <!-- BOTTOM -->

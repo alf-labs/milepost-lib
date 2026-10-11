@@ -31,7 +31,7 @@ class ExternalGpsProvider @Inject constructor(
     private val logger: ILogger,
     private val appSettings: AppSettings,
     private val usbManagerOpt: Optional<UsbManager>,
-) {
+) : IGpsProvider {
     companion object {
         private val TAG = ExternalGpsProvider::class.java.simpleName
         const val ACTION_USB_PERMISSION = "com.alflabs.milepostlib.USB_PERMISSION"
@@ -71,7 +71,8 @@ class ExternalGpsProvider @Inject constructor(
         }
     }
 
-    suspend fun start(locationCallback: LocationCallback): Boolean {
+    override suspend fun start(locationCallback: LocationCallback): Boolean {
+        logger.d(TAG, "@@ Start External GPS Provider")
         if (device == null) {
             setupDevice()
         }
@@ -264,7 +265,12 @@ class ExternalGpsProvider @Inject constructor(
         }
     }
 
-    fun onDestroy() {
+    override fun onDestroy() {
+        stop()
+    }
+
+    override fun stop() {
+        logger.d(TAG, "@@ Stop External GPS Provider")
         logger.d(TAG, "@@ USB GPS closing...")
         usbIoManager?.stop()
         usbIoManager = null
