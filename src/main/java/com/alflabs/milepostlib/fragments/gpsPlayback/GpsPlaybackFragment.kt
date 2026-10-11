@@ -323,7 +323,7 @@ class GpsPlaybackFragment : SensorsFragment() {
         if (markerPositionCurrent == null) {
             markerPositionCurrent = map.addMarker(
                 MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_purple))
                     .position(position)
                     .anchor(0.5f, 0.5f)
             )
@@ -344,7 +344,7 @@ class GpsPlaybackFragment : SensorsFragment() {
         if (markerMpCurrent == null) {
             markerMpCurrent = map.addMarker(
                 MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_purple))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue_small))
                     .position(position)
                     .anchor(0.5f, 0.5f)
             )

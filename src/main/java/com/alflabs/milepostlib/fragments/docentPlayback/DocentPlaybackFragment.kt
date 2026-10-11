@@ -12,7 +12,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
-import androidx.recyclerview.widget.RecyclerView
 import com.alflabs.milepostlib.R
 import com.alflabs.milepostlib.databinding.DocentPlaybackFragmentBinding
 import com.alflabs.milepostlib.db.DocentTrackDao
@@ -534,7 +533,7 @@ class DocentPlaybackFragment : SensorsFragment() {
         if (markerPositionCurrent == null) {
             markerPositionCurrent = map.addMarker(
                 MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_purple))
                     .position(position)
                     .anchor(0.5f, 0.5f)
             )
@@ -555,7 +554,7 @@ class DocentPlaybackFragment : SensorsFragment() {
         if (markerMpCurrent == null) {
             markerMpCurrent = map.addMarker(
                 MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_purple))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_blue_small))
                     .position(position)
                     .anchor(0.5f, 0.5f)
             )
