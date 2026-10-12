@@ -136,11 +136,24 @@ configurations.all {
     }
 }
 
-// Fix for Robolectric 4.17 issue with SDK 37.
-// see https://github.com/robolectric/robolectric/issues/11434
 tasks.withType<Test> {
+    // Fix for Robolectric 4.17 issue with SDK 37.
+    // see https://github.com/robolectric/robolectric/issues/11434
     jvmArgs(
         "--add-exports",
-        "java.base/jdk.internal.access=ALL-UNNAMED"
+        "java.base/jdk.internal.access=ALL-UNNAMED",
     )
+
+    // Fix: Attach Mockito as a Java Agent at test runtime. Needed for recent JVM (17+).
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+        val agentJar = classpath.files.find { file ->
+            file.name.contains("mockito-core") || file.name.contains("byte-buddy-agent")
+        }
+        println("Mockito Agent runtime class path: $agentJar")
+        if (agentJar != null) {
+            listOf("-javaagent:${agentJar.absolutePath}")
+        } else {
+            emptyList()
+        }
+    })
 }
