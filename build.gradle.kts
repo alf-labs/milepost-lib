@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.navigation.safe.args)
     alias(libs.plugins.room)
@@ -135,4 +134,13 @@ configurations.all {
     resolutionStrategy {
         force(libs.truth)
     }
+}
+
+// Fix for Robolectric 4.17 issue with SDK 37.
+// see https://github.com/robolectric/robolectric/issues/11434
+tasks.withType<Test> {
+    jvmArgs(
+        "--add-exports",
+        "java.base/jdk.internal.access=ALL-UNNAMED"
+    )
 }
