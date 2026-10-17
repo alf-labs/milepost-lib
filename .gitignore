@@ -1,1 +1,6 @@
+*.hprof
+*.iml
+.gradle
+.idea
 /build
+/out
