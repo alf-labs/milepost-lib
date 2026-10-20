@@ -9,7 +9,14 @@
     <uses-feature android:name="android.hardware.usb.host" />
 
     <application>
-        <service android:name=".service.LocationService" android:foregroundServiceType="location"/>
+        <!-- Dependency for the GMS map library, needs to be explicitly declared for API 37. -->
+        <uses-library
+                android:name="org.apache.http.legacy"
+                android:required="false" />
+
+        <service
+                android:name=".service.LocationService"
+                android:foregroundServiceType="location"/>
 
         <activity
                 android:name="com.alflabs.milepostlib.activity.MpActivity"

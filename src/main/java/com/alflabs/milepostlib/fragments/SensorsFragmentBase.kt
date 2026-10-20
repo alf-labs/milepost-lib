@@ -1,5 +1,7 @@
 package com.alflabs.milepostlib.fragments
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -7,6 +9,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.annotation.CallSuper
+import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDirections
@@ -19,6 +22,7 @@ import com.alflabs.milepostlib.app.GlobalState
 import com.alflabs.milepostlib.op.Operator
 import com.alflabs.milepostlib.op.OperatorMode
 import com.alflabs.milepostlib.service.ExternalGpsProvider
+import com.alflabs.milepostlib.service.InternalGpsProvider
 import com.alflabs.milepostlib.service.LocationService
 import com.alflabs.milepostlib.service.ServiceMode
 import com.alflabs.milepostlib.utils.MapStyle
@@ -87,6 +91,7 @@ abstract class SensorsFragmentBase: Fragment() {
     protected abstract val zoomInButton: ImageButton?
     protected abstract val zoomOutButton: ImageButton?
 
+    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         logger.d(TAG, "onViewCreated")
@@ -117,6 +122,7 @@ abstract class SensorsFragmentBase: Fragment() {
                     findNavController().navigate(actionToPermissionsDlg())
                 } else {
                     setInitialMapZoom = true
+                    disableMapLocationLayer()
                     LocationService.startService(requireActivity())
                     requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     onStartButton()
@@ -245,7 +251,7 @@ abstract class SensorsFragmentBase: Fragment() {
 
     protected fun onLocationChanged(value: LocationData?) {
         logger.d(TAG, "onLocationChanged: ${value?.latLong?.timestampMillis}")
-        // This may potentially be called outside of the proper binding lifecycle.
+        // This may potentially be called outside the proper binding lifecycle.
         if (value == null || !hasBinding) return
 
         val recordedLocationsList = getLocationsList()
@@ -342,6 +348,21 @@ abstract class SensorsFragmentBase: Fragment() {
             CameraUpdateFactory.newLatLng(currentPosition)
         }
         map.animateCamera(update)
+    }
+
+    /** Disable layer that shows current user location. */
+    @RequiresPermission(
+        allOf = [
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION]
+    )
+    private fun disableMapLocationLayer() {
+        try {
+            googleMap?.isMyLocationEnabled = false
+        } catch (e: Exception) {
+            logger.d(TAG, "@@ Map.MyLocatedEnabled=false failed", e)
+        }
+
     }
 
     // Interface customized by derived classes
