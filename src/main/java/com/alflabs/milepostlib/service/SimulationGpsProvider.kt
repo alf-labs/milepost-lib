@@ -7,7 +7,6 @@ import com.alflabs.milepostlib.db.GpsTrackEntity
 import com.alflabs.milepostlib.location.LocationData
 import com.alflabs.milepostlib.location.LocationDataList
 import com.alflabs.milepostlib.op.AudioPlayingStatus
-import com.alflabs.rx.AndroidSchedulers
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Schedulers
 import com.alflabs.utils.ILogger
@@ -130,8 +129,8 @@ class SimulationGpsProvider @Inject constructor(
      *
      * [speedFactor] is a multiplier to speed up the delay (e.g. make them shorter).
      * E.g. 1.0 is normal speed, 2.0 is twice faster (shorter delays),
-     * Values > 1 mean to accelerate speed all the time.
-     * Values < -1 mean to accelerate speed only when there's no PA audio going on.
+     * Values < -1 mean to accelerate speed all the time.
+     * Values > 1 mean to accelerate speed only when there's no PA audio going on.
      * Values [-1 up to 1] are meaningless and interpreted as 1.
      */
     private fun replayGpsTrack(
@@ -143,7 +142,7 @@ class SimulationGpsProvider @Inject constructor(
         if (locations.isEmpty()) return@flow
 
         val delayMultiplier = 1.0f / max(1.0f, abs(speedFactor))
-        val constantFactor = speedFactor >= 0f
+        val constantFactor = speedFactor < 0f
 
         // Emit the initial recorded point
         val firstLocation = locations.first()

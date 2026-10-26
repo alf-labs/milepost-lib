@@ -137,8 +137,8 @@ class AppSettings @Inject constructor(
 
     /** Speed factor for GPS Simulation.
      * 1x is the default and is 'real time' normal speed.
-     * > 1 means to accelerate time by a constant factor.
-     * < -1 means to accelerate time only when there's no PA audio.
+     * < -1 means to accelerate time by a constant factor.
+     * > 1 means to accelerate time only when there's no PA audio.
      * Values [-1..1[ are essentially invalid as they have no meaning, and uses normal speed.
      */
     suspend fun simulateGpsFactor(): Float {
