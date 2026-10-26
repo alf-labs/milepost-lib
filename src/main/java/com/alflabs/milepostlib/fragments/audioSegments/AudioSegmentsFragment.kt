@@ -183,6 +183,12 @@ class AudioSegmentsFragment : Fragment() {
                         askAndMaybeDeleteEntry()
                         true
                     }
+                    R.id.action_reselect_file -> {
+                        audioSegmentAdapter?.getSelected()?.let { item ->
+                            onUpdateAudioDocumentUri(item)
+                        }
+                        true
+                    }
                     else -> false
                 }
             }
@@ -336,7 +342,7 @@ class AudioSegmentsFragment : Fragment() {
                     .setTitle("Duplicate File Reference")
                     // Note: message does not specify that references encode the start/end
                     // timestamps as this cannot be selected in the UI yet. The message should be
-                    // change if that feature is later added.
+                    // changed if that feature is later added.
                     .setMessage("There is already an entry for a file named '$fileName'. Segments need to be unique. Please choose a different file or rename it first.")
                     .setPositiveButton("OK", null)
                     .show()
@@ -350,7 +356,11 @@ class AudioSegmentsFragment : Fragment() {
             viewModel.updatePersistableUri(
                 selectAudioSegmentPendingId,
                 descriptor,
-                persistableUri)
+                persistableUri,
+                audioSegmentMetadata {
+                    // Duration may have changed so we need to update it.
+                    this.durationMs = durationMs
+                })
             logger.d(TAG, "@@ addAudioFileUri: updated $selectAudioSegmentPendingId -> $persistableUri")
             notifyItemIdChanged(selectAudioSegmentPendingId)
             selectAudioSegmentPendingId = -1L

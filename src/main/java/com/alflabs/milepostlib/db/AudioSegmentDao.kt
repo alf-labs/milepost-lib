@@ -16,8 +16,13 @@ interface AudioSegmentDao {
     @Update
     suspend fun update(audioFile: AudioSegmentEntity)
 
-    @Query("UPDATE audio_segments SET descriptor = :descriptor, persistableUri = :persistableUri WHERE id = :id")
-    suspend fun updatePersistableUri(id: Long, descriptor: String, persistableUri: String)
+    @Query("UPDATE audio_segments SET descriptor = :descriptor, persistableUri = :persistableUri, metadata = :metadata WHERE id = :id")
+    suspend fun updatePersistableUri(
+        id: Long,
+        descriptor: String,
+        persistableUri: String,
+        metadata: AudioSegmentMetadata
+    )
 
     @Query("SELECT * FROM audio_segments WHERE id = :id")
     fun getById(id: Long): Flow<AudioSegmentEntity?>

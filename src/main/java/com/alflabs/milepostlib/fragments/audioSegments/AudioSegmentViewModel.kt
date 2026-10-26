@@ -5,6 +5,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.alflabs.milepostlib.db.AudioSegmentDao
 import com.alflabs.milepostlib.db.AudioSegmentEntity
+import com.alflabs.milepostlib.db.AudioSegmentMetadata
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,9 +23,14 @@ class AudioSegmentViewModel @Inject constructor(
         }
     }
 
-    fun updatePersistableUri(id: Long, descriptor: String, persistableUri: String) {
+    fun updatePersistableUri(
+        id: Long,
+        descriptor: String,
+        persistableUri: String,
+        metadata: AudioSegmentMetadata
+    ) {
         viewModelScope.launch {
-            audioSegmentDao.updatePersistableUri(id, descriptor, persistableUri)
+            audioSegmentDao.updatePersistableUri(id, descriptor, persistableUri, metadata)
         }
     }
 
