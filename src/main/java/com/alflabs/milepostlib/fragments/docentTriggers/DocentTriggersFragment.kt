@@ -33,8 +33,8 @@ import com.alflabs.milepostlib.db.DocentTrackEntity
 import com.alflabs.milepostlib.db.GpsTrackEntity
 import com.alflabs.milepostlib.db.PlayTriggerEntity
 import com.alflabs.milepostlib.fragments.audioSegments.AudioSegmentItem
+import com.alflabs.milepostlib.trigger.PlaybackTrigger
 import com.alflabs.milepostlib.trigger.PlaybackTriggerDirection
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
 import com.alflabs.milepostlib.utils.DocentImporterExporter
 import com.alflabs.milepostlib.utils.Time
 import com.alflabs.milepostlib.utils.Units
@@ -317,7 +317,7 @@ class DocentTriggersFragment : Fragment() {
                 logger.d(TAG, "@@  In Cold Start: $newInColdStart")
 
                 var changed = isAdd
-                val newTrigger = currTrigger?.toBuilder() ?: PlaybackTriggerMetadata.newBuilder()
+                val newTrigger = currTrigger?.toBuilder() ?: PlaybackTrigger.newBuilder()
                 var newEntity = item?.toEntity() ?: PlayTriggerEntity(
                     audioSegmentId = 0,
                     docentTrackId = docentTrack.id,

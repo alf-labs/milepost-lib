@@ -4,18 +4,13 @@ import com.alflabs.milepostlib.location.LatLongData
 import com.alflabs.milepostlib.location.LocationData
 import com.alflabs.milepostlib.location.LocationDataList
 import com.alflabs.milepostlib.location.SpeedData
-import com.alflabs.milepostlib.location.latLongData
 import com.alflabs.milepostlib.location.locationData
 import com.alflabs.milepostlib.location.locationDataList
 import com.alflabs.milepostlib.location.speedData
-import com.alflabs.milepostlib.trigger.PlaybackTriggerDirection
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
-import com.alflabs.milepostlib.trigger.playbackTriggerMetadata
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import java.util.UUID
 import kotlin.collections.forEach
 
 class LocationDataListDeserializer : StdDeserializer<LocationDataList>(LocationDataList::class.java) {

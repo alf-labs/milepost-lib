@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
+import com.alflabs.milepostlib.trigger.PlaybackTrigger
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 @Entity(
@@ -36,5 +36,5 @@ data class PlayTriggerEntity(
     val docentTrackId: Long,
 
     @ColumnInfo
-    val playbackTrigger: PlaybackTriggerMetadata? = null
+    val playbackTrigger: PlaybackTrigger? = null
 )

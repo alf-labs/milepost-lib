@@ -3,7 +3,7 @@ package com.alflabs.milepostlib.fragments.docentTriggers
 import androidx.room.Ignore
 import com.alflabs.milepostlib.db.AudioSegmentMetadata
 import com.alflabs.milepostlib.db.PlayTriggerEntity
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
+import com.alflabs.milepostlib.trigger.PlaybackTrigger
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -16,7 +16,7 @@ data class DocentTriggerItem(
     @field:JsonIgnore val id: Long = 0,
     @field:JsonIgnore val audioSegmentId: Long = 0,
     @field:JsonIgnore val docentTrackId: Long = 0,
-    @param:JsonProperty("playbackTrigger") val playbackTrigger: PlaybackTriggerMetadata? = null,
+    @param:JsonProperty("playbackTrigger") val playbackTrigger: PlaybackTrigger? = null,
     // Fields from the AudioSegmentEntity
     @param:JsonProperty("audioDescriptor") val audioDescriptor: String,
     @field:JsonIgnore val persistableUri: String = "",

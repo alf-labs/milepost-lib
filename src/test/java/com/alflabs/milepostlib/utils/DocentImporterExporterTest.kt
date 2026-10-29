@@ -13,7 +13,7 @@ import com.alflabs.milepostlib.db.gpsTrackSummary
 import com.alflabs.milepostlib.fragments.docentTriggers.DocentTriggerItem
 import com.alflabs.milepostlib.location.LocationDataList
 import com.alflabs.milepostlib.trigger.PlaybackTriggerDirection
-import com.alflabs.milepostlib.trigger.playbackTriggerMetadata
+import com.alflabs.milepostlib.trigger.playbackTrigger
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.google.common.truth.Truth.assertThat
@@ -71,7 +71,7 @@ class DocentImporterExporterTest {
                 persistableUri = "Uri-1",
                 docentTrackId = 42L,
                 audioDescriptor = audioFiles[1]!!,
-                playbackTrigger = playbackTriggerMetadata {
+                playbackTrigger = playbackTrigger {
                     includeInColdStart = true
                     mpMin = 10f
                     mpMax = 11f
@@ -84,7 +84,7 @@ class DocentImporterExporterTest {
                 persistableUri = "Uri-2",
                 docentTrackId = 42L,
                 audioDescriptor = audioFiles[2]!!,
-                playbackTrigger = playbackTriggerMetadata {
+                playbackTrigger = playbackTrigger {
                     includeInColdStart = true
                     mpMin = 20f
                     mpMax = 22f
@@ -97,7 +97,7 @@ class DocentImporterExporterTest {
                 persistableUri = "Uri-3",
                 docentTrackId = 42L,
                 audioDescriptor = audioFiles[3]!!,
-                playbackTrigger = playbackTriggerMetadata {
+                playbackTrigger = playbackTrigger {
                     includeInColdStart = false
                     mpMin = 30f
                     mpMax = 33f

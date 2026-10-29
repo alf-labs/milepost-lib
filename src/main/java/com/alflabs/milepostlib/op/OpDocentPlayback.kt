@@ -6,7 +6,7 @@ import com.alflabs.milepostlib.db.DocentTrackEntity
 import com.alflabs.milepostlib.db.GpsTrackEntity
 import com.alflabs.milepostlib.fragments.docentPlayback.DocentPlaybackItem
 import com.alflabs.milepostlib.trigger.PlaybackTriggerDirection
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
+import com.alflabs.milepostlib.trigger.PlaybackTrigger
 import com.alflabs.rx.IPublisher
 import com.alflabs.rx.ISubscriber
 import com.alflabs.rx.Publishers
@@ -171,7 +171,7 @@ class OpDocentPlayback @AssistedInject constructor(
     }
 
     private fun matchEstimate(
-        trigger: PlaybackTriggerMetadata?,
+        trigger: PlaybackTrigger?,
         estimate: MpEstimate,
     ): Boolean {
         if (trigger == null) return false

@@ -2,7 +2,7 @@ package com.alflabs.milepostlib.db
 
 import androidx.room.TypeConverter
 import com.alflabs.milepostlib.location.LocationDataList
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
+import com.alflabs.milepostlib.trigger.PlaybackTrigger
 import com.google.protobuf.AbstractMessageLite
 import com.google.protobuf.GeneratedMessageLite
 import com.google.protobuf.InvalidProtocolBufferException
@@ -31,10 +31,10 @@ class Converters {
     fun toAudioSegmentMetadata(value: String?): AudioSegmentMetadata?  = toProto<AudioSegmentMetadata>(value)
 
     @TypeConverter
-    fun fromPlaybackTriggerMetadata(value: PlaybackTriggerMetadata?): String? = fromProto(value)
+    fun fromPlaybackTrigger(value: PlaybackTrigger?): String? = fromProto(value)
 
     @TypeConverter
-    fun toPlaybackTriggerMetadata(value: String?): PlaybackTriggerMetadata?  = toProto<PlaybackTriggerMetadata>(value)
+    fun toPlaybackTrigger(value: String?): PlaybackTrigger?  = toProto<PlaybackTrigger>(value)
 
     companion object {
         /** Serializes a generic Protobuf lite to a Base64 string. */

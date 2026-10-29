@@ -2,7 +2,7 @@ package com.alflabs.milepostlib.fragments.docentPlayback
 
 import androidx.room.Ignore
 import com.alflabs.milepostlib.fragments.docentTriggers.DocentTriggerItem
-import com.alflabs.milepostlib.trigger.PlaybackTriggerMetadata
+import com.alflabs.milepostlib.trigger.PlaybackTrigger
 
 data class DocentPlaybackItem(
     val isPlaying: Boolean,
@@ -10,7 +10,7 @@ data class DocentPlaybackItem(
     // Fields from the PlayTriggerEntity
     val triggerId: Long,
     val audioSegmentId: Long,
-    val playbackTrigger: PlaybackTriggerMetadata?,
+    val playbackTrigger: PlaybackTrigger?,
     // Fields from the AudioSegmentEntity
     val descriptor: String,
     val persistableUri: String,
