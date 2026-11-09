@@ -1,0 +1,2 @@
+# Consumer keep rules for MilepostLib.
+# In AGP 9.3+, keep rules are placed in the src/<variant>/keepRules source set with the .keep extension.
