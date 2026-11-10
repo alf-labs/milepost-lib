@@ -1,6 +1,8 @@
 package com.alflabs.milepostlib.fragments.docentTriggers
 
+import androidx.annotation.Keep
 import androidx.room.Ignore
+import com.alflabs.annotations.ExportedJson
 import com.alflabs.milepostlib.db.AudioSegmentMetadata
 import com.alflabs.milepostlib.db.PlayTriggerEntity
 import com.alflabs.milepostlib.trigger.PlaybackTrigger
@@ -11,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
  * A derivative of [com.alflabs.milepostlib.db.PlayTriggerEntity]
  * suitable for the [DocentTriggersFragment] recycler view.
  */
+@Keep
+@ExportedJson
 data class DocentTriggerItem(
     // Fields from the PlayTriggerEntity
     @field:JsonIgnore val id: Long = 0,

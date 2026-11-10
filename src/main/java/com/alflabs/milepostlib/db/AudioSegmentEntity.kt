@@ -1,9 +1,11 @@
 package com.alflabs.milepostlib.db
 
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+@Keep
 @Entity(tableName = "audio_segments")
 data class AudioSegmentEntity(
     @PrimaryKey(autoGenerate = true)

@@ -1,5 +1,6 @@
 package com.alflabs.milepostlib.db
 
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -7,6 +8,7 @@ import androidx.room.PrimaryKey
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.util.UUID
 
+@Keep
 @Entity(
     tableName = "docent_tracks",
     foreignKeys = [

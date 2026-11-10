@@ -1,5 +1,6 @@
 package com.alflabs.milepostlib.db
 
+import androidx.annotation.Keep
 import com.alflabs.milepostlib.location.LocationData
 import com.alflabs.milepostlib.location.LocationDataList
 import com.alflabs.milepostlib.location.SpeedData
@@ -113,6 +114,7 @@ fun objectMapperImportProtobuf() : ObjectMapper = jacksonMapperBuilder().apply {
 }
 
 // Mixin definition that allows Jackson to ignore Protobuf-Lite getters during export.
+@Keep
 abstract class ProtobufLiteMixin {
     @get:JsonIgnore
     abstract val defaultInstanceForType: MessageLite

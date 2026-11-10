@@ -1,8 +1,10 @@
 package com.alflabs.milepostlib.db
 
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.alflabs.annotations.ExportedJson
 import com.alflabs.milepostlib.location.LocationDataList
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -15,6 +17,8 @@ import java.util.UUID
 
 // Doc: https://developer.android.com/training/data-storage/room/defining-data
 
+@Keep
+@ExportedJson
 @Entity(tableName = "gps_tracks")
 data class GpsTrackEntity(
     // Note: according to the autoGenerate doc, setting the value to 0 forces it to be generated.

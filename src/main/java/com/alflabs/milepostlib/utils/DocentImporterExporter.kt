@@ -2,6 +2,8 @@ package com.alflabs.milepostlib.utils
 
 import android.content.Context
 import android.net.Uri
+import androidx.annotation.Keep
+import com.alflabs.annotations.ExportedJson
 import com.alflabs.milepostlib.db.DocentTrackEntity
 import com.alflabs.milepostlib.db.GpsTrackEntity
 import com.alflabs.milepostlib.db.objectMapperExportProtobuf
@@ -142,6 +144,8 @@ class DocentImporterExporter @Inject constructor(
 
 
 /** A variation of [DocentTrackEntity] suitable for JSON import/export. */
+@Keep
+@ExportedJson
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DocentImportExportData @JsonCreator constructor(
     @param:JsonProperty("docentTrack") val docentTrack: DocentTrackEntity,

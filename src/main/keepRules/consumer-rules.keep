@@ -1,2 +1,29 @@
 # Consumer keep rules for MilepostLib.
 # In AGP 9.3+, keep rules are placed in the src/<variant>/keepRules source set with the .keep extension.
+
+# Do not obfuscate public classes or fields.
+-keep class com.alflabs.** { public *; }
+-keep class * extends com.alflabs.** { public *; }
+
+# JS in the web views, keep only the public method names
+-keepclassmembers class com.alflabs.**JSVersion { public *; }
+
+# Do not obfuscate Protobuf Lite messages,
+# which Protobuf's runtime accesses reflectively via Unsafe/ManifestSchemaFactory.
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
+
+# Preserve annotations needed for reflection
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
+
+# Keep all classes and members annotated with Jackson annotations
+-keep @com.fasterxml.jackson.annotation.* class * { *; }
+-keepclassmembers class * {
+    @com.fasterxml.jackson.annotation.* <fields>;
+    @com.fasterxml.jackson.annotation.* <methods>;
+}
+
+# Keep all Room Entities
+-keep @androidx.room.Entity class * { *; }
+
+# Keep the LibUtils annotation for ExportedJson
+-keep @com.alflabs.annotations.ExportedJson class * { *; }

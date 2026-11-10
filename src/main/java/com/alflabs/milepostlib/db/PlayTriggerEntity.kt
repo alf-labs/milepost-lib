@@ -1,5 +1,6 @@
 package com.alflabs.milepostlib.db
 
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -7,6 +8,7 @@ import androidx.room.PrimaryKey
 import com.alflabs.milepostlib.trigger.PlaybackTrigger
 import com.fasterxml.jackson.annotation.JsonIgnore
 
+@Keep
 @Entity(
     tableName = "play_triggers",
     foreignKeys = [
